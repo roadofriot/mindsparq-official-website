@@ -9,10 +9,10 @@ begin
   -- 1. Find the target user by verified email
   select id into target_user_id
   from auth.users
-  where email = 'OWNER_USER_EMAIL_HERE';
+  where email = 'merokhoj@gmail.com';
 
   if target_user_id is null then
-    raise exception 'User with email OWNER_USER_EMAIL_HERE not found in auth.users. Please sign up or create account first.';
+    raise exception 'User with email merokhoj@gmail.com not found in auth.users. Please sign up or create account first.';
   end if;
 
   -- 2. Grant super_admin & owner role
@@ -32,7 +32,7 @@ begin
   insert into public.audit_logs (actor_user_id, actor_email, action, target_type, target_id, metadata)
   values (
     target_user_id,
-    'OWNER_USER_EMAIL_HERE',
+    'merokhoj@gmail.com',
     'role.grant.bootstrap_super_admin',
     'user_roles',
     target_user_id::text,

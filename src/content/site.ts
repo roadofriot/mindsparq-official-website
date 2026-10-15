@@ -9,7 +9,7 @@ export interface SiteConfig {
     country: string;
     fullFormatted: string;
     mapQueryUrl?: string;
-  };
+  registrationStatus: string;
   founder: {
     name: string;
     nameNepali: string;
@@ -47,6 +47,7 @@ export const siteConfig: SiteConfig = {
   name: "MindSparQ Education & Technology",
   tagline: "Empowering Minds, Sparking Innovation",
   domain: "mindsparqeducation.com.np",
+  registrationStatus: "Registered, as confirmed by the founder",
   location: {
     address: "Gyanbhoomi Path",
     city: "Butwal 11",
@@ -58,20 +59,22 @@ export const siteConfig: SiteConfig = {
   founder: {
     name: 'Samay Budhathoki Chhetri',
     nameNepali: 'समय बुढाथोकी क्षेत्री',
-        role: 'Founder & CEO',
+    altName: 'Sonu Chhetri',
+    role: 'Founder & CEO',
     bio: 'Educator, technologist, and researcher dedicated to fusing foundational cognitive skills with applied AI and robotics education in Nepal.'
   },
   coreValues: [
-    { title: 'Innovation', titleNepali: 'नवीनता', desc: 'Embracing fresh ideas, modern technology, and dynamic pedagogy.' },
-    { title: 'Quality Education', titleNepali: 'गुणस्तरीय शिक्षा', desc: 'Prioritizing genuine understanding, critical thinking, and skill mastery.' },
-    { title: 'Inclusion', titleNepali: 'समावेशिता', desc: 'Empowering diverse learners across varying learning paces and backgrounds.' },
-    { title: 'Integrity', titleNepali: 'इमानदारी', desc: 'Transparent claims, data privacy, responsible technology, and ethical conduct.' },
-    { title: 'Practical Learning', titleNepali: 'व्यवहारिक सिकाइ', desc: 'Connecting concepts directly to hands-on experiments, circuits, and projects.' },
-    { title: 'Continuous Growth', titleNepali: 'निरन्तर विकास', desc: 'Perpetual improvement for learners, educators, platforms, and institutions.' }
+    { title: 'Innovation', titleNepali: 'नवीनता', desc: 'Explore new ideas, practical methods, and appropriate technologies that improve learning and solve real problems.' },
+    { title: 'Quality Education', titleNepali: 'गुणस्तरीय शिक्षा', desc: 'Prioritize meaningful understanding, measurable learning objectives, suitable instruction, and continuous improvement.' },
+    { title: 'Practical Learning', titleNepali: 'व्यवहारिक सिकाइ', desc: 'Connect concepts to exercises, experiments, projects, demonstrations, and real-world applications.' },
+    { title: 'Integrity', titleNepali: 'इमानदारी', desc: 'Communicate honestly, protect institutional and user information, and avoid unsupported claims about services or outcomes.' },
+    { title: 'Inclusion', titleNepali: 'समावेशिता', desc: 'Respect different backgrounds, abilities, learning needs, and learning speeds.' },
+    { title: 'Responsibility', titleNepali: 'जिम्मेवारी', desc: 'Protect children, use technology thoughtfully, respect intellectual property, and handle personal data responsibly.' },
+    { title: 'Continuous Improvement', titleNepali: 'निरन्तर सुधार', desc: 'Review programs, gather feedback, evaluate outcomes, and improve teaching materials, software, and operational processes.' }
   ],
   nameConcept: {
-    mind: 'Represents thought, knowledge, mental capacity, and cognitive development (सोच, ज्ञान, मानसिक क्षमता र बौद्धिक विकास).',
-    sparq: 'Represents curiosity, spark of new ideas, creativity, and innovation (जिज्ञासा, नयाँ विचार, रचनात्मकता र नवप्रवर्तन).'
+    mind: 'Thinking, understanding, knowledge, creativity, and intellectual development (सोच, ज्ञान, मानसिक क्षमता र बौद्धिक विकास).',
+    sparq: 'Curiosity, inspiration, fresh ideas, innovation, and the spark that initiates discovery (जिज्ञासा, नयाँ विचार, रचनात्मकता र नवप्रवर्तन).'
   },
   contact: {
     // Left unpopulated until official owner confirmation as strictly instructed

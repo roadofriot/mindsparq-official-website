@@ -32,7 +32,7 @@ export const Header: React.FC = () => {
   // Handle scroll effect for header shadow
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -44,16 +44,25 @@ export const Header: React.FC = () => {
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        backgroundColor: 'var(--navbar-bg)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: `1px solid ${scrolled ? 'var(--color-border)' : 'transparent'}`,
-        boxShadow: scrolled ? 'var(--shadow-sm)' : 'none',
-        transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)'
+        backgroundColor: scrolled ? 'var(--navbar-bg)' : 'rgba(var(--color-surface-rgb, 15, 23, 42), 0.85)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: `1px solid ${scrolled ? 'var(--color-border)' : 'rgba(255, 255, 255, 0.06)'}`,
+        boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.15)' : 'none',
+        transition: 'all var(--transition-fast)'
       }}
     >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 'var(--header-height)' }}>
-        <Logo />
+      <div 
+        className="container" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          height: '68px' 
+        }}
+      >
+        {/* Brand Logo */}
+        <Logo showTagline={false} />
 
         {/* Desktop Navigation */}
         <nav 
@@ -61,7 +70,7 @@ export const Header: React.FC = () => {
           style={{
             display: 'none',
             alignItems: 'center',
-            gap: 'var(--space-4)'
+            gap: 'var(--space-6)'
           }}
           className="desktop-nav"
         >
@@ -69,27 +78,72 @@ export const Header: React.FC = () => {
             <NavLink
               key={item.href}
               to={item.href}
-              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}
               style={({ isActive }) => ({
-                fontSize: 'var(--font-sm)',
-                fontWeight: 600,
-                color: isActive ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
-                padding: '8px 12px',
-                borderRadius: 'var(--radius-sm)',
+                position: 'relative',
+                fontSize: '0.875rem',
+                fontWeight: isActive ? 600 : 500,
+                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                padding: '8px 2px',
                 textDecoration: 'none',
                 transition: 'color var(--transition-fast)'
               })}
             >
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <span 
+                      style={{
+                        position: 'absolute',
+                        bottom: '-6px',
+                        left: '0',
+                        right: '0',
+                        height: '2px',
+                        borderRadius: '2px',
+                        background: 'linear-gradient(90deg, #38bdf8 0%, #818cf8 100%)',
+                        boxShadow: '0 0 8px rgba(56, 189, 248, 0.6)'
+                      }} 
+                    />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        {/* Actions (Auth status, Theme toggle + CTA) */}
+        {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          {/* User Auth link */}
+          {/* Minimal Theme Switcher */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              border: '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-text-primary)',
+              cursor: 'pointer',
+              transition: 'background-color var(--transition-fast), border-color var(--transition-fast)'
+            }}
+          >
+            {theme === 'light' ? (
+              <Moon size={16} aria-hidden="true" />
+            ) : (
+              <Sun size={16} aria-hidden="true" style={{ color: '#f59e0b' }} />
+            )}
+          </button>
+
+          {/* User Auth Portal Link / Button */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {isStaff && (
                 <Link
                   to="/admin"
@@ -98,16 +152,16 @@ export const Header: React.FC = () => {
                     display: 'none',
                     alignItems: 'center',
                     gap: '4px',
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    padding: '5px 12px',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)',
                     color: '#d97706',
-                    fontSize: 'var(--font-xs)',
+                    fontSize: '0.75rem',
                     fontWeight: 700,
                     textDecoration: 'none'
                   }}
                 >
-                  <Shield size={14} /> Admin
+                  <Shield size={13} /> Admin
                 </Link>
               )}
               <Link
@@ -117,77 +171,64 @@ export const Header: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 14px',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-full)',
                   backgroundColor: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                  fontSize: 'var(--font-sm)',
+                  color: 'var(--color-text-primary)',
+                  fontSize: '0.8125rem',
                   fontWeight: 600,
                   textDecoration: 'none'
                 }}
               >
-                <User size={16} />
+                <User size={14} />
                 <span className="desktop-cta" style={{ display: 'none' }}>Portal</span>
               </Link>
             </div>
           ) : (
             <Link
               to="/auth"
+              className="desktop-cta"
               style={{
-                display: 'inline-flex',
+                display: 'none',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 14px',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--color-surface)',
+                padding: '6px 16px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'transparent',
                 border: '1px solid var(--color-border)',
-                color: 'var(--color-text)',
-                fontSize: 'var(--font-sm)',
+                color: 'var(--color-text-primary)',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
-                textDecoration: 'none'
+                textDecoration: 'none',
+                transition: 'border-color var(--transition-fast), background-color var(--transition-fast)'
               }}
             >
-              <User size={16} />
               <span>Sign In</span>
             </Link>
           )}
 
-          {/* Theme Switch Button */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-            title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-            style={{
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              backgroundColor: 'var(--color-surface)',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-              transition: 'background-color var(--transition-fast), border-color var(--transition-fast)'
-            }}
-          >
-            {theme === 'light' ? (
-              <Moon size={18} aria-hidden="true" />
-            ) : (
-              <Sun size={18} aria-hidden="true" style={{ color: '#f59e0b' }} />
-            )}
-          </button>
-
-          {/* Primary CTA (Desktop) */}
+          {/* Primary CTA Button: Enquire -> (Pill shaped gradient button) */}
           <NavLink
             to="/contact"
-            className="btn btn-primary desktop-cta"
-            style={{ display: 'none' }}
+            className="desktop-cta"
+            style={{
+              display: 'none',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 18px',
+              borderRadius: 'var(--radius-full)',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
+              color: '#ffffff',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              boxShadow: '0 2px 10px rgba(59, 130, 246, 0.3)',
+              transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)'
+            }}
           >
             <span>Enquire</span>
-            <ArrowRight size={16} aria-hidden="true" />
+            <ArrowRight size={14} aria-hidden="true" />
           </NavLink>
 
           {/* Mobile Menu Toggle Button */}
@@ -199,24 +240,24 @@ export const Header: React.FC = () => {
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open navigation menu'}
             className="mobile-menu-toggle"
             style={{
-              width: '40px',
-              height: '40px',
+              width: '36px',
+              height: '36px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '50%',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface)',
-              color: 'var(--color-text)',
+              color: 'var(--color-text-primary)',
               cursor: 'pointer'
             }}
           >
-            {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+            {mobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation Menu */}
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div
           id="mobile-navigation-menu"
@@ -227,7 +268,7 @@ export const Header: React.FC = () => {
             borderTop: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface)',
             padding: 'var(--space-6) var(--space-4)',
-            boxShadow: 'var(--shadow-lg)'
+            boxShadow: 'var(--shadow-xl)'
           }}
           className="mobile-menu-panel"
         >
@@ -241,97 +282,100 @@ export const Header: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '12px 16px',
+                  padding: '10px 14px',
                   borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-base)',
+                  fontSize: 'var(--font-sm)',
                   fontWeight: 600,
-                  color: isActive ? 'var(--color-primary-600)' : 'var(--color-text)',
-                  backgroundColor: isActive ? 'var(--color-primary-50)' : 'transparent',
+                  color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
+                  backgroundColor: isActive ? 'var(--color-brand-primary-soft)' : 'transparent',
                   textDecoration: 'none'
                 })}
               >
                 {item.label}
-                <ArrowRight size={16} aria-hidden="true" />
+                <ArrowRight size={14} aria-hidden="true" />
               </NavLink>
             ))}
 
-            {user ? (
-              <>
-                <Link
-                  to="/learner"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 16px',
-                    borderRadius: 'var(--radius-md)',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    color: 'var(--color-text)'
-                  }}
-                >
-                  <span>Learner Dashboard</span>
-                  <User size={16} />
-                </Link>
-                {isStaff && (
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {user ? (
+                <>
                   <Link
-                    to="/admin"
+                    to="/learner"
                     onClick={() => setMobileMenuOpen(false)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '12px 16px',
+                      padding: '10px 14px',
                       borderRadius: 'var(--radius-md)',
                       fontWeight: 600,
                       textDecoration: 'none',
-                      color: '#d97706',
-                      backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                      color: 'var(--color-text-primary)'
                     }}
                   >
-                    <span>Admin Console</span>
-                    <Shield size={16} />
+                    <span>Learner Portal</span>
+                    <User size={16} />
                   </Link>
-                )}
-              </>
-            ) : (
-              <Link
-                to="/auth"
-                onClick={() => setMobileMenuOpen(false)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 16px',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  color: 'var(--color-primary-600)'
-                }}
-              >
-                <span>Sign In / Register</span>
-                <User size={16} />
-              </Link>
-            )}
-            
-            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
+                  {isStaff && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                        color: '#d97706',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                      }}
+                    >
+                      <span>Admin Console</span>
+                      <Shield size={16} />
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    color: 'var(--color-brand-primary)'
+                  }}
+                >
+                  <span>Sign In / Register</span>
+                  <User size={16} />
+                </Link>
+              )}
+
               <NavLink
                 to="/contact"
                 onClick={() => setMobileMenuOpen(false)}
                 className="btn btn-primary"
-                style={{ width: '100%', justifyContent: 'center' }}
+                style={{ width: '100%', justifyContent: 'center', marginTop: '6px' }}
               >
                 <span>Enquire Now</span>
-                <ArrowRight size={16} aria-hidden="true" />
+                <ArrowRight size={15} aria-hidden="true" />
               </NavLink>
             </div>
           </nav>
         </div>
       )}
 
-      {/* Embedded CSS for responsive switching */}
+      {/* Embedded styles for responsive header */}
       <style>{`
+        .header-nav-link:hover {
+          color: var(--color-brand-primary) !important;
+        }
         @media (min-width: 960px) {
           .desktop-nav {
             display: flex !important;

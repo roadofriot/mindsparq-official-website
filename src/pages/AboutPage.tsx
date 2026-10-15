@@ -481,6 +481,67 @@ export const AboutPage: React.FC = () => {
         `}</style>
       </section>
 
+      {/* Learning Methodology Pillars (Anchor: #approach) */}
+      <section 
+        id="approach" 
+        className="section-spacing"
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)'
+        }}
+      >
+        <div className="container">
+          <div className="section-header">
+            <div className="eyebrow eyebrow-teal">
+              <Sparkles size={14} />
+              <span>Pedagogical Framework</span>
+            </div>
+            <h2>The MindSparQ Learning Methodology</h2>
+            <p>
+              We firmly avoid unverified shortcuts or hyperbole. Our methodology is rooted in steady cognitive development, hands-on experimentation, and deliberate practice.
+            </p>
+          </div>
+
+          <div 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: 'var(--space-6)'
+            }}
+          >
+            {learningPillars.map((pillar) => (
+              <div 
+                key={pillar.step}
+                className="card"
+                style={{
+                  backgroundColor: 'var(--color-bg)',
+                  borderColor: 'var(--color-border)',
+                  padding: 'var(--space-6)'
+                }}
+              >
+                <div 
+                  style={{
+                    fontSize: 'var(--text-2xl)',
+                    fontWeight: 800,
+                    color: 'var(--color-brand-primary)',
+                    marginBottom: 'var(--space-2)'
+                  }}
+                >
+                  Step {pillar.step}
+                </div>
+                <h3 style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-2)' }}>
+                  {pillar.title}
+                </h3>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  {pillar.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Target Audiences We Serve */}
       <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>
         <div className="container">

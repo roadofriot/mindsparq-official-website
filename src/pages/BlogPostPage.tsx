@@ -26,6 +26,80 @@ import {
 } from 'lucide-react';
 import { sharePublicContent, getSocialShareUrls } from '../services/socialService';
 
+const FALLBACK_ARTICLES: Record<string, BlogPost> = {
+  'why-abacus-training-enhances-mathematical-fluency': {
+    id: 'fallback-blog-1',
+    slug: 'why-abacus-training-enhances-mathematical-fluency',
+    title: 'Why Abacus Training Enhances Mathematical Fluency in Early Childhood',
+    excerpt: 'Discover how tactile bead calculation transitions into spatial mental arithmetic, fostering concentration and numerical confidence in young learners.',
+    content: `Tactile calculation through the soroban abacus remains one of the most effective, research-backed methods to develop deep cognitive number sense in young children.
+
+### 1. The Dual-Hemisphere Cognitive Advantage
+When children manipulate physical abacus beads with both hands, both the left (logical, analytical, sequential) and right (spatial, holistic, intuitive) hemispheres of the brain are activated simultaneously. This bilateral stimulation accelerates neural path development during formative childhood years.
+
+### 2. Transition from Physical Beads to Mental Imagery (Anzan)
+The true breakthrough of abacus training occurs when children transition from physical bead movement to mental projection (Anzan). Learners visualize an internal imaginary soroban in their mind's eye. By manipulating virtual beads at rapid speed, they solve multi-digit arithmetic operations faster than typing into a conventional digital calculator.
+
+### 3. Fostering Enduring Concentration & Discipline
+Beyond arithmetic, abacus practice cultivates photographic memory, intense listening acumen, and sustained academic attention spans. Students learn to sit calmly, listen to rapid multi-number dictations, and maintain unwavering focus.
+
+At **MindSparQ Education & Technology**, our structured, tiered curriculum guides learners from basic tactile bead arithmetic through progressive milestones, eliminating math anxiety and replacing it with lifelong numerical enthusiasm.`,
+    cover_image_url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80',
+    category: 'Cognitive Skills',
+    author_name: 'MindSparQ Academic Team',
+    status: 'published',
+    published_at: '2026-10-15T09:00:00Z',
+    created_at: '2026-10-15T09:00:00Z',
+    updated_at: '2026-10-15T09:00:00Z'
+  },
+  'introducing-practical-ai-and-robotics-in-nepal-schools': {
+    id: 'fallback-blog-2',
+    slug: 'introducing-practical-ai-and-robotics-in-nepal-schools',
+    title: 'Introducing Practical AI & Robotics in Nepal Schools: A Hands-on Roadmap',
+    excerpt: 'How project-based learning and microcontroller experimentation demystify technology for young students.',
+    content: `As technology accelerates globally, introducing robotics and artificial intelligence into primary and secondary schools in Nepal is no longer an optional luxury—it is an educational necessity.
+
+### Moving From Passive Consumers to Active Creators
+Too many young students experience technology purely as passive consumers through smartphone screens and video games. Hands-on robotics radically reverses this equation by challenging learners to design physical mechanisms, connect real electronic sensors, and write algorithmic instructions.
+
+### The Sense • Think • Act Feedback Loop
+Every autonomous robotic system operates on a fundamental loop:
+1. **Sense:** Ultrasonic, infrared, and optical sensors perceive the physical environment.
+2. **Think:** Microcontrollers like Arduino UNO R4 WiFi and ESP32 evaluate sensor data against programmed conditions.
+3. **Act:** Actuators and motors respond physically to navigate obstacles or execute tasks.
+
+### Turnkey School Integration in Nepal
+MindSparQ partners directly with educational institutions to set up turnkey robotics innovation clubs. We provide hardware kits, age-tailored curriculums (Classes 3–8 Robotics Explorer & Young Robot Innovator cohorts), and certified mentor support.`,
+    cover_image_url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    category: 'Robotics & AI',
+    author_name: 'MindSparQ Tech Team',
+    status: 'published',
+    published_at: '2026-10-12T14:30:00Z',
+    created_at: '2026-10-12T14:30:00Z',
+    updated_at: '2026-10-12T14:30:00Z'
+  },
+  'building-future-ready-skills-ai-coding-and-creativity-for-nepali-students': {
+    id: 'fallback-blog-3',
+    slug: 'building-future-ready-skills-ai-coding-and-creativity-for-nepali-students',
+    title: 'Building Future-Ready Skills: AI, Coding and Creativity for Nepali Students',
+    excerpt: 'Explore how technology, creativity, and problem-solving work together to prepare learners for the digital future.',
+    content: `Preparing learners for tomorrow requires bridging timeless foundational thinking with emerging computational tools.
+
+### The Synergy of Critical Reasoning & Applied AI
+Artificial intelligence tools are transforming workplaces, but tools alone cannot replace human creativity, judgment, and systematic problem decomposition. At MindSparQ, our pedagogical methodology centers on cultivating resilient problem solvers who understand both how algorithms function and how to wield them ethically and responsibly.
+
+### Local Relevance in Nepali Communities
+From Butwal to national platforms, students equipped with computational thinking are already prototyping solutions for community challenges, agricultural sensors, and smart automation. By connecting students, teachers, and parents in a supportive learning triangle, we nurture confident innovators ready for regional and global opportunities.`,
+    cover_image_url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+    category: 'Education',
+    author_name: 'MindSparQ Team',
+    status: 'published',
+    published_at: '2026-10-10T11:00:00Z',
+    created_at: '2026-10-10T11:00:00Z',
+    updated_at: '2026-10-10T11:00:00Z'
+  }
+};
+
 export const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
@@ -54,22 +128,28 @@ export const BlogPostPage: React.FC = () => {
     setLoading(true);
     getPostBySlug(slug)
       .then(async (p) => {
-        if (!mounted || !p) return;
-        setPost(p);
+        if (!mounted) return;
+        const resolvedPost = p || FALLBACK_ARTICLES[slug] || null;
+        setPost(resolvedPost);
 
-        // Fetch comments
-        const cmts = await getCommentsForPost(p.id);
-        if (mounted) setComments(cmts);
+        if (resolvedPost) {
+          // Fetch comments
+          const cmts = await getCommentsForPost(resolvedPost.id);
+          if (mounted) setComments(cmts);
 
-        // Fetch like & bookmark status
-        const likeInfo = await getPostLikeInfo(p.id);
-        if (mounted) {
-          setLikeCount(likeInfo.count);
-          setIsLiked(likeInfo.isLiked);
+          // Fetch like & bookmark status
+          const likeInfo = await getPostLikeInfo(resolvedPost.id);
+          if (mounted) {
+            setLikeCount(likeInfo.count);
+            setIsLiked(likeInfo.isLiked);
+          }
+
+          const bkmk = await getBookmarkStatus('blog_post', resolvedPost.id);
+          if (mounted) setIsBookmarked(bkmk);
         }
-
-        const bkmk = await getBookmarkStatus('blog_post', p.id);
-        if (mounted) setIsBookmarked(bkmk);
+      })
+      .catch(() => {
+        if (mounted) setPost(FALLBACK_ARTICLES[slug] || null);
       })
       .finally(() => {
         if (mounted) setLoading(false);

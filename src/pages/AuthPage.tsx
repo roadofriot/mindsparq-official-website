@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
-export const AuthPage: React.FC = () => {
+interface AuthPageProps {
+  initialMode?: 'signin' | 'signup' | 'forgot';
+}
+
+export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, isConfigured } = useAuth();
+  const { user, isStaff, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, isConfigured } = useAuth();
 
-  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(initialMode);
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -16,7 +21,13 @@ export const AuthPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const returnUrl = searchParams.get('returnUrl') || '/learner';
+  const defaultDest = isStaff ? '/admin' : '/learner';
+  const returnUrl = searchParams.get('returnUrl') || defaultDest;
+
+  // Sync mode with prop if it changes
+  React.useEffect(() => {
+    if (initialMode) setMode(initialMode);
+  }, [initialMode]);
 
   // If already logged in, redirect
   React.useEffect(() => {
@@ -467,7 +478,7 @@ export const AuthPage: React.FC = () => {
                 />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -475,7 +486,7 @@ export const AuthPage: React.FC = () => {
                   style={{
                     width: '100%',
                     height: '46px',
-                    padding: '0 16px 0 44px',
+                    padding: '0 44px 0 44px',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--color-surface-elevated)',
                     border: '1px solid var(--color-border)',
@@ -493,6 +504,27 @@ export const AuthPage: React.FC = () => {
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-text-muted)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
           )}

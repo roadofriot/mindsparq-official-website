@@ -97,6 +97,9 @@ export const App: React.FC = () => {
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="auth" element={<AuthPage />} />
+                <Route path="login" element={<AuthPage initialMode="signin" />} />
+                <Route path="forgot-password" element={<AuthPage initialMode="forgot" />} />
+                <Route path="reset-password" element={<AuthPage initialMode="forgot" />} />
 
                 {/* Learner Dashboard */}
                 <Route
@@ -132,6 +135,7 @@ export const App: React.FC = () => {
                 <Route path="users" element={<AdminUsersPage />} />
                 <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="audit" element={<AdminAuditLogsPage />} />
+                <Route path="audit-log" element={<AdminAuditLogsPage />} />
               </Route>
             </Routes>
           </Suspense>

@@ -1,10 +1,11 @@
-export type RoleKey = 'owner' | 'admin' | 'editor' | 'contributor' | 'learner';
+export type RoleKey = 'super_admin' | 'owner' | 'admin' | 'editor' | 'contributor' | 'learner';
 
 export interface Profile {
   id: string;
   display_name: string;
   avatar_path: string | null;
   bio: string | null;
+  status?: 'active' | 'invited' | 'suspended' | 'deactivated';
   created_at: string;
   updated_at: string;
 }
@@ -147,6 +148,10 @@ export interface BlogPost {
   category: string;
   status: 'draft' | 'review' | 'published' | 'archived';
   published_at: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   created_at: string;
   updated_at: string;
   likes_count?: number;

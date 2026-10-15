@@ -14,6 +14,7 @@ interface AuthContextType {
   isStaff: boolean;
   isAdmin: boolean;
   isOwner: boolean;
+  isSuperAdmin: boolean;
   hasRole: (role: RoleKey) => boolean;
   hasPermission: (capability: Capability) => boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ error: AuthError | null }>;
@@ -214,7 +215,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isStaff = isStaffRole(roles);
   const isAdmin = isAdminOrOwnerRole(roles);
-  const isOwner = roles.includes('owner');
+  const isOwner = roles.includes('owner') || roles.includes('super_admin');
+  const isSuperAdmin = isOwner;
 
   const value: AuthContextType = {
     user,
@@ -226,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isStaff,
     isAdmin,
     isOwner,
+    isSuperAdmin,
     hasRole,
     hasPermission,
     signInWithEmail,

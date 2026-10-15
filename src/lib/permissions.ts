@@ -57,6 +57,23 @@ const ROLE_PERMISSIONS: Record<RoleKey, Capability[]> = {
     'settings.manage',
     'audit.read'
   ],
+  super_admin: [
+    'content.read',
+    'content.create',
+    'content.edit.own',
+    'content.edit.any',
+    'content.publish',
+    'media.upload',
+    'media.delete',
+    'courses.manage',
+    'events.manage',
+    'comments.moderate',
+    'users.manage',
+    'roles.manage',
+    'integrations.manage',
+    'settings.manage',
+    'audit.read'
+  ],
   owner: [
     'content.read',
     'content.create',
@@ -91,15 +108,23 @@ export function hasCapability(roles: RoleKey[], capability: Capability): boolean
 }
 
 /**
- * Check if the user has staff access (contributor, editor, admin, or owner)
+ * Check if the user has staff access (contributor, editor, admin, owner, or super_admin)
  */
 export function isStaffRole(roles: RoleKey[]): boolean {
-  return roles.some((r) => ['contributor', 'editor', 'admin', 'owner'].includes(r));
+  return roles.some((r) => ['contributor', 'editor', 'admin', 'owner', 'super_admin'].includes(r));
 }
 
 /**
- * Check if user is administrator or owner
+ * Check if user is administrator, owner, or super_admin
  */
 export function isAdminOrOwnerRole(roles: RoleKey[]): boolean {
-  return roles.some((r) => ['admin', 'owner'].includes(r));
+  return roles.some((r) => ['admin', 'owner', 'super_admin'].includes(r));
 }
+
+/**
+ * Check if user is specifically a super admin or owner
+ */
+export function isSuperAdminOrOwnerRole(roles: RoleKey[]): boolean {
+  return roles.some((r) => ['owner', 'super_admin'].includes(r));
+}
+

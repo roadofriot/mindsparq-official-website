@@ -336,7 +336,7 @@ export const Hero: React.FC = () => {
             <div style={{ maxWidth: '680px' }}>
               <div className="eyebrow">
                 <Sparkles size={14} aria-hidden="true" />
-                <span>EDUCATION • MATHEMATICS • TECHNOLOGY</span>
+                <span>EDUCATION • INNOVATION • AI • STEM • DIGITAL LEARNING</span>
               </div>
 
               <h1 
@@ -369,7 +369,7 @@ export const Hero: React.FC = () => {
                   marginBottom: 'var(--space-8)'
                 }}
               >
-                {siteConfig.name} helps learners build confidence in mathematics, explore creative problem-solving, and discover the possibilities of coding, AI, and robotics through engaging learning experiences.
+                {siteConfig.name} unites foundational cognitive arts—Abacus, Mental Math, Vedic Mathematics, and bilingual penmanship—with modern applied AI, Coding, and Robotics to empower independent thinkers and young creators in Nepal.
               </p>
 
               <div 
@@ -385,12 +385,12 @@ export const Hero: React.FC = () => {
                   <span>Explore Courses</span>
                 </Link>
                 <Link to="/programs" className="btn btn-secondary btn-lg">
-                  <span>Our Programs</span>
+                  <span>Our Programs & Partnerships</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
-                <Link to="/contact" className="btn btn-secondary btn-lg">
+                <Link to="/about" className="btn btn-secondary btn-lg">
                   <Compass size={18} aria-hidden="true" />
-                  <span>Contact Center</span>
+                  <span>Institutional Profile</span>
                 </Link>
               </div>
 
@@ -400,6 +400,7 @@ export const Hero: React.FC = () => {
                   marginTop: 'var(--space-8)',
                   display: 'flex',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
                   gap: 'var(--space-4)',
                   fontSize: 'var(--text-xs)',
                   color: 'var(--color-text-muted)'
@@ -407,12 +408,12 @@ export const Hero: React.FC = () => {
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-accent-teal)' }} />
-                  Based in Butwal, Rupandehi
+                  Founder & CEO: {siteConfig.founder.name} ({siteConfig.founder.nameNepali})
                 </span>
                 <span>•</span>
-                <span>Research-Backed Learning</span>
+                <span>Butwal-11, Rupandehi</span>
                 <span>•</span>
-                <span>Hands-On Pedagogy</span>
+                <span style={{ color: 'var(--color-brand-primary)', fontWeight: 600 }}>{siteConfig.domain}</span>
               </div>
             </div>
 

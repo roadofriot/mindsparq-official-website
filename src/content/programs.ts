@@ -15,97 +15,97 @@ export const programs: Program[] = [
     id: 'abacus-mental-math',
     title: 'Abacus & Mental Math',
     category: 'mathematics',
-    shortDescription: 'Mental arithmetic, number sense, concentration, and structured practice-based learning.',
-    fullDescription: 'Our Abacus & Mental Math program guides young learners to master mental arithmetic calculations using tactile abacus methods transitioning to mental imagery. The focus is on building steady concentration, sharp number sense, and mathematical confidence through guided practice.',
+    shortDescription: 'Foundational numerical sense, rapid mental calculation, and cognitive focus for primary students.',
+    fullDescription: 'Our structured Abacus Mental Math program trains young minds to manipulate physical soroban beads and systematically transition to internal mental visualization (Anzan). Focus areas include step-by-step addition, subtraction, multiplication, calculation velocity, and sustained mental concentration.',
     keyOutcomes: [
-      'Rapid calculation skills using mental visualization',
-      'Enhanced focus, memory retention, and listening ability',
-      'Positive attitude towards numerical challenges',
-      'Strong cognitive foundation for school mathematics'
+      'Rapid mental calculation without physical aids or electronic calculators',
+      'Sharpened focus, photographic memory, and bilateral brain stimulation',
+      'Strong numerical intuition eliminating early math anxiety',
+      'Tiered milestone evaluations tailored from beginner to advanced levels'
     ],
-    audience: 'Children and primary-to-middle school students',
-    deliveryFormat: 'Structured weekly sessions with hands-on practice kits',
+    audience: 'UKG to Grade 5 (Ages 5–11; customized modules available for older learners)',
+    deliveryFormat: 'Structured weekly sessions with hands-on practice kits & workbooks',
     iconName: 'Calculator'
   },
   {
     id: 'vedic-mathematics',
     title: 'Vedic Mathematics',
     category: 'mathematics',
-    shortDescription: 'Alternative calculation strategies, speed arithmetic, and deep mathematical fluency.',
-    fullDescription: 'Derived from classical principles, Vedic Mathematics offers systematic sutras and mental short-cuts for complex arithmetic, algebraic manipulations, and quick verification of answers. Ideal for building flexibility in mathematical thinking.',
+    shortDescription: 'Alternative mental calculation sutras, number pattern recognition, and rapid problem-solving.',
+    fullDescription: 'Rooted in systematic classical sutras, Vedic Mathematics introduces fast calculation algorithms that complement standard school curricula. Students learn pattern identification, cross-multiplication shortcuts, algebraic factorization, and mental verification routines.',
     keyOutcomes: [
-      'Alternative calculation strategies and mental agility',
-      'Cross-checking algorithms to prevent computation errors',
-      'Fluency in multiplication, division, squares, and roots',
-      'Exam preparation and problem-solving speed'
+      'Fast mental math shortcuts for multi-digit arithmetic and algebraic forms',
+      'Deep pattern recognition and flexible mathematical thinking',
+      'High-speed calculation verification for school examinations',
+      'Heightened confidence in competitive problem-solving'
     ],
-    audience: 'Middle school, high school students, and competitive learners',
-    deliveryFormat: 'Module-based classroom or workshop curriculum',
+    audience: 'Classes 6 to 12, competitive learners, and secondary school students',
+    deliveryFormat: 'Module-based classroom workshops and intensive problem-solving bootcamps',
     iconName: 'Brain'
   },
   {
     id: 'ai-coding-robotics',
     title: 'AI Coding & Robotics',
     category: 'technology',
-    shortDescription: 'Age-appropriate coding, electronics, robotics, computational thinking, and hands-on projects.',
-    fullDescription: 'A practical, exploratory journey introducing modern computing concepts. Learners explore block-based to text-based coding, sensors, microcontrollers, and foundational robotics mechanics. Students construct real working prototypes while developing critical computational thinking.',
+    shortDescription: 'Computational thinking, Scratch visual coding, electronics, Arduino/ESP32, and robotic assembly.',
+    fullDescription: 'Students move from passive technology consumers to active creators. Starting with visual block coding in Scratch, learners progress into circuit design, sensor integration (ultrasonic, infrared, light), actuators, microcontrollers like Arduino UNO R4 WiFi and ESP32, and introductory artificial intelligence concepts.',
     keyOutcomes: [
-      'Algorithmic logic and systematic problem decomposition',
-      'Hands-on experience with hardware sensors and controllers',
-      'Creative project prototyping and teamwork',
-      'Demystification of artificial intelligence and automated systems'
+      'Algorithmic logic, computational thinking, and systematic debugging',
+      'Hands-on assembly of functional autonomous and remote-controlled robots',
+      'Electronics comprehension: breadboards, sensors, motors, and microcontrollers',
+      'Ethical, responsible understanding of AI and modern smart technology'
     ],
-    audience: 'Young innovators, school students, and technology enthusiasts',
-    deliveryFormat: 'Interactive lab workshops and project-based cohorts',
+    audience: 'Classes 3–8 ("Robotics Explorer" & "Young Robot Innovator" tiers) and teen creators',
+    deliveryFormat: 'Hands-on hardware lab sessions with physical maker kits & project showcases',
     iconName: 'Cpu'
   },
   {
     id: 'handwriting-development',
-    title: 'Handwriting Development',
+    title: 'Handwriting Improvement',
     category: 'skills',
-    shortDescription: 'English and Nepali handwriting practice, including print and cursive styles.',
-    fullDescription: 'Legible, comfortable handwriting remains an essential academic and personal skill. Our program systematically trains pencil grip, posture, letter formation, spacing, and rhythm in both English (Print & Cursive) and Nepali (Devanagari script) styles.',
+    shortDescription: 'Bilingual penmanship in English and Nepali (Devanagari) across print, cursive, mono, and italic styles.',
+    fullDescription: 'Neat, legible handwriting enhances cognitive retention and academic examination success. We provide biomechanically guided instruction covering ergonomic pen grip, writing posture, baseline alignment, uniform letter sizing, and spacing across English (Print & Cursive) and Nepali (Devanagari script).',
     keyOutcomes: [
-      'Correct ergonomic grip and fatigue-free writing posture',
-      'Neat, consistent character proportion and alignment',
-      'Bilingual proficiency across English and Devanagari scripts',
-      'Enhanced presentation confidence in academic evaluations'
+      'Ergonomic tripod pen grip and fatigue-free writing posture',
+      'Clear, uniform letter formation in Print, Cursive, Mono, and Italic styles',
+      'Full bilingual mastery across English and Nepali (Devanagari) scripts',
+      'Measurable penmanship speed and examination presentation clarity'
     ],
-    audience: 'Early learners, students seeking penmanship improvement',
-    deliveryFormat: 'Guided practice workbooks and individualized feedback',
+    audience: 'Early learners, school students, and adults seeking penmanship refinement',
+    deliveryFormat: 'Step-by-step workbook practice with individual mentor feedback',
     iconName: 'PenTool'
   },
   {
     id: 'ai-literacy-training',
-    title: 'AI Literacy & Training',
-    category: 'technology',
-    shortDescription: 'Practical AI education for students, teachers, parents, and working professionals.',
-    fullDescription: 'Understanding the implications, ethical considerations, and real-world tools of Artificial Intelligence is vital today. This literacy program provides balanced, accessible training covering generative tools, data awareness, everyday productivity, and responsible technology usage.',
+    title: 'Teacher Training & Digital Education',
+    category: 'institutional',
+    shortDescription: 'Modern pedagogical strategies, student-centered classrooms, and responsible AI integration for educators.',
+    fullDescription: 'Empowering school teachers and educators with 21st-century instructional methodologies. We provide hands-on training on interactive teaching aids, digital classroom tools, responsible educational AI adoption, active lesson planning, and student progress tracking.',
     keyOutcomes: [
-      'Fundamental understanding of how AI models function',
-      'Effective prompt engineering and tool workflow adoption',
-      'Critical thinking regarding privacy, ethics, and truthfulness',
-      'Empowerment for teachers and professionals in digital transformation'
+      'Student-centered, activity-based pedagogical techniques',
+      'Responsible adoption of digital educational tools and AI assistants',
+      'Effective lesson planning, formative evaluation, and progress recording',
+      'Fostering dynamic classroom participation and experiential inquiry'
     ],
-    audience: 'Educators, senior students, parents, and institutional professionals',
-    deliveryFormat: 'Interactive seminars, intensive bootcamps, and executive modules',
-    iconName: 'Sparkles'
+    audience: 'School principals, subject teachers, and academic coordinators',
+    deliveryFormat: 'On-site institutional workshops, teacher enrichment bootcamps, and certification',
+    iconName: 'School'
   },
   {
     id: 'school-teacher-support',
-    title: 'School & Teacher Support',
-    category: 'institutional',
-    shortDescription: 'Curriculum integration, pedagogical training, and STEM/math lab enablement for schools.',
-    fullDescription: 'MindSparQ collaborates with educational institutions across Nepal to augment existing school curricula. We offer specialized teacher training workshops, turnkey abacus and robotics club integration, and ongoing pedagogical support.',
+    title: 'Parent Engagement & Student Development',
+    category: 'skills',
+    shortDescription: 'Collaborative parent orientations, supportive home practice environments, and student leadership.',
+    fullDescription: 'Strengthening the vital bridge between home and school. We conduct parent orientations on nurturing positive practice routines, setting age-appropriate developmental milestones, positive reinforcement, and helping students cultivate public speaking, communication, and leadership confidence.',
     keyOutcomes: [
-      'Teacher upskilling in activity-based math and STEM pedagogy',
-      'Seamless co-curricular club setup and resource planning',
-      'Student competition preparation and school STEM exhibitions',
-      'Structured assessment frameworks for continuous progress'
+      'Supportive home practice habits and balanced digital routines',
+      'Positive reinforcement techniques aligned with developmental stages',
+      'Student motivation, communication fluency, and leadership confidence',
+      'Transparent academic growth reviews and goal-setting collaboration'
     ],
-    audience: 'School principals, academic coordinators, and classroom educators',
-    deliveryFormat: 'Institutional partnerships, on-site educator workshops, and custom programs',
-    iconName: 'School'
+    audience: 'Parents, guardians, and youth development cohorts',
+    deliveryFormat: 'Interactive family seminars, weekend masterclasses, and counseling orientations',
+    iconName: 'Sparkles'
   }
 ];
 
@@ -157,23 +157,88 @@ export const learningPillars = [
 
 export const whoWeSupport = [
   {
-    title: 'Children & Students',
-    description: 'From primary math learners to teen robotics creators, we provide engaging pathways to build real skills and confidence.',
+    title: 'Students & Learners (विद्यार्थी)',
+    description: 'Nurturing mathematical intuition, computational thinking, robotics tinkering, and analytical confidence.',
     iconName: 'Brain'
   },
   {
-    title: 'Parents & Families',
-    description: 'Transparent guidance on children’s cognitive development and supportive resources for home practice.',
+    title: 'Parents & Guardians (अभिभावक)',
+    description: 'Providing positive practice guidance, developmental orientations, and transparent progress reports.',
     iconName: 'Sparkles'
   },
   {
-    title: 'Teachers & Schools',
-    description: 'Pedagogical training, modern STEM curricula, and practical classroom teaching aids to elevate student engagement.',
+    title: 'Teachers & Educators (शिक्षक)',
+    description: 'Upskilling in student-centered pedagogy, responsible AI tools, and hands-on activity design.',
     iconName: 'School'
   },
   {
-    title: 'Young Innovators',
-    description: 'Mentorship and collaborative project spaces for learners passionate about coding, electronics, and future technology.',
+    title: 'Partner Schools (विद्यालय)',
+    description: 'Turnkey co-curricular clubs, STEM lab establishment, trainer deployment, and institutional reporting.',
+    iconName: 'School'
+  },
+  {
+    title: 'Educational Institutions (शैक्षिक संस्था)',
+    description: 'Digital curriculum systems, LMS/CMS portals, and custom academic management integration.',
     iconName: 'Cpu'
+  },
+  {
+    title: 'Young Innovators & Tech Creators (युवा तथा नवप्रवर्तक)',
+    description: 'Physical maker labs, Arduino/ESP32 prototyping, sensor projects, and robotics exhibition mentorship.',
+    iconName: 'Cpu'
+  }
+];
+
+export const schoolPartnershipModel = {
+  title: 'School Partnership & Co-Curricular Excellence Model',
+  titleNepali: 'विद्यालयसँगको सहकार्य तथा साझेदारी मोडेल',
+  overview: 'MindSparQ engages with schools as genuine educational partners rather than transactional vendors. Together, we establish vibrant STEM, Abacus, and Robotics learning environments within school ecosystems.',
+  schoolRole: [
+    'Institutional coordination, timetable alignment, and classroom/lab facility allocation',
+    'Student cohort organization and parental communication support',
+    'Collaborative academic monitoring alongside MindSparQ mentors'
+  ],
+  mindsparqRole: [
+    'Provision of structured, age-appropriate curriculum and lesson milestones',
+    'Deployment of certified, rigorously vetted trainers and academic mentors',
+    'Supply of hardware kits (Abacus frames, sensor kits, Arduino/ESP32 robotics sets)',
+    'Continuous quality assurance, student attendance records, and term progress reports'
+  ],
+  operationalCommitments: [
+    'Bespoke batch scheduling respecting school examinations and annual calendar',
+    'Strict adherence to Child Protection, student safety, and data privacy policies',
+    'Formal written partnership memorandums with clear, transparent operational terms'
+  ]
+};
+
+export const digitalEcosystemModules = [
+  {
+    id: 'lms',
+    title: 'MindSparQ Learning (LMS)',
+    description: 'Online modular courses, curated video lessons, practice exercises, quizzes, and learner progress tracking.'
+  },
+  {
+    id: 'cms',
+    title: 'MindSparQ CMS',
+    description: 'Dynamic administrative management for curriculum updates, announcements, event calendars, and multimedia.'
+  },
+  {
+    id: 'crm',
+    title: 'MindSparQ CRM / ERP',
+    description: 'Streamlined academic records, cohort scheduling, student attendance, inventory, and partner school reporting.'
+  },
+  {
+    id: 'ai',
+    title: 'MindSparQ AI',
+    description: 'Responsible AI assistants for learning material development, study notes synthesis, and coding guidance.'
+  },
+  {
+    id: 'studio',
+    title: 'MindSparQ Arduino Robotics Studio',
+    description: 'Integrated desktop and browser environment for flashing code to Arduino UNO R4 WiFi & ESP32 robotics projects.'
+  },
+  {
+    id: 'notes',
+    title: 'MindSparQ Note Editor & Reader',
+    description: 'Focused reading and note-taking tool designed for students and educators to organize technical and math notes.'
   }
 ];

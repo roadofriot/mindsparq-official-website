@@ -68,22 +68,25 @@ export const AboutSnippet: React.FC = () => {
                   <Award size={20} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: 'var(--text-base)', margin: 0 }}>Core Educational Values</h4>
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Clarity • Rigor • Curiosity</span>
+                  <h4 style={{ fontSize: 'var(--text-base)', margin: 0 }}>Core Institutional Values</h4>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Innovation • Quality • Integrity • Growth</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                 <MapPin size={16} style={{ color: 'var(--color-brand-primary)', flexShrink: 0, marginTop: '2px' }} />
-                <span>
-                  <strong>Center Location:</strong> {siteConfig.location.fullFormatted}
-                </span>
+                <div>
+                  <strong>Registered Center:</strong> {siteConfig.location.fullFormatted}
+                  <div style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                    Founder & CEO: {siteConfig.founder.name} ({siteConfig.founder.nameNepali})
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                 <ShieldCheck size={16} style={{ color: 'var(--color-accent-teal)', flexShrink: 0, marginTop: '2px' }} />
                 <span>
-                  <strong>Ethical Reporting:</strong> All program offerings, availability, and syllabi are accurately presented without inflated or unconfirmed marketing claims.
+                  <strong>Ethical Reporting & Portal:</strong> Official domain <strong>{siteConfig.domain}</strong>. All curriculum pathways, hardware labs, and partnership agreements are grounded in verified academic standards.
                 </span>
               </div>
             </div>

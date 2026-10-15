@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { CheckCircle2, ArrowRight, Info, Sparkles, Filter } from 'lucide-react';
-import { programs, Program } from '../content/programs';
+import { CheckCircle2, ArrowRight, Info, Sparkles, Filter, Building2, Handshake, Shield } from 'lucide-react';
+import { programs, Program, schoolPartnershipModel } from '../content/programs';
 import { ProgramIcon } from '../components/ui/ProgramIcon';
 
 type FilterCategory = 'all' | 'mathematics' | 'technology' | 'skills' | 'institutional';
@@ -237,6 +237,125 @@ export const ProgramsPage: React.FC = () => {
             }
           }
         `}</style>
+      </section>
+
+      {/* School Partnership Model (विद्यालयसँगको सहकार्य तथा साझेदारी मोडेल) */}
+      <section 
+        id="school-partnerships" 
+        className="section-spacing"
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)'
+        }}
+      >
+        <div className="container">
+          <div className="section-header">
+            <div className="eyebrow eyebrow-teal">
+              <Handshake size={14} />
+              <span>Institutional Collaboration</span>
+            </div>
+            <h2>{schoolPartnershipModel.title}</h2>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-base)' }}>
+              {schoolPartnershipModel.titleNepali} — {schoolPartnershipModel.overview}
+            </p>
+          </div>
+
+          <div 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: 'var(--space-8)',
+              marginBottom: 'var(--space-10)'
+            }}
+          >
+            {/* School's Role */}
+            <div 
+              className="card"
+              style={{
+                backgroundColor: 'var(--color-bg)',
+                borderColor: 'var(--color-border)',
+                padding: 'var(--space-6)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-3)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Building2 size={20} style={{ color: 'var(--color-brand-primary)' }} />
+                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>School's Contribution (विद्यालयको भूमिका)</h3>
+              </div>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', padding: 0 }}>
+                {schoolPartnershipModel.schoolRole.map((item, idx) => (
+                  <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                    <CheckCircle2 size={15} style={{ color: 'var(--color-brand-primary)', flexShrink: 0, marginTop: '2px' }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* MindSparQ's Role */}
+            <div 
+              className="card"
+              style={{
+                backgroundColor: 'var(--color-bg)',
+                borderColor: 'var(--color-border)',
+                padding: 'var(--space-6)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-3)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles size={20} style={{ color: 'var(--color-accent-teal)' }} />
+                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>MindSparQ Deliverables (MindSparQ को भूमिका)</h3>
+              </div>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', padding: 0 }}>
+                {schoolPartnershipModel.mindsparqRole.map((item, idx) => (
+                  <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                    <CheckCircle2 size={15} style={{ color: 'var(--color-accent-teal)', flexShrink: 0, marginTop: '2px' }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Operational Commitments & CTA */}
+          <div 
+            style={{
+              backgroundColor: 'var(--color-surface-elevated)',
+              borderRadius: 'var(--radius-xl)',
+              padding: 'var(--space-8)',
+              border: '1px solid var(--color-border)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 'var(--space-6)'
+            }}
+          >
+            <div style={{ maxWidth: '640px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--space-2)' }}>
+                <Shield size={18} style={{ color: 'var(--color-accent-teal)' }} />
+                <h4 style={{ fontSize: 'var(--text-base)', margin: 0 }}>Operational Standards & Child Protection</h4>
+              </div>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                Every partnership operates under written MOUs, customized timetable integration, transparent trainer background verification, and child safety compliance. Commercial terms, device kit fees, and revenue sharing are formalised strictly through verified mutual contracts.
+              </p>
+            </div>
+
+            <Link 
+              to="/contact?inquiryType=school-partnership" 
+              className="btn btn-primary btn-lg"
+              style={{ flexShrink: 0 }}
+            >
+              <Handshake size={18} />
+              <span>Initiate School Partnership</span>
+            </Link>
+          </div>
+        </div>
       </section>
     </div>
   );

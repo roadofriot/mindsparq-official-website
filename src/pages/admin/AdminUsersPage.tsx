@@ -12,18 +12,10 @@ import {
   Users,
   UserPlus,
   Search,
-  Shield,
   ShieldCheck,
-  ShieldAlert,
   AlertCircle,
   CheckCircle2,
-  X,
-  Lock,
-  UserCheck,
-  UserX,
-  MoreVertical,
-  Mail,
-  User as UserIcon
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -534,7 +526,7 @@ export const AdminUsersPage: React.FC = () => {
 
                       {/* Actions */}
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                        {(isOwner || isSuperAdmin) && !isCurrent ? (
+                        {(isOwner || isSuperAdmin) && !isCurrent && !isUserSuperAdmin ? (
                           <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                             <button
                               type="button"

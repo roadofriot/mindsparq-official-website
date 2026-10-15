@@ -7,17 +7,11 @@ import {
   Trash2,
   FileText,
   AlertCircle,
-  Eye,
   Search,
   CheckCircle2,
-  Clock,
-  Archive,
-  Send,
   X,
-  Sparkles,
   ExternalLink,
-  User as UserIcon,
-  BookOpen
+  User as UserIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';

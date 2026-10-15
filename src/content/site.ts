@@ -9,6 +9,7 @@ export interface SiteConfig {
     country: string;
     fullFormatted: string;
     mapQueryUrl?: string;
+  };
   registrationStatus: string;
   founder: {
     name: string;

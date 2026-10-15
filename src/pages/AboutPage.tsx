@@ -368,7 +368,7 @@ export const AboutPage: React.FC = () => {
                 <span>Foundational Principles</span>
               </div>
               <h2>Core Institutional Values (संस्थाका मूल मूल्यहरू)</h2>
-              <p>The six unshakeable commitments that govern every MindSparQ classroom, platform, and partnership.</p>
+              <p>The seven unshakeable commitments that govern every MindSparQ classroom, platform, and partnership.</p>
             </div>
 
             <div 
@@ -434,8 +434,8 @@ export const AboutPage: React.FC = () => {
                 <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-3)' }}>
                   VAK-Based Teaching Strategies Research
                 </h2>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }}>
-                  Academic research spearheaded by our founder investigates the effectiveness of <strong>Visual, Auditory, and Kinesthetic (VAK)</strong> teaching strategies on secondary school student learning outcomes in <strong>Butwal Sub-Metropolitan City</strong>.
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-3)' }}>
+                  Academic research spearheaded by our founder investigates: <em>“The Effectiveness of VAK-Based Teaching Strategies in Enhancing Learning Outcomes Among Secondary School Students in Butwal Sub-Metropolitan City, Nepal.”</em>
                 </p>
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
                   We treat pedagogical research with scientific rigor. Rather than adopting unverified commercial fads, MindSparQ continuously tests and incorporates verified sensory feedback methods to ensure multi-modal learning for every student.

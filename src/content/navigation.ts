@@ -9,8 +9,7 @@ export const navItems: NavItem[] = [
   { label: 'Programs', href: '/programs' },
   { label: 'Courses', href: '/courses' },
   { label: 'Events', href: '/events' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact', href: '/contact' }
+  { label: 'Blog', href: '/blog' }
 ];
 
 export const footerLinks = {

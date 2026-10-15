@@ -7,16 +7,16 @@ export const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isStaff, isAdmin, isSuperAdmin, refreshProfile } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const redirectedRef = useRef(false);
+  const redirected = useRef(false);
 
-  const doRedirect = (targetUserEmail?: string, staffStatus?: boolean) => {
-    if (redirectedRef.current) return;
-    redirectedRef.current = true;
+  const routeUser = (email?: string, staff?: boolean) => {
+    if (redirected.current) return;
+    redirected.current = true;
 
-    const email = targetUserEmail?.toLowerCase();
-    const isOwner = staffStatus || email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
+    const userEmail = email?.toLowerCase();
+    const isOwnerOrStaff = staff || userEmail === 'merokhoj@gmail.com' || userEmail === 'roadofriot@gmail.com';
 
-    if (isOwner) {
+    if (isOwnerOrStaff) {
       navigate('/admin', { replace: true });
     } else {
       navigate('/learner', { replace: true });
@@ -24,103 +24,76 @@ export const AuthCallbackPage: React.FC = () => {
   };
 
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
 
-    const handleCallback = async () => {
-      try {
-        // 1. Check for errors in URL
-        const params = new URLSearchParams(window.location.search);
-        const error = params.get('error_description') || params.get('error');
-        if (error) {
-          if (isMounted) setErrorMsg(error);
-          return;
-        }
+    // Check for OAuth error parameter in URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const errorParam = searchParams.get('error_description') || searchParams.get('error');
+    if (errorParam) {
+      if (active) setErrorMsg(errorParam);
+      return;
+    }
 
-        // 2. Handle PKCE code exchange
-        const code = params.get('code');
-        if (code) {
-          const { data: codeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError && isMounted) {
-            setErrorMsg(exchangeError.message);
-            return;
-          }
-          if (codeData?.user) {
-            await refreshProfile();
-            doRedirect(codeData.user.email, true);
-            return;
-          }
-        }
+    // 1. If user is already active in AuthContext, navigate immediately
+    if (user) {
+      routeUser(user.email, isStaff || isAdmin || isSuperAdmin);
+      return;
+    }
 
-        // 3. Handle Implicit OAuth Hash Fragments (#access_token=...&refresh_token=...)
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-          const hashString = window.location.hash.startsWith('#')
-            ? window.location.hash.substring(1)
-            : window.location.hash;
-          const hashParams = new URLSearchParams(hashString);
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
+    // 2. Extract implicit hash tokens if present
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      const hash = window.location.hash.startsWith('#')
+        ? window.location.hash.substring(1)
+        : window.location.hash;
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
 
-          if (accessToken) {
-            const { data: hashData, error: hashError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || ''
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        }).then(({ data, error }) => {
+          if (!active) return;
+          if (error) {
+            setErrorMsg(error.message);
+          } else if (data?.user) {
+            refreshProfile().finally(() => {
+              routeUser(data.user?.email, true);
             });
-
-            if (!hashError && hashData?.user) {
-              await refreshProfile();
-              doRedirect(hashData.user.email, true);
-              return;
-            }
           }
-        }
-
-        // 4. Fallback: Check existing session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError && isMounted) {
-          setErrorMsg(sessionError.message);
-          return;
-        }
-
-        if (session?.user) {
-          await refreshProfile();
-          doRedirect(session.user.email, isStaff || isAdmin || isSuperAdmin);
-        } else {
-          // If after 3 seconds still no session, redirect to login
-          setTimeout(() => {
-            if (isMounted && !redirectedRef.current) {
-              navigate('/login', { replace: true });
-            }
-          }, 3000);
-        }
-      } catch (err: unknown) {
-        if (isMounted) {
-          setErrorMsg((err as Error).message || 'Authentication verification failed.');
-        }
+        });
+        return;
       }
-    };
+    }
 
-    handleCallback();
-
-    // Listen for auth state change event as reactive safeguard
+    // 3. Listen for Supabase session establishment
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user && isMounted) {
+      if (!active) return;
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
         await refreshProfile();
-        doRedirect(session.user.email, isStaff || isAdmin || isSuperAdmin);
+        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
+      }
+    });
+
+    // 4. Check existing session
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (!active) return;
+      if (error) {
+        setErrorMsg(error.message);
+        return;
+      }
+      if (session?.user) {
+        await refreshProfile();
+        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
       }
     });
 
     return () => {
-      isMounted = false;
+      active = false;
       subscription.unsubscribe();
     };
-  }, [refreshProfile, navigate, isStaff, isAdmin, isSuperAdmin]);
-
-  // If user prop is already present in context
-  useEffect(() => {
-    if (user) {
-      doRedirect(user.email, isStaff || isAdmin || isSuperAdmin);
-    }
-  }, [user, isStaff, isAdmin, isSuperAdmin]);
+  }, [user, isStaff, isAdmin, isSuperAdmin, refreshProfile, navigate]);
 
   return (
     <div

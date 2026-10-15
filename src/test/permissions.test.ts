@@ -48,4 +48,14 @@ describe('Permissions & Role-Based Access Control (RBAC)', () => {
     expect(isAdminOrOwnerRole(['admin'])).toBe(true);
     expect(isAdminOrOwnerRole(['owner'])).toBe(true);
   });
+
+  it('allows super_admin full institutional authority and verifies helper predicates', () => {
+    expect(hasCapability(['super_admin'], 'roles.manage')).toBe(true);
+    expect(hasCapability(['super_admin'], 'audit.read')).toBe(true);
+    expect(hasCapability(['super_admin'], 'integrations.manage')).toBe(true);
+    expect(isStaffRole(['super_admin'])).toBe(true);
+    expect(isAdminOrOwnerRole(['super_admin'])).toBe(true);
+    expect(isAdminOrOwnerRole(['learner'])).toBe(false);
+  });
 });
+

@@ -239,7 +239,7 @@ export const ProgramsPage: React.FC = () => {
         `}</style>
       </section>
 
-      {/* School Partnership Model (विद्यालयसँगको सहकार्य तथा साझेदारी मोडेल) */}
+      {/* School Partnership Model */}
       <section 
         id="school-partnerships" 
         className="section-spacing"
@@ -257,7 +257,7 @@ export const ProgramsPage: React.FC = () => {
             </div>
             <h2>{schoolPartnershipModel.title}</h2>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-base)' }}>
-              {schoolPartnershipModel.titleNepali} — {schoolPartnershipModel.overview}
+              {schoolPartnershipModel.overview}
             </p>
           </div>
 
@@ -283,7 +283,7 @@ export const ProgramsPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Building2 size={20} style={{ color: 'var(--color-brand-primary)' }} />
-                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>School's Contribution (विद्यालयको भूमिका)</h3>
+                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>School's Contribution</h3>
               </div>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', padding: 0 }}>
                 {schoolPartnershipModel.schoolRole.map((item, idx) => (
@@ -309,7 +309,7 @@ export const ProgramsPage: React.FC = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Sparkles size={20} style={{ color: 'var(--color-accent-teal)' }} />
-                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>MindSparQ Deliverables (MindSparQ को भूमिका)</h3>
+                <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>MindSparQ Deliverables</h3>
               </div>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', padding: 0 }}>
                 {schoolPartnershipModel.mindsparqRole.map((item, idx) => (

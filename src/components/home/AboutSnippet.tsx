@@ -78,7 +78,7 @@ export const AboutSnippet: React.FC = () => {
                 <div>
                   <strong>Registered Center:</strong> {siteConfig.location.fullFormatted}
                   <div style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                    Founder & CEO: {siteConfig.founder.name} ({siteConfig.founder.nameNepali})
+                    Founder & CEO: {siteConfig.founder.name}
                   </div>
                 </div>
               </div>

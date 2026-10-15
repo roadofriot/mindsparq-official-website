@@ -408,7 +408,7 @@ export const Hero: React.FC = () => {
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-accent-teal)' }} />
-                  Founder & CEO: {siteConfig.founder.name} ({siteConfig.founder.nameNepali})
+                  Founder & CEO: {siteConfig.founder.name}
                 </span>
                 <span>•</span>
                 <span>Butwal-11, Rupandehi</span>

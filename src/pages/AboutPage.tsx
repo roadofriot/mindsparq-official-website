@@ -85,7 +85,9 @@ export const AboutPage: React.FC = () => {
                 <Globe size={20} style={{ color: 'var(--color-brand-primary)' }} />
                 <div>
                   <h2 style={{ fontSize: 'var(--text-xl)', margin: 0 }}>Official Institutional Introduction</h2>
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>संस्थागत आधिकारिक परिचय</span>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                    {profileLanguage === 'en' ? 'Core Institutional Reference' : 'संस्थागत आधिकारिक परिचय'}
+                  </span>
                 </div>
               </div>
 
@@ -123,7 +125,7 @@ export const AboutPage: React.FC = () => {
                     transition: 'all var(--transition-fast)'
                   }}
                 >
-                  नेपाली परिचय
+                  Nepali Profile
                 </button>
               </div>
             </div>
@@ -197,17 +199,17 @@ export const AboutPage: React.FC = () => {
               </div>
               <h2 style={{ fontSize: 'var(--text-2xl)' }}>The Story Behind "MindSparQ"</h2>
               <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
-                The name encapsulates our core philosophy of transitioning from curiosity to ideation, and from ideation to creation (<strong>सिकाइबाट विचार र विचारबाट सिर्जना</strong>).
+                The name encapsulates our core philosophy of transitioning from curiosity to ideation, and from ideation to creation.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
                 <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                  <strong style={{ color: 'var(--color-brand-primary)', fontSize: 'var(--text-sm)' }}>Mind (सोच र मानसिक क्षमता):</strong>
+                  <strong style={{ color: 'var(--color-brand-primary)', fontSize: 'var(--text-sm)' }}>Mind:</strong>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
                     {siteConfig.nameConcept.mind}
                   </p>
                 </div>
                 <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                  <strong style={{ color: 'var(--color-accent-teal)', fontSize: 'var(--text-sm)' }}>SparQ (जिज्ञासा र नवप्रवर्तन):</strong>
+                  <strong style={{ color: 'var(--color-accent-teal)', fontSize: 'var(--text-sm)' }}>SparQ:</strong>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
                     {siteConfig.nameConcept.sparq}
                   </p>
@@ -247,7 +249,7 @@ export const AboutPage: React.FC = () => {
                     {siteConfig.founder.name}
                   </h3>
                   <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-brand-primary)', fontWeight: 600 }}>
-                    {siteConfig.founder.nameNepali} ({siteConfig.founder.altName}) • {siteConfig.founder.role}
+                    {siteConfig.founder.altName} • {siteConfig.founder.role}
                   </span>
                 </div>
               </div>
@@ -304,7 +306,7 @@ export const AboutPage: React.FC = () => {
               >
                 <Eye size={22} />
               </div>
-              <h2 style={{ fontSize: 'var(--text-2xl)' }}>Vision — दीर्घकालीन दृष्टिकोण</h2>
+              <h2 style={{ fontSize: 'var(--text-2xl)' }}>Vision</h2>
               <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
                 To establish a credible, innovative, and impactful education and technology institution in Nepal where every learner discovers their potential, acquires modern competencies, and prepares for future global opportunities. In the long term, MindSparQ aspires to build an educational technology brand capable of serving South Asia and international markets.
               </p>
@@ -334,7 +336,7 @@ export const AboutPage: React.FC = () => {
               >
                 <Target size={22} />
               </div>
-              <h2 style={{ fontSize: 'var(--text-2xl)' }}>Mission — संस्थाको मूल उद्देश्य</h2>
+              <h2 style={{ fontSize: 'var(--text-2xl)' }}>Mission</h2>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', padding: 0 }}>
                 <li style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
                   <CheckCircle2 size={16} style={{ color: 'var(--color-accent-teal)', flexShrink: 0, marginTop: '2px' }} />
@@ -367,7 +369,7 @@ export const AboutPage: React.FC = () => {
                 <Award size={14} />
                 <span>Foundational Principles</span>
               </div>
-              <h2>Core Institutional Values (संस्थाका मूल मूल्यहरू)</h2>
+              <h2>Core Institutional Values</h2>
               <p>The seven unshakeable commitments that govern every MindSparQ classroom, platform, and partnership.</p>
             </div>
 
@@ -388,13 +390,10 @@ export const AboutPage: React.FC = () => {
                     padding: 'var(--space-6)'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                  <div style={{ marginBottom: 'var(--space-2)' }}>
                     <h3 style={{ fontSize: 'var(--text-base)', margin: 0, color: 'var(--color-brand-primary)' }}>
                       {val.title}
                     </h3>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                      {val.titleNepali}
-                    </span>
                   </div>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
                     {val.desc}
@@ -550,7 +549,7 @@ export const AboutPage: React.FC = () => {
               <Layers size={14} />
               <span>Beneficiaries</span>
             </div>
-            <h2>Target Audiences We Serve (लक्षित समूह)</h2>
+            <h2>Target Audiences We Serve</h2>
             <p>Our structured educational and technological frameworks address the specific developmental needs of distinct stakeholders.</p>
           </div>
 

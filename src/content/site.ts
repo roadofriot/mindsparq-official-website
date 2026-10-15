@@ -74,8 +74,8 @@ export const siteConfig: SiteConfig = {
     { title: 'Continuous Improvement', titleNepali: 'निरन्तर सुधार', desc: 'Review programs, gather feedback, evaluate outcomes, and improve teaching materials, software, and operational processes.' }
   ],
   nameConcept: {
-    mind: 'Thinking, understanding, knowledge, creativity, and intellectual development (सोच, ज्ञान, मानसिक क्षमता र बौद्धिक विकास).',
-    sparq: 'Curiosity, inspiration, fresh ideas, innovation, and the spark that initiates discovery (जिज्ञासा, नयाँ विचार, रचनात्मकता र नवप्रवर्तन).'
+    mind: 'Thinking, understanding, knowledge, creativity, and intellectual development.',
+    sparq: 'Curiosity, inspiration, fresh ideas, innovation, and the spark that initiates discovery.'
   },
   contact: {
     // Left unpopulated until official owner confirmation as strictly instructed

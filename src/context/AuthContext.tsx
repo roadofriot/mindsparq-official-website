@@ -20,6 +20,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signUpWithEmail: (email: string, password: string, displayName: string) => Promise<{ error: AuthError | null; user: User | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
+  signInWithGithub: () => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   refreshProfile: () => Promise<void>;
@@ -177,6 +178,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const signInWithGithub = async () => {
+    if (!isSupabaseConfigured) {
+      return {
+        error: new AuthError('Supabase is not configured yet. GitHub OAuth requires a valid Supabase project.')
+      };
+    }
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: redirectUrl
+      }
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     if (!isSupabaseConfigured) {
       setUser(null);
@@ -234,6 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithEmail,
     signUpWithEmail,
     signInWithGoogle,
+    signInWithGithub,
     signOut,
     resetPassword,
     refreshProfile

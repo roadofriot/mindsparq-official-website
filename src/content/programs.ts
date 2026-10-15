@@ -157,32 +157,32 @@ export const learningPillars = [
 
 export const whoWeSupport = [
   {
-    title: 'Students & Learners (विद्यार्थी)',
+    title: 'Students & Learners',
     description: 'Nurturing mathematical intuition, computational thinking, robotics tinkering, and analytical confidence.',
     iconName: 'Brain'
   },
   {
-    title: 'Parents & Guardians (अभिभावक)',
+    title: 'Parents & Guardians',
     description: 'Providing positive practice guidance, developmental orientations, and transparent progress reports.',
     iconName: 'Sparkles'
   },
   {
-    title: 'Teachers & Educators (शिक्षक)',
+    title: 'Teachers & Educators',
     description: 'Upskilling in student-centered pedagogy, responsible AI tools, and hands-on activity design.',
     iconName: 'School'
   },
   {
-    title: 'Partner Schools (विद्यालय)',
+    title: 'Partner Schools',
     description: 'Turnkey co-curricular clubs, STEM lab establishment, trainer deployment, and institutional reporting.',
     iconName: 'School'
   },
   {
-    title: 'Educational Institutions (शैक्षिक संस्था)',
+    title: 'Educational Institutions',
     description: 'Digital curriculum systems, LMS/CMS portals, and custom academic management integration.',
     iconName: 'Cpu'
   },
   {
-    title: 'Young Innovators & Tech Creators (युवा तथा नवप्रवर्तक)',
+    title: 'Young Innovators & Tech Creators',
     description: 'Physical maker labs, Arduino/ESP32 prototyping, sensor projects, and robotics exhibition mentorship.',
     iconName: 'Cpu'
   }
@@ -190,7 +190,6 @@ export const whoWeSupport = [
 
 export const schoolPartnershipModel = {
   title: 'School Partnership & Co-Curricular Excellence Model',
-  titleNepali: 'विद्यालयसँगको सहकार्य तथा साझेदारी मोडेल',
   overview: 'MindSparQ engages with schools as genuine educational partners rather than transactional vendors. Together, we establish vibrant STEM, Abacus, and Robotics learning environments within school ecosystems.',
   schoolRole: [
     'Institutional coordination, timetable alignment, and classroom/lab facility allocation',

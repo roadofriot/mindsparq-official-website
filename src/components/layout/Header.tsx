@@ -44,11 +44,11 @@ export const Header: React.FC = () => {
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        backgroundColor: scrolled ? 'var(--navbar-bg)' : 'rgba(var(--color-surface-rgb, 15, 23, 42), 0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: `1px solid ${scrolled ? 'var(--color-border)' : 'rgba(255, 255, 255, 0.06)'}`,
-        boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.15)' : 'none',
+        backgroundColor: 'var(--navbar-bg)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${scrolled ? 'var(--color-border)' : 'rgba(255, 255, 255, 0.08)'}`,
+        boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.2)' : 'none',
         transition: 'all var(--transition-fast)'
       }}
     >

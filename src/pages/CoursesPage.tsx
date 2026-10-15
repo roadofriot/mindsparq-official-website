@@ -115,7 +115,7 @@ export const CoursesPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Filter and Search Bar */}
+      {/* Pill-Style Search & Level Filter Bar */}
       <section className="container" style={{ marginTop: 'var(--space-8)', marginBottom: 'var(--space-8)' }}>
         <div
           style={{
@@ -125,22 +125,23 @@ export const CoursesPage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             backgroundColor: 'var(--color-surface)',
-            padding: 'var(--space-4)',
-            borderRadius: 'var(--radius-lg)',
+            padding: '12px 20px',
+            borderRadius: 'var(--radius-xl)',
             border: '1px solid var(--color-border)',
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          {/* Search Input */}
-          <div style={{ position: 'relative', flex: '1 1 300px' }}>
+          {/* Search Input with Icon */}
+          <div style={{ position: 'relative', flex: '1 1 320px' }}>
             <Search
               size={18}
               style={{
                 position: 'absolute',
-                left: '12px',
+                left: '16px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-muted)',
+                pointerEvents: 'none'
               }}
             />
             <input
@@ -148,33 +149,55 @@ export const CoursesPage: React.FC = () => {
               placeholder="Search courses by topic, skill, or keyword..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field"
-              style={{ paddingLeft: '40px', width: '100%' }}
+              style={{
+                width: '100%',
+                height: '42px',
+                padding: '0 16px 0 46px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-surface-elevated)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+                fontSize: '0.875rem',
+                outline: 'none',
+                transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#38bdf8';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             />
           </div>
 
-          {/* Level Filter */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            {['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'].map((level) => (
-              <button
-                key={level}
-                onClick={() => setSelectedLevel(level)}
-                style={{
-                  padding: 'var(--space-2) var(--space-4)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid',
-                  borderColor: selectedLevel === level ? 'var(--color-primary-600)' : 'var(--color-border)',
-                  backgroundColor: selectedLevel === level ? 'var(--color-primary-50)' : 'var(--color-surface)',
-                  color: selectedLevel === level ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
-                  fontWeight: selectedLevel === level ? 600 : 400,
-                  fontSize: 'var(--font-sm)',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)'
-                }}
-              >
-                {level}
-              </button>
-            ))}
+          {/* Level Filter Pills */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'].map((level) => {
+              const isSelected = selectedLevel === level;
+              return (
+                <button
+                  key={level}
+                  onClick={() => setSelectedLevel(level)}
+                  style={{
+                    padding: '7px 18px',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid',
+                    borderColor: isSelected ? '#2563eb' : 'var(--color-border)',
+                    backgroundColor: isSelected ? '#2563eb' : 'var(--color-surface-elevated)',
+                    color: isSelected ? '#ffffff' : 'var(--color-text-secondary)',
+                    fontWeight: isSelected ? 600 : 500,
+                    fontSize: '0.8125rem',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    boxShadow: isSelected ? '0 2px 10px rgba(37, 99, 235, 0.35)' : 'none'
+                  }}
+                >
+                  {level}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>

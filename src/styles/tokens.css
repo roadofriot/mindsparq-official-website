@@ -79,7 +79,7 @@
   --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.1), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
   --shadow-hover: 0 16px 32px -4px rgba(36, 87, 214, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
 
-  --navbar-bg: rgba(255, 255, 255, 0.92);
+  --navbar-bg: rgba(255, 255, 255, 0.96);
   --card-glass: rgba(255, 255, 255, 0.85);
 }
 
@@ -95,30 +95,30 @@
   --color-text-muted: #8E9DB2;
   --color-text-on-brand: #FFFFFF;
 
-  --color-brand-primary: #7AA2FF;
-  --color-brand-primary-hover: #98B8FF;
-  --color-brand-primary-soft: rgba(122, 162, 255, 0.12);
+  --color-brand-primary: #3B82F6;
+  --color-brand-primary-hover: #2563EB;
+  --color-brand-primary-soft: rgba(59, 130, 246, 0.15);
 
-  --color-accent-teal: #54D6C5;
-  --color-accent-teal-soft: rgba(84, 214, 197, 0.12);
+  --color-accent-teal: #14B8A6;
+  --color-accent-teal-soft: rgba(20, 184, 166, 0.15);
 
-  --color-amber-highlight: #F4B544;
-  --color-amber-highlight-soft: rgba(244, 181, 68, 0.15);
+  --color-amber-highlight: #F59E0B;
+  --color-amber-highlight-soft: rgba(245, 158, 11, 0.15);
 
-  --color-border: #2A3950;
-  --color-border-hover: #3B4E6B;
+  --color-border: #243247;
+  --color-border-hover: #374A67;
 
-  --color-focus-ring: rgba(122, 162, 255, 0.5);
+  --color-focus-ring: rgba(59, 130, 246, 0.45);
 
-  --color-success: #34D399;
-  --color-error: #F87171;
-  --color-error-soft: rgba(248, 113, 113, 0.15);
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-error-soft: rgba(239, 68, 68, 0.15);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.55);
-  --shadow-hover: 0 16px 32px -4px rgba(0, 0, 0, 0.65), 0 0 1px rgba(122, 162, 255, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.65);
+  --shadow-hover: 0 16px 36px -4px rgba(0, 0, 0, 0.75), 0 0 1px rgba(59, 130, 246, 0.4);
 
-  --navbar-bg: rgba(17, 28, 46, 0.92);
+  --navbar-bg: rgba(11, 18, 32, 0.96);
   --card-glass: rgba(17, 28, 46, 0.85);
 }

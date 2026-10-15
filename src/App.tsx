@@ -13,6 +13,7 @@ import { ContactPage } from './pages/ContactPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AuthPage } from './pages/AuthPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
 
 // Learning Platform pages (code-split)
 const CoursesPage = lazy(() => import('./pages/CoursesPage').then((m) => ({ default: m.CoursesPage })));
@@ -97,6 +98,7 @@ export const App: React.FC = () => {
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="auth" element={<AuthPage />} />
+                <Route path="auth/callback" element={<AuthCallbackPage />} />
                 <Route path="login" element={<AuthPage initialMode="signin" />} />
                 <Route path="forgot-password" element={<AuthPage initialMode="forgot" />} />
                 <Route path="reset-password" element={<AuthPage initialMode="forgot" />} />

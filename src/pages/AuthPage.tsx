@@ -154,10 +154,11 @@ export const AuthPage: React.FC = () => {
           <div
             style={{
               display: 'flex',
-              backgroundColor: 'var(--color-surface-hover)',
+              backgroundColor: 'var(--color-surface-elevated)',
               borderRadius: 'var(--radius-lg)',
               padding: '4px',
-              marginBottom: 'var(--space-6)'
+              marginBottom: 'var(--space-6)',
+              border: '1px solid var(--color-border)'
             }}
           >
             <button
@@ -165,14 +166,15 @@ export const AuthPage: React.FC = () => {
               onClick={() => { setMode('signin'); setErrorMsg(null); setSuccessMsg(null); }}
               style={{
                 flex: 1,
-                padding: 'var(--space-2)',
+                padding: '10px var(--space-3)',
                 borderRadius: 'var(--radius-md)',
                 border: 'none',
-                background: mode === 'signin' ? 'var(--color-surface)' : 'transparent',
-                color: mode === 'signin' ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
-                fontWeight: mode === 'signin' ? 600 : 400,
+                background: mode === 'signin' ? '#2563eb' : 'transparent',
+                color: mode === 'signin' ? '#ffffff' : 'var(--color-text-secondary)',
+                fontWeight: mode === 'signin' ? 600 : 500,
+                fontSize: '0.875rem',
                 cursor: 'pointer',
-                boxShadow: mode === 'signin' ? 'var(--shadow-sm)' : 'none',
+                boxShadow: mode === 'signin' ? '0 2px 8px rgba(37, 99, 235, 0.4)' : 'none',
                 transition: 'all var(--transition-fast)'
               }}
             >
@@ -183,14 +185,15 @@ export const AuthPage: React.FC = () => {
               onClick={() => { setMode('signup'); setErrorMsg(null); setSuccessMsg(null); }}
               style={{
                 flex: 1,
-                padding: 'var(--space-2)',
+                padding: '10px var(--space-3)',
                 borderRadius: 'var(--radius-md)',
                 border: 'none',
-                background: mode === 'signup' ? 'var(--color-surface)' : 'transparent',
-                color: mode === 'signup' ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
-                fontWeight: mode === 'signup' ? 600 : 400,
+                background: mode === 'signup' ? '#2563eb' : 'transparent',
+                color: mode === 'signup' ? '#ffffff' : 'var(--color-text-secondary)',
+                fontWeight: mode === 'signup' ? 600 : 500,
+                fontSize: '0.875rem',
                 cursor: 'pointer',
-                boxShadow: mode === 'signup' ? 'var(--shadow-sm)' : 'none',
+                boxShadow: mode === 'signup' ? '0 2px 8px rgba(37, 99, 235, 0.4)' : 'none',
                 transition: 'all var(--transition-fast)'
               }}
             >
@@ -254,7 +257,13 @@ export const AuthPage: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
+                padding: '11px var(--space-4)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface-elevated)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+                fontWeight: 600,
+                fontSize: '0.875rem',
                 marginBottom: 'var(--space-4)'
               }}
             >
@@ -303,10 +312,10 @@ export const AuthPage: React.FC = () => {
                 htmlFor="displayName"
                 style={{
                   display: 'block',
-                  fontSize: 'var(--font-sm)',
-                  fontWeight: 500,
-                  marginBottom: 'var(--space-1)',
-                  color: 'var(--color-text)'
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  marginBottom: '6px',
+                  color: 'var(--color-text-primary)'
                 }}
               >
                 Full Name
@@ -316,10 +325,11 @@ export const AuthPage: React.FC = () => {
                   size={18}
                   style={{
                     position: 'absolute',
-                    left: '12px',
+                    left: '14px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-muted)',
+                    pointerEvents: 'none'
                   }}
                 />
                 <input
@@ -329,8 +339,26 @@ export const AuthPage: React.FC = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="e.g. Suman Sharma"
-                  className="input-field"
-                  style={{ paddingLeft: '40px', width: '100%' }}
+                  style={{
+                    width: '100%',
+                    height: '46px',
+                    padding: '0 16px 0 44px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--color-surface-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#38bdf8';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
@@ -341,10 +369,10 @@ export const AuthPage: React.FC = () => {
               htmlFor="email"
               style={{
                 display: 'block',
-                fontSize: 'var(--font-sm)',
-                fontWeight: 500,
-                marginBottom: 'var(--space-1)',
-                color: 'var(--color-text)'
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                marginBottom: '6px',
+                color: 'var(--color-text-primary)'
               }}
             >
               Email Address
@@ -354,10 +382,11 @@ export const AuthPage: React.FC = () => {
                 size={18}
                 style={{
                   position: 'absolute',
-                  left: '12px',
+                  left: '14px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: 'var(--color-text-secondary)'
+                  color: 'var(--color-text-muted)',
+                  pointerEvents: 'none'
                 }}
               />
               <input
@@ -367,23 +396,41 @@ export const AuthPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="input-field"
-                style={{ paddingLeft: '40px', width: '100%' }}
+                style={{
+                  width: '100%',
+                  height: '46px',
+                  padding: '0 16px 0 44px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-primary)',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#38bdf8';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
 
           {mode !== 'forgot' && (
-            <div style={{ marginBottom: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ marginBottom: 'var(--space-5)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <label
                   htmlFor="password"
                   style={{
                     display: 'block',
-                    fontSize: 'var(--font-sm)',
-                    fontWeight: 500,
-                    marginBottom: 'var(--space-1)',
-                    color: 'var(--color-text)'
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    margin: 0,
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   Password
@@ -395,9 +442,11 @@ export const AuthPage: React.FC = () => {
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: 'var(--color-primary-600)',
-                      fontSize: 'var(--font-xs)',
-                      cursor: 'pointer'
+                      color: '#38bdf8',
+                      fontSize: '0.8125rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      padding: 0
                     }}
                   >
                     Forgot password?
@@ -409,10 +458,11 @@ export const AuthPage: React.FC = () => {
                   size={18}
                   style={{
                     position: 'absolute',
-                    left: '12px',
+                    left: '14px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-muted)',
+                    pointerEvents: 'none'
                   }}
                 />
                 <input
@@ -422,8 +472,26 @@ export const AuthPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="input-field"
-                  style={{ paddingLeft: '40px', width: '100%' }}
+                  style={{
+                    width: '100%',
+                    height: '46px',
+                    padding: '0 16px 0 44px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--color-surface-elevated)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                    transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#38bdf8';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
@@ -432,15 +500,22 @@ export const AuthPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary"
             style={{
               width: '100%',
+              height: '46px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 'var(--space-2)',
-              padding: 'var(--space-3)',
-              marginTop: 'var(--space-2)'
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              color: '#ffffff',
+              border: 'none',
+              fontWeight: 600,
+              fontSize: '0.9375rem',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+              transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)'
             }}
           >
             <span>

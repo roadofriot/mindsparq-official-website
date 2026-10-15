@@ -632,7 +632,9 @@ export const AboutPage: React.FC = () => {
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
-              padding: 'var(--space-10) var(--space-8)'
+              borderRadius: 'var(--radius-2xl)',
+              padding: 'clamp(24px, 4vw, 44px)',
+              boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.4)'
             }}
           >
             <div 
@@ -640,74 +642,134 @@ export const AboutPage: React.FC = () => {
                 display: 'grid',
                 gridTemplateColumns: '1fr',
                 gap: 'var(--space-8)',
-                alignItems: 'center'
+                alignItems: 'stretch'
               }}
               className="location-grid"
             >
-              <div>
-                <div className="eyebrow eyebrow-amber">
-                  <MapPin size={14} />
-                  <span>Physical Presence</span>
-                </div>
-                <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-3)' }}>
-                  Our Learning Center in Butwal
-                </h2>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }}>
-                  MindSparQ is physically located at <strong>{siteConfig.location.fullFormatted}</strong>. We welcome educators, school principals, and parents to visit our facility to explore our soroban abacus models, sensor maker kits, and bilingual penmanship curricula.
-                </p>
-                <div 
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-4)',
-                    backgroundColor: 'var(--color-surface-elevated)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    marginBottom: 'var(--space-6)'
-                  }}
-                >
-                  <MapPin size={22} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
-                  <div>
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                      Registered Address
-                    </span>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)', margin: 0, fontWeight: 600 }}>
-                      {siteConfig.location.fullFormatted}
-                    </p>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                      Official Portal: {siteConfig.domain}
-                    </span>
+              {/* Left Column: Physical Presence */}
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div className="eyebrow eyebrow-amber" style={{ marginBottom: 'var(--space-3)' }}>
+                    <MapPin size={14} />
+                    <span>Physical Presence</span>
+                  </div>
+                  <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 800, marginBottom: 'var(--space-3)', color: 'var(--color-text-primary)' }}>
+                    Our Learning Center in Butwal
+                  </h2>
+                  <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-5)' }}>
+                    MindSparQ is physically located at <strong>{siteConfig.location.fullFormatted}</strong>. We welcome educators, school principals, and parents to visit our facility to explore our soroban abacus models, sensor maker kits, and bilingual penmanship curricula.
+                  </p>
+
+                  <div 
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 'var(--space-3)',
+                      padding: '16px 20px',
+                      backgroundColor: 'var(--color-surface-elevated)',
+                      borderRadius: 'var(--radius-lg)',
+                      border: '1px solid var(--color-border)',
+                      marginBottom: 'var(--space-6)'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#38bdf8',
+                        flexShrink: 0
+                      }}
+                    >
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>
+                        Registered Address
+                      </span>
+                      <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-primary)', margin: '2px 0 4px', fontWeight: 600 }}>
+                        {siteConfig.location.fullFormatted}
+                      </p>
+                      <span style={{ fontSize: '0.75rem', color: '#38bdf8' }}>
+                        Official Portal: {siteConfig.domain}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
-                  <Link to="/contact" className="btn btn-primary">
+                <div>
+                  <Link 
+                    to="/contact" 
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '12px 24px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4)',
+                      transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)'
+                    }}
+                  >
                     <span>Contact & Location Directions</span>
                     <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
 
-              {/* Ethical Standards Commitment */}
+              {/* Right Column: Ethical Standards Commitment */}
               <div 
                 style={{
                   backgroundColor: 'var(--color-surface-elevated)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 'var(--space-6)',
-                  border: '1px solid var(--color-border)'
+                  borderRadius: 'var(--radius-xl)',
+                  padding: 'clamp(20px, 3vw, 28px)',
+                  border: '1px solid var(--color-border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--space-3)' }}>
-                  <ShieldCheck size={22} style={{ color: 'var(--color-accent-teal)' }} />
-                  <h3 style={{ fontSize: 'var(--text-base)', margin: 0 }}>Commitment to Truth & Child Protection</h3>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--space-3)' }}>
+                    <ShieldCheck size={22} style={{ color: '#2dd4bf', flexShrink: 0 }} />
+                    <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>
+                      Commitment to Truth & Child Protection
+                    </h3>
+                  </div>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.65, marginBottom: 'var(--space-4)' }}>
+                    We adhere strictly to factual representations. We do not manufacture student awards, make false claims of international affiliations, or guarantee instant grade improvements.
+                  </p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                    Student photographs, project videos, and personal information are treated with rigorous privacy safeguards and parental consent. DMIT or learning style observations are treated strictly as supplementary behavioral guides, never as deterministic scientific or career predictions.
+                  </p>
                 </div>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 'var(--space-3)' }}>
-                  We adhere strictly to factual representations. We do not manufacture student awards, make false claims of international affiliations, or guarantee instant grade improvements.
-                </p>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                  Student photographs, project videos, and personal information are treated with rigorous privacy safeguards and parental consent. DMIT or learning style observations are treated strictly as supplementary behavioral guides, never as deterministic scientific or career predictions.
-                </p>
+
+                <div
+                  style={{
+                    marginTop: 'var(--space-5)',
+                    paddingTop: 'var(--space-3)',
+                    borderTop: '1px solid var(--color-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '0.75rem',
+                    color: '#2dd4bf',
+                    fontWeight: 600
+                  }}
+                >
+                  <ShieldCheck size={15} />
+                  <span>Verified Institutional Ethics & Child Safety Standard</span>
+                </div>
               </div>
             </div>
           </div>
@@ -716,7 +778,7 @@ export const AboutPage: React.FC = () => {
         <style>{`
           @media (min-width: 860px) {
             .location-grid {
-              grid-template-columns: 1.2fr 0.8fr !important;
+              grid-template-columns: 1.15fr 0.85fr !important;
             }
           }
         `}</style>

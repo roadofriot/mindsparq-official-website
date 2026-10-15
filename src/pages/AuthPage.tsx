@@ -21,7 +21,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const defaultDest = isStaff ? '/admin' : '/learner';
+  const isOwnerEmail = Boolean(
+    user?.email && (
+      user.email.toLowerCase() === 'merokhoj@gmail.com' ||
+      user.email.toLowerCase() === 'roadofriot@gmail.com'
+    )
+  );
+  const defaultDest = (isStaff || isOwnerEmail) ? '/admin' : '/learner';
   const returnUrl = searchParams.get('returnUrl') || defaultDest;
 
   // Sync mode with prop if it changes

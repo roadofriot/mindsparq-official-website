@@ -100,11 +100,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
       if (session?.user) {
+        setSession(session);
+        setUser(session.user);
         fetchProfileAndRoles(session.user.id, session.user.email);
       } else {
+        setSession(null);
+        setUser(null);
         setProfile(null);
         setRoles([]);
         setLoading(false);
@@ -114,13 +116,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth state changes
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[MindSparQ Auth Event]', event, 'User:', session?.user?.email, 'Mounted:', mounted);
       if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setRoles([]);
+        setLoading(false);
+        return;
+      }
+
       if (session?.user) {
+        setSession(session);
+        setUser(session.user);
         fetchProfileAndRoles(session.user.id, session.user.email);
-      } else {
+      } else if (event === 'INITIAL_SESSION') {
+        // Initial session resolved with no user
+        setSession(null);
+        setUser(null);
         setProfile(null);
         setRoles([]);
         setLoading(false);

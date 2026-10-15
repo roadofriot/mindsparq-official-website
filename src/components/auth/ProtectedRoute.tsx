@@ -52,6 +52,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Not authenticated
   if (!user) {
+    console.warn('[ProtectedRoute] Redirecting to /auth because user is null at:', location.pathname);
     return <Navigate to={`/auth?returnUrl=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 

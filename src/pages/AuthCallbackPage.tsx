@@ -36,54 +36,63 @@ export const AuthCallbackPage: React.FC = () => {
 
     // 1. If user is already active in AuthContext, navigate immediately
     if (user) {
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
       routeUser(user.email, isStaff || isAdmin || isSuperAdmin);
       return;
     }
 
-    // 2. Extract implicit hash tokens if present
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-      const hash = window.location.hash.startsWith('#')
-        ? window.location.hash.substring(1)
-        : window.location.hash;
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get('access_token');
-      const refreshToken = params.get('refresh_token');
-
-      if (accessToken && refreshToken) {
-        supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        }).then(({ data, error }) => {
-          if (!active) return;
-          if (error) {
-            setErrorMsg(error.message);
-          } else if (data?.user) {
-            refreshProfile().finally(() => {
-              routeUser(data.user?.email, true);
-            });
-          }
-        });
-        return;
-      }
-    }
-
-    // 3. Listen for Supabase session establishment
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!active) return;
-      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
-        await refreshProfile();
-        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
-      }
-    });
-
-    // 4. Check existing session
+    // 2. Check existing session first (Supabase detectSessionInUrl handles implicit hash tokens automatically)
     supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (!active) return;
+      if (!active || redirected.current) return;
       if (error) {
         setErrorMsg(error.message);
         return;
       }
       if (session?.user) {
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        await refreshProfile();
+        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
+        return;
+      }
+
+      // If no session detected yet but hash tokens exist, fallback to explicit setSession only if getSession had no session
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        const hash = window.location.hash.startsWith('#')
+          ? window.location.hash.substring(1)
+          : window.location.hash;
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          window.history.replaceState(null, '', window.location.pathname);
+          supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          }).then(async ({ data, error: setErr }) => {
+            if (!active || redirected.current) return;
+            if (setErr) {
+              setErrorMsg(setErr.message);
+            } else if (data?.user) {
+              await refreshProfile();
+              routeUser(data.user?.email, true);
+            }
+          });
+        }
+      }
+    });
+
+    // 3. Listen for Supabase session establishment
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!active || redirected.current) return;
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
         await refreshProfile();
         routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
       }

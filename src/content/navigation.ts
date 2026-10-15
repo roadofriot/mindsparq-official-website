@@ -7,6 +7,9 @@ export const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   { label: 'Programs', href: '/programs' },
+  { label: 'Courses', href: '/courses' },
+  { label: 'Events', href: '/events' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' }
 ];
 
@@ -18,6 +21,12 @@ export const footerLinks = {
     { label: 'Handwriting Development', href: '/programs#handwriting-development' },
     { label: 'AI Literacy & Training', href: '/programs#ai-literacy-training' },
     { label: 'School & Teacher Support', href: '/programs#school-teacher-support' }
+  ],
+  learning: [
+    { label: 'Course Catalog', href: '/courses' },
+    { label: 'Events & Workshops', href: '/events' },
+    { label: 'Blog & Articles', href: '/blog' },
+    { label: 'Learner Portal', href: '/learner' }
   ],
   company: [
     { label: 'About MindSparQ', href: '/about' },

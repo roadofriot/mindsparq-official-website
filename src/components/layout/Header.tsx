@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Sun, Moon, Menu, X, ArrowRight } from 'lucide-react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
+import { Sun, Moon, Menu, X, ArrowRight, User, Shield } from 'lucide-react';
 import { navItems } from '../../content/navigation';
 import { useThemeContext } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { Logo } from './Logo';
 
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useThemeContext();
+  const { user, isStaff } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -59,7 +61,7 @@ export const Header: React.FC = () => {
           style={{
             display: 'none',
             alignItems: 'center',
-            gap: 'var(--space-6)'
+            gap: 'var(--space-4)'
           }}
           className="desktop-nav"
         >
@@ -69,9 +71,9 @@ export const Header: React.FC = () => {
               to={item.href}
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
               style={({ isActive }) => ({
-                fontSize: 'var(--text-sm)',
+                fontSize: 'var(--font-sm)',
                 fontWeight: 600,
-                color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-secondary)',
+                color: isActive ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
                 padding: '8px 12px',
                 borderRadius: 'var(--radius-sm)',
                 textDecoration: 'none',
@@ -83,8 +85,74 @@ export const Header: React.FC = () => {
           ))}
         </nav>
 
-        {/* Actions (Theme toggle + CTA) */}
+        {/* Actions (Auth status, Theme toggle + CTA) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          {/* User Auth link */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              {isStaff && (
+                <Link
+                  to="/admin"
+                  className="desktop-cta"
+                  style={{
+                    display: 'none',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    color: '#d97706',
+                    fontSize: 'var(--font-xs)',
+                    fontWeight: 700,
+                    textDecoration: 'none'
+                  }}
+                >
+                  <Shield size={14} /> Admin
+                </Link>
+              )}
+              <Link
+                to="/learner"
+                title="Learner Dashboard"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)',
+                  fontSize: 'var(--font-sm)',
+                  fontWeight: 600,
+                  textDecoration: 'none'
+                }}
+              >
+                <User size={16} />
+                <span className="desktop-cta" style={{ display: 'none' }}>Portal</span>
+              </Link>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--font-sm)',
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}
+            >
+              <User size={16} />
+              <span>Sign In</span>
+            </Link>
+          )}
+
           {/* Theme Switch Button */}
           <button
             type="button"
@@ -92,23 +160,23 @@ export const Header: React.FC = () => {
             aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
             title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
             style={{
-              width: '44px',
-              height: '44px',
+              width: '40px',
+              height: '40px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface)',
-              color: 'var(--color-text-primary)',
+              color: 'var(--color-text)',
               cursor: 'pointer',
               transition: 'background-color var(--transition-fast), border-color var(--transition-fast)'
             }}
           >
             {theme === 'light' ? (
-              <Moon size={19} aria-hidden="true" />
+              <Moon size={18} aria-hidden="true" />
             ) : (
-              <Sun size={19} aria-hidden="true" style={{ color: 'var(--color-amber-highlight)' }} />
+              <Sun size={18} aria-hidden="true" style={{ color: '#f59e0b' }} />
             )}
           </button>
 
@@ -118,7 +186,7 @@ export const Header: React.FC = () => {
             className="btn btn-primary desktop-cta"
             style={{ display: 'none' }}
           >
-            <span>Enquire Now</span>
+            <span>Enquire</span>
             <ArrowRight size={16} aria-hidden="true" />
           </NavLink>
 
@@ -131,19 +199,19 @@ export const Header: React.FC = () => {
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open navigation menu'}
             className="mobile-menu-toggle"
             style={{
-              width: '44px',
-              height: '44px',
+              width: '40px',
+              height: '40px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)',
               backgroundColor: 'var(--color-surface)',
-              color: 'var(--color-text-primary)',
+              color: 'var(--color-text)',
               cursor: 'pointer'
             }}
           >
-            {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+            {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -175,10 +243,10 @@ export const Header: React.FC = () => {
                   justifyContent: 'space-between',
                   padding: '12px 16px',
                   borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--text-base)',
+                  fontSize: 'var(--font-base)',
                   fontWeight: 600,
-                  color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
-                  backgroundColor: isActive ? 'var(--color-brand-primary-soft)' : 'transparent',
+                  color: isActive ? 'var(--color-primary-600)' : 'var(--color-text)',
+                  backgroundColor: isActive ? 'var(--color-primary-50)' : 'transparent',
                   textDecoration: 'none'
                 })}
               >
@@ -186,6 +254,66 @@ export const Header: React.FC = () => {
                 <ArrowRight size={16} aria-hidden="true" />
               </NavLink>
             ))}
+
+            {user ? (
+              <>
+                <Link
+                  to="/learner"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderRadius: 'var(--radius-md)',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    color: 'var(--color-text)'
+                  }}
+                >
+                  <span>Learner Dashboard</span>
+                  <User size={16} />
+                </Link>
+                {isStaff && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 16px',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                      color: '#d97706',
+                      backgroundColor: 'rgba(245, 158, 11, 0.1)'
+                    }}
+                  >
+                    <span>Admin Console</span>
+                    <Shield size={16} />
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  color: 'var(--color-primary-600)'
+                }}
+              >
+                <span>Sign In / Register</span>
+                <User size={16} />
+              </Link>
+            )}
             
             <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
               <NavLink
@@ -204,7 +332,7 @@ export const Header: React.FC = () => {
 
       {/* Embedded CSS for responsive switching */}
       <style>{`
-        @media (min-width: 820px) {
+        @media (min-width: 960px) {
           .desktop-nav {
             display: flex !important;
           }

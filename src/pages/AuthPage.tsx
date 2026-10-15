@@ -1,0 +1,486 @@
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+
+export const AuthPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user, signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, isConfigured } = useAuth();
+
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const returnUrl = searchParams.get('returnUrl') || '/learner';
+
+  // If already logged in, redirect
+  React.useEffect(() => {
+    if (user) {
+      navigate(returnUrl, { replace: true });
+    }
+  }, [user, navigate, returnUrl]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setLoading(true);
+
+    try {
+      if (mode === 'signin') {
+        const { error } = await signInWithEmail(email, password);
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          navigate(returnUrl, { replace: true });
+        }
+      } else if (mode === 'signup') {
+        if (!displayName.trim()) {
+          setErrorMsg('Please enter your full name.');
+          setLoading(false);
+          return;
+        }
+        if (password.length < 6) {
+          setErrorMsg('Password must be at least 6 characters.');
+          setLoading(false);
+          return;
+        }
+        const { error } = await signUpWithEmail(email, password, displayName);
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setSuccessMsg('Account created successfully! Check your email if verification is required, or sign in.');
+          setMode('signin');
+        }
+      } else if (mode === 'forgot') {
+        const { error } = await resetPassword(email);
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setSuccessMsg('Password reset instructions have been dispatched to your email.');
+        }
+      }
+    } catch (err: unknown) {
+      setErrorMsg((err as Error).message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setErrorMsg(error.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: 'calc(100vh - var(--header-height) - 100px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--space-8) var(--space-4)',
+        background: 'radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 50%)'
+      }}
+    >
+      <div
+        className="card"
+        style={{
+          width: '100%',
+          maxWidth: '460px',
+          padding: 'var(--space-8)',
+          boxShadow: 'var(--shadow-xl)',
+          borderRadius: 'var(--radius-xl)'
+        }}
+      >
+        {!isConfigured && (
+          <div
+            style={{
+              padding: 'var(--space-3) var(--space-4)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#d97706',
+              fontSize: 'var(--font-xs)',
+              marginBottom: 'var(--space-6)',
+              display: 'flex',
+              gap: 'var(--space-2)'
+            }}
+          >
+            <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <strong>Database Configuration Notice:</strong> Supabase credentials (<code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>) are not yet configured in <code>.env</code>. Forms are operating in safe preview mode.
+            </div>
+          </div>
+        )}
+
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              padding: 'var(--space-3)',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-primary-50)',
+              color: 'var(--color-primary-600)',
+              marginBottom: 'var(--space-3)'
+            }}
+          >
+            <ShieldCheck size={28} />
+          </div>
+          <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
+            {mode === 'signin' && 'Welcome to MindSparQ'}
+            {mode === 'signup' && 'Create Learner Account'}
+            {mode === 'forgot' && 'Reset Your Password'}
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-sm)', marginTop: 'var(--space-1)' }}>
+            {mode === 'signin' && 'Sign in to access your courses, progress, and certificates'}
+            {mode === 'signup' && 'Join the next generation of innovators and thinkers in Nepal'}
+            {mode === 'forgot' && 'Enter your verified account email to receive reset instructions'}
+          </p>
+        </div>
+
+        {/* Tab Selection */}
+        {mode !== 'forgot' && (
+          <div
+            style={{
+              display: 'flex',
+              backgroundColor: 'var(--color-surface-hover)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '4px',
+              marginBottom: 'var(--space-6)'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => { setMode('signin'); setErrorMsg(null); setSuccessMsg(null); }}
+              style={{
+                flex: 1,
+                padding: 'var(--space-2)',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                background: mode === 'signin' ? 'var(--color-surface)' : 'transparent',
+                color: mode === 'signin' ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
+                fontWeight: mode === 'signin' ? 600 : 400,
+                cursor: 'pointer',
+                boxShadow: mode === 'signin' ? 'var(--shadow-sm)' : 'none',
+                transition: 'all var(--transition-fast)'
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode('signup'); setErrorMsg(null); setSuccessMsg(null); }}
+              style={{
+                flex: 1,
+                padding: 'var(--space-2)',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                background: mode === 'signup' ? 'var(--color-surface)' : 'transparent',
+                color: mode === 'signup' ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
+                fontWeight: mode === 'signup' ? 600 : 400,
+                cursor: 'pointer',
+                boxShadow: mode === 'signup' ? 'var(--shadow-sm)' : 'none',
+                transition: 'all var(--transition-fast)'
+              }}
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
+
+        {/* Status Alerts */}
+        {errorMsg && (
+          <div
+            style={{
+              padding: 'var(--space-3) var(--space-4)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#ef4444',
+              fontSize: 'var(--font-sm)',
+              marginBottom: 'var(--space-4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)'
+            }}
+          >
+            <AlertCircle size={16} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {successMsg && (
+          <div
+            style={{
+              padding: 'var(--space-3) var(--space-4)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
+              color: '#16a34a',
+              fontSize: 'var(--font-sm)',
+              marginBottom: 'var(--space-4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)'
+            }}
+          >
+            <CheckCircle2 size={16} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        {/* Google OAuth Button */}
+        {mode !== 'forgot' && (
+          <>
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="btn btn-secondary"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-3)',
+                marginBottom: 'var(--space-4)'
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                margin: 'var(--space-4) 0',
+                color: 'var(--color-text-secondary)',
+                fontSize: 'var(--font-xs)'
+              }}
+            >
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }} />
+              <span style={{ padding: '0 var(--space-3)' }}>OR WITH EMAIL</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-border)' }} />
+            </div>
+          </>
+        )}
+
+        {/* Email Form */}
+        <form onSubmit={handleSubmit}>
+          {mode === 'signup' && (
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <label
+                htmlFor="displayName"
+                style={{
+                  display: 'block',
+                  fontSize: 'var(--font-sm)',
+                  fontWeight: 500,
+                  marginBottom: 'var(--space-1)',
+                  color: 'var(--color-text)'
+                }}
+              >
+                Full Name
+              </label>
+              <div style={{ position: 'relative' }}>
+                <UserIcon
+                  size={18}
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                />
+                <input
+                  id="displayName"
+                  type="text"
+                  required
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="e.g. Suman Sharma"
+                  className="input-field"
+                  style={{ paddingLeft: '40px', width: '100%' }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <label
+              htmlFor="email"
+              style={{
+                display: 'block',
+                fontSize: 'var(--font-sm)',
+                fontWeight: 500,
+                marginBottom: 'var(--space-1)',
+                color: 'var(--color-text)'
+              }}
+            >
+              Email Address
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Mail
+                size={18}
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-text-secondary)'
+                }}
+              />
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="input-field"
+                style={{ paddingLeft: '40px', width: '100%' }}
+              />
+            </div>
+          </div>
+
+          {mode !== 'forgot' && (
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label
+                  htmlFor="password"
+                  style={{
+                    display: 'block',
+                    fontSize: 'var(--font-sm)',
+                    fontWeight: 500,
+                    marginBottom: 'var(--space-1)',
+                    color: 'var(--color-text)'
+                  }}
+                >
+                  Password
+                </label>
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode('forgot'); setErrorMsg(null); setSuccessMsg(null); }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-primary-600)',
+                      fontSize: 'var(--font-xs)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <Lock
+                  size={18}
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="input-field"
+                  style={{ paddingLeft: '40px', width: '100%' }}
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 'var(--space-2)',
+              padding: 'var(--space-3)',
+              marginTop: 'var(--space-2)'
+            }}
+          >
+            <span>
+              {loading
+                ? 'Processing...'
+                : mode === 'signin'
+                ? 'Sign In to Account'
+                : mode === 'signup'
+                ? 'Create Free Account'
+                : 'Send Reset Link'}
+            </span>
+            <ArrowRight size={18} />
+          </button>
+        </form>
+
+        {mode === 'forgot' && (
+          <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
+            <button
+              type="button"
+              onClick={() => { setMode('signin'); setErrorMsg(null); setSuccessMsg(null); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-primary-600)',
+                fontSize: 'var(--font-sm)',
+                cursor: 'pointer'
+              }}
+            >
+              Back to Sign In
+            </button>
+          </div>
+        )}
+
+        <div style={{ marginTop: 'var(--space-6)', textAlign: 'center', fontSize: 'var(--font-xs)', color: 'var(--color-text-secondary)' }}>
+          By continuing, you agree to MindSparQ's{' '}
+          <Link to="/privacy-policy" style={{ color: 'var(--color-primary-600)', textDecoration: 'underline' }}>
+            Privacy Policy
+          </Link>.
+        </div>
+      </div>
+    </div>
+  );
+};

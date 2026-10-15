@@ -1,0 +1,377 @@
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { BlogPost, BlogComment, Bookmark } from '../types/database';
+import { recordAuditLog } from './auditService';
+
+// ==========================================
+// BLOG POSTS
+// ==========================================
+
+export async function getPublishedPosts(): Promise<BlogPost[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false });
+
+  if (error) {
+    console.error('[MindSparQ Blog] Error fetching published posts:', error);
+    return [];
+  }
+
+  // Filter future published_at client-side as well
+  return ((data as BlogPost[]) || []).filter((post) => {
+    return !post.published_at || post.published_at <= now;
+  });
+}
+
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) return null;
+  return data as BlogPost;
+}
+
+export async function getAllPosts(): Promise<BlogPost[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[MindSparQ Blog] Error fetching all posts:', error);
+    return [];
+  }
+
+  return (data as BlogPost[]) || [];
+}
+
+export async function savePost(
+  post: Partial<BlogPost>
+): Promise<{ data: BlogPost | null; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { data: null, error: new Error('Supabase is not configured.') };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const isNew = !post.id;
+  const payload = {
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt,
+    content: post.content,
+    cover_image_url: post.cover_image_url || null,
+    author_name: post.author_name || 'MindSparQ Team',
+    category: post.category || 'Education',
+    status: post.status || 'draft',
+    published_at: post.status === 'published' ? (post.published_at || new Date().toISOString()) : null,
+    author_id: user?.id || null,
+    updated_at: new Date().toISOString()
+  };
+
+  if (isNew) {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (!error && data) {
+      await recordAuditLog('blog.create', 'blog_posts', data.id, { title: data.title });
+    }
+    return { data: data as BlogPost, error };
+  } else {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .update(payload)
+      .eq('id', post.id)
+      .select()
+      .single();
+
+    if (!error && data) {
+      await recordAuditLog('blog.update', 'blog_posts', data.id, { title: data.title, status: data.status });
+    }
+    return { data: data as BlogPost, error };
+  }
+}
+
+export async function deletePost(id: string): Promise<{ error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { error: new Error('Supabase is not configured.') };
+  }
+
+  const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+  if (!error) {
+    await recordAuditLog('blog.delete', 'blog_posts', id);
+  }
+  return { error };
+}
+
+// ==========================================
+// COMMENTS & MODERATION
+// ==========================================
+
+export async function getCommentsForPost(postId: string): Promise<BlogComment[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const { data, error } = await supabase
+    .from('blog_comments')
+    .select('*')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.warn('[MindSparQ Blog] Error fetching comments:', error.message);
+    return [];
+  }
+
+  return (data as BlogComment[]) || [];
+}
+
+export async function getAllComments(statusFilter?: string): Promise<BlogComment[]> {
+  if (!isSupabaseConfigured) return [];
+
+  let query = supabase
+    .from('blog_comments')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (statusFilter && statusFilter !== 'all') {
+    query = query.eq('status', statusFilter);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('[MindSparQ Blog] Error fetching moderation queue:', error);
+    return [];
+  }
+
+  return (data as BlogComment[]) || [];
+}
+
+export async function submitComment(
+  postId: string,
+  authorName: string,
+  body: string
+): Promise<{ data: BlogComment | null; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { data: null, error: new Error('Supabase is not configured.') };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { data: null, error: new Error('Please sign in to submit a comment.') };
+  }
+
+  if (body.trim().length < 2) {
+    return { data: null, error: new Error('Comment must be at least 2 characters.') };
+  }
+
+  if (body.trim().length > 2000) {
+    return { data: null, error: new Error('Comment exceeds maximum length of 2000 characters.') };
+  }
+
+  const { data, error } = await supabase
+    .from('blog_comments')
+    .insert([
+      {
+        post_id: postId,
+        user_id: user.id,
+        author_name: authorName.trim() || 'Learner',
+        body: body.trim(),
+        status: 'pending' // Always pending first for safe moderation
+      }
+    ])
+    .select()
+    .single();
+
+  return { data: data as BlogComment, error };
+}
+
+export async function moderateComment(
+  commentId: string,
+  status: 'approved' | 'rejected' | 'spam'
+): Promise<{ error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { error: new Error('Supabase is not configured.') };
+  }
+
+  const { error } = await supabase
+    .from('blog_comments')
+    .update({ status })
+    .eq('id', commentId);
+
+  if (!error) {
+    await recordAuditLog('comment.moderate', 'blog_comments', commentId, { status });
+  }
+
+  return { error };
+}
+
+export async function deleteComment(commentId: string): Promise<{ error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { error: new Error('Supabase is not configured.') };
+  }
+
+  const { error } = await supabase.from('blog_comments').delete().eq('id', commentId);
+  return { error };
+}
+
+// ==========================================
+// LIKES & BOOKMARKS
+// ==========================================
+
+export async function getPostLikeInfo(postId: string): Promise<{ count: number; isLiked: boolean }> {
+  if (!isSupabaseConfigured) return { count: 0, isLiked: false };
+
+  const { count } = await supabase
+    .from('content_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('target_type', 'blog_post')
+    .eq('target_id', postId);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  let isLiked = false;
+
+  if (user) {
+    const { data } = await supabase
+      .from('content_likes')
+      .select('id')
+      .eq('target_type', 'blog_post')
+      .eq('target_id', postId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    isLiked = Boolean(data);
+  }
+
+  return { count: count || 0, isLiked };
+}
+
+export async function toggleLike(
+  targetType: 'blog_post' | 'course',
+  targetId: string
+): Promise<{ isLiked: boolean; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { isLiked: false, error: new Error('Supabase is not configured.') };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { isLiked: false, error: new Error('Sign in required to like content.') };
+  }
+
+  // Check if currently liked
+  const { data: existing } = await supabase
+    .from('content_likes')
+    .select('id')
+    .eq('target_type', targetType)
+    .eq('target_id', targetId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('content_likes')
+      .delete()
+      .eq('id', existing.id);
+    return { isLiked: false, error };
+  } else {
+    const { error } = await supabase
+      .from('content_likes')
+      .insert([
+        {
+          target_type: targetType,
+          target_id: targetId,
+          user_id: user.id
+        }
+      ]);
+    return { isLiked: true, error };
+  }
+}
+
+export async function getBookmarkStatus(
+  targetType: 'blog_post' | 'course',
+  targetId: string
+): Promise<boolean> {
+  if (!isSupabaseConfigured) return false;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await supabase
+    .from('bookmarks')
+    .select('id')
+    .eq('target_type', targetType)
+    .eq('target_id', targetId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return Boolean(data);
+}
+
+export async function toggleBookmark(
+  targetType: 'blog_post' | 'course',
+  targetId: string
+): Promise<{ isBookmarked: boolean; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { isBookmarked: false, error: new Error('Supabase is not configured.') };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { isBookmarked: false, error: new Error('Sign in required to bookmark.') };
+  }
+
+  const { data: existing } = await supabase
+    .from('bookmarks')
+    .select('id')
+    .eq('target_type', targetType)
+    .eq('target_id', targetId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from('bookmarks').delete().eq('id', existing.id);
+    return { isBookmarked: false, error };
+  } else {
+    const { error } = await supabase.from('bookmarks').insert([
+      {
+        target_type: targetType,
+        target_id: targetId,
+        user_id: user.id
+      }
+    ]);
+    return { isBookmarked: true, error };
+  }
+}
+
+export async function getUserBookmarks(): Promise<Bookmark[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('bookmarks')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[MindSparQ Blog] Error fetching bookmarks:', error);
+    return [];
+  }
+
+  return (data as Bookmark[]) || [];
+}

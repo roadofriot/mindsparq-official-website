@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>MindSparQ Education & Technology | Empowering Minds, Sparking Innovation</title>
+    <meta name="title" content="MindSparQ Education & Technology | Empowering Minds, Sparking Innovation" />
+    <meta name="description" content="MindSparQ Education & Technology provides innovative learning in Abacus & Mental Math, Vedic Mathematics, AI Coding & Robotics, and Handwriting Development in Nepal." />
+    <meta name="keywords" content="MindSparQ, Abacus, Mental Math, Vedic Mathematics, AI Coding, Robotics, Education Nepal, Butwal" />
+    <meta name="author" content="MindSparQ Education & Technology" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mindsparqeducation.com.np/" />
+    <meta property="og:title" content="MindSparQ Education & Technology | Empowering Minds, Sparking Innovation" />
+    <meta property="og:description" content="Empowering learners through mental arithmetic, computational thinking, and future-ready technology skills in Nepal." />
+    <meta property="og:image" content="/favicon.svg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:title" content="MindSparQ Education & Technology" />
+    <meta property="twitter:description" content="Empowering Minds, Sparking Innovation. Abacus, Vedic Math, Robotics & AI Coding." />
+    
+    <!-- Fonts: Inter with Devanagari & Latin support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Mukta:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Prevent Theme Flash -->
+    <script>
+      (function() {
+        const storedTheme = localStorage.getItem('mindsparq-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = storedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

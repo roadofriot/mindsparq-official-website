@@ -35,13 +35,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [roles, setRoles] = useState<RoleKey[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchProfileAndRoles = useCallback(async (userId: string) => {
+  const fetchProfileAndRoles = useCallback(async (userId: string, userEmailParam?: string) => {
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
     }
 
     try {
+      const email = (userEmailParam || '').toLowerCase();
+      const isOwnerAccount = email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
+
       // 1. Fetch Profile
       const { data: profileData, error: profileErr } = await supabase
         .from('profiles')
@@ -55,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If profile doesn't exist yet, construct fallback
         setProfile({
           id: userId,
-          display_name: user?.email ? user.email.split('@')[0] : 'Learner',
+          display_name: email ? email.split('@')[0] : 'Learner',
           avatar_path: null,
           bio: null,
           created_at: new Date().toISOString(),
@@ -69,9 +72,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select('*')
         .eq('user_id', userId);
 
-      const userEmail = user?.email?.toLowerCase();
-      const isOwnerAccount = userEmail === 'merokhoj@gmail.com' || userEmail === 'roadofriot@gmail.com';
-
       if (rolesData && !rolesErr && rolesData.length > 0) {
         const loadedRoles = (rolesData as UserRole[]).map((r) => r.role_key);
         setRoles(isOwnerAccount ? Array.from(new Set([...loadedRoles, 'super_admin', 'owner', 'admin'])) : loadedRoles);
@@ -81,12 +81,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error('[MindSparQ Auth] Error loading user profile & roles:', err);
-      const isOwnerAccount = user?.email?.toLowerCase() === 'merokhoj@gmail.com' || user?.email?.toLowerCase() === 'roadofriot@gmail.com';
+      const email = (userEmailParam || '').toLowerCase();
+      const isOwnerAccount = email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
       setRoles(isOwnerAccount ? ['super_admin', 'owner', 'admin'] : ['learner']);
     } finally {
       setLoading(false);
     }
-  }, [user?.email]);
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -102,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfileAndRoles(session.user.id);
+        fetchProfileAndRoles(session.user.id, session.user.email);
       } else {
         setProfile(null);
         setRoles([]);
@@ -118,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfileAndRoles(session.user.id);
+        fetchProfileAndRoles(session.user.id, session.user.email);
       } else {
         setProfile(null);
         setRoles([]);
@@ -134,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfileAndRoles(user.id);
+      await fetchProfileAndRoles(user.id, user.email);
     }
   };
 

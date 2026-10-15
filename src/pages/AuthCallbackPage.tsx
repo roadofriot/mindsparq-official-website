@@ -1,12 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 export const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isStaff, isAdmin, isSuperAdmin, refreshProfile, loading } = useAuth();
+  const { user, isStaff, isAdmin, isSuperAdmin, refreshProfile } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const redirectedRef = useRef(false);
+
+  const doRedirect = (targetUserEmail?: string, staffStatus?: boolean) => {
+    if (redirectedRef.current) return;
+    redirectedRef.current = true;
+
+    const email = targetUserEmail?.toLowerCase();
+    const isOwner = staffStatus || email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
+
+    if (isOwner) {
+      navigate('/admin', { replace: true });
+    } else {
+      navigate('/learner', { replace: true });
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -21,17 +36,45 @@ export const AuthCallbackPage: React.FC = () => {
           return;
         }
 
-        // 2. PKCE code exchange
+        // 2. Handle PKCE code exchange
         const code = params.get('code');
         if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { data: codeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError && isMounted) {
             setErrorMsg(exchangeError.message);
             return;
           }
+          if (codeData?.user) {
+            await refreshProfile();
+            doRedirect(codeData.user.email, true);
+            return;
+          }
         }
 
-        // 3. Resolve session (also handles URL hash fragments automatically)
+        // 3. Handle Implicit OAuth Hash Fragments (#access_token=...&refresh_token=...)
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          const hashString = window.location.hash.startsWith('#')
+            ? window.location.hash.substring(1)
+            : window.location.hash;
+          const hashParams = new URLSearchParams(hashString);
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken) {
+            const { data: hashData, error: hashError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || ''
+            });
+
+            if (!hashError && hashData?.user) {
+              await refreshProfile();
+              doRedirect(hashData.user.email, true);
+              return;
+            }
+          }
+        }
+
+        // 4. Fallback: Check existing session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError && isMounted) {
           setErrorMsg(sessionError.message);
@@ -40,6 +83,14 @@ export const AuthCallbackPage: React.FC = () => {
 
         if (session?.user) {
           await refreshProfile();
+          doRedirect(session.user.email, isStaff || isAdmin || isSuperAdmin);
+        } else {
+          // If after 3 seconds still no session, redirect to login
+          setTimeout(() => {
+            if (isMounted && !redirectedRef.current) {
+              navigate('/login', { replace: true });
+            }
+          }, 3000);
         }
       } catch (err: unknown) {
         if (isMounted) {
@@ -50,21 +101,26 @@ export const AuthCallbackPage: React.FC = () => {
 
     handleCallback();
 
+    // Listen for auth state change event as reactive safeguard
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user && isMounted) {
+        await refreshProfile();
+        doRedirect(session.user.email, isStaff || isAdmin || isSuperAdmin);
+      }
+    });
+
     return () => {
       isMounted = false;
+      subscription.unsubscribe();
     };
-  }, [refreshProfile]);
+  }, [refreshProfile, navigate, isStaff, isAdmin, isSuperAdmin]);
 
-  // Navigate once user and roles are resolved
+  // If user prop is already present in context
   useEffect(() => {
-    if (!loading && user) {
-      if (isStaff || isAdmin || isSuperAdmin) {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/learner', { replace: true });
-      }
+    if (user) {
+      doRedirect(user.email, isStaff || isAdmin || isSuperAdmin);
     }
-  }, [loading, user, isStaff, isAdmin, isSuperAdmin, navigate]);
+  }, [user, isStaff, isAdmin, isSuperAdmin]);
 
   return (
     <div

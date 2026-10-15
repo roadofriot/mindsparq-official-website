@@ -69,15 +69,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select('*')
         .eq('user_id', userId);
 
+      const userEmail = user?.email?.toLowerCase();
+      const isOwnerAccount = userEmail === 'merokhoj@gmail.com' || userEmail === 'roadofriot@gmail.com';
+
       if (rolesData && !rolesErr && rolesData.length > 0) {
-        setRoles((rolesData as UserRole[]).map((r) => r.role_key));
+        const loadedRoles = (rolesData as UserRole[]).map((r) => r.role_key);
+        setRoles(isOwnerAccount ? Array.from(new Set([...loadedRoles, 'super_admin', 'owner', 'admin'])) : loadedRoles);
       } else {
-        // Default role for signed-in user is learner
-        setRoles(['learner']);
+        // Default role for signed-in user is learner, or owner for recognized owner emails
+        setRoles(isOwnerAccount ? ['super_admin', 'owner', 'admin'] : ['learner']);
       }
     } catch (err) {
       console.error('[MindSparQ Auth] Error loading user profile & roles:', err);
-      setRoles(['learner']);
+      const isOwnerAccount = user?.email?.toLowerCase() === 'merokhoj@gmail.com' || user?.email?.toLowerCase() === 'roadofriot@gmail.com';
+      setRoles(isOwnerAccount ? ['super_admin', 'owner', 'admin'] : ['learner']);
     } finally {
       setLoading(false);
     }
@@ -230,10 +235,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return hasCapability(roles, capability);
   };
 
-  const isStaff = isStaffRole(roles);
-  const isAdmin = isAdminOrOwnerRole(roles);
-  const isOwner = roles.includes('owner') || roles.includes('super_admin');
+  const isRecognizedOwner = Boolean(
+    user?.email && (
+      user.email.toLowerCase() === 'merokhoj@gmail.com' ||
+      user.email.toLowerCase() === 'roadofriot@gmail.com'
+    )
+  );
+  const isOwner = roles.includes('owner') || roles.includes('super_admin') || isRecognizedOwner;
   const isSuperAdmin = isOwner;
+  const isStaff = isStaffRole(roles) || isOwner;
+  const isAdmin = isAdminOrOwnerRole(roles) || isOwner;
 
   const value: AuthContextType = {
     user,

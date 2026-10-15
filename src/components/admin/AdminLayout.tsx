@@ -22,24 +22,28 @@ import {
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
-  const { user, profile, roles, isOwner, isAdmin } = useAuth();
+  const { user, profile, roles, isOwner, isAdmin, isSuperAdmin } = useAuth();
   const { theme, toggleTheme } = useThemeContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navLinks = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
+    { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
     { label: 'Homepage Carousel', href: '/admin/carousel', icon: Sliders },
     { label: 'Media Library', href: '/admin/media', icon: Image },
     { label: 'Curriculum Programs', href: '/admin/programs', icon: GraduationCap },
     { label: 'Courses & Lessons', href: '/admin/courses', icon: BookOpen },
-    { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
     { label: 'Events & Workshops', href: '/admin/events', icon: Calendar },
     { label: 'Comment Moderation', href: '/admin/comments', icon: MessageSquare },
-    ...(isAdmin || isOwner
+    ...((isSuperAdmin || isOwner)
       ? [
-          { label: 'User & Staff Roles', href: '/admin/users', icon: Users },
-          { label: 'Social & Settings', href: '/admin/settings', icon: Share2 },
+          { label: 'Team & Access', href: '/admin/users', icon: Users },
           { label: 'Security Audit Logs', href: '/admin/audit', icon: ShieldAlert }
+        ]
+      : []),
+    ...(isAdmin || isOwner || isSuperAdmin
+      ? [
+          { label: 'Settings & Integrations', href: '/admin/settings', icon: Share2 }
         ]
       : [])
   ];

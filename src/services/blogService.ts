@@ -65,21 +65,28 @@ export async function savePost(
 
   const { data: { user } } = await supabase.auth.getUser();
   const isNew = !post.id;
-  const payload = {
+  const payload: Record<string, unknown> = {
     slug: post.slug,
     title: post.title,
     excerpt: post.excerpt,
     content: post.content,
     cover_image_url: post.cover_image_url || null,
+    author_id: post.author_id || user?.id || null,
     author_name: post.author_name || 'MindSparQ Team',
     category: post.category || 'Education',
     status: post.status || 'draft',
-    published_at: post.status === 'published' ? (post.published_at || new Date().toISOString()) : null,
-    author_id: user?.id || null,
+    seo_title: post.seo_title || null,
+    seo_description: post.seo_description || null,
+    updated_by: user?.id || null,
     updated_at: new Date().toISOString()
   };
 
+  if (post.status === 'published') {
+    payload.published_at = post.published_at || new Date().toISOString();
+  }
+
   if (isNew) {
+    payload.created_by = user?.id || null;
     const { data, error } = await supabase
       .from('blog_posts')
       .insert([payload])
@@ -87,7 +94,7 @@ export async function savePost(
       .single();
 
     if (!error && data) {
-      await recordAuditLog('blog.create', 'blog_posts', data.id, { title: data.title });
+      await recordAuditLog('blog.create', 'blog_posts', data.id, { title: data.title, status: data.status });
     }
     return { data: data as BlogPost, error };
   } else {
@@ -103,6 +110,48 @@ export async function savePost(
     }
     return { data: data as BlogPost, error };
   }
+}
+
+export async function updatePostStatus(
+  id: string,
+  newStatus: 'draft' | 'review' | 'published' | 'archived'
+): Promise<{ data: BlogPost | null; error: Error | null }> {
+  if (!isSupabaseConfigured) {
+    return { data: null, error: new Error('Supabase is not configured.') };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const updatePayload: Record<string, unknown> = {
+    status: newStatus,
+    updated_by: user?.id || null,
+    updated_at: new Date().toISOString()
+  };
+
+  if (newStatus === 'published') {
+    updatePayload.published_at = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .update(updatePayload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (!error && data) {
+    const actionKey =
+      newStatus === 'published'
+        ? 'blog.publish'
+        : newStatus === 'archived'
+        ? 'blog.archive'
+        : newStatus === 'review'
+        ? 'blog.submit_review'
+        : 'blog.unpublish';
+
+    await recordAuditLog(actionKey, 'blog_posts', id, { newStatus, title: data.title });
+  }
+
+  return { data: data as BlogPost, error };
 }
 
 export async function deletePost(id: string): Promise<{ error: Error | null }> {

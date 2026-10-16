@@ -923,26 +923,34 @@ export const AdminBlogPage: React.FC = () => {
               </div>
 
               {/* Excerpt */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px' }}>
-                  Excerpt / Brief Summary * (Shows in listings & preview cards)
-                </label>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Excerpt / Brief Summary * (Shows in listings & preview cards)
+                  </label>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                    {(editingPost.excerpt || '').length} characters
+                  </span>
+                </div>
                 <textarea
                   required
-                  rows={2}
-                  placeholder="Provide a concise 1-2 sentence overview of the article..."
+                  rows={5}
+                  placeholder="Provide a concise 1-3 sentence overview of the article for preview cards, social shares, and search engines..."
                   value={editingPost.excerpt || ''}
                   onChange={(e) => setEditingPost({ ...editingPost, excerpt: e.target.value })}
                   style={{
                     width: '100%',
-                    padding: '10px 12px',
+                    minHeight: '125px',
+                    padding: '14px',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--color-surface-elevated)',
                     border: '1px solid var(--color-border)',
                     color: 'var(--color-text-primary)',
                     fontSize: '0.875rem',
                     fontFamily: 'inherit',
-                    resize: 'vertical'
+                    lineHeight: 1.6,
+                    resize: 'vertical',
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)'
                   }}
                 />
               </div>

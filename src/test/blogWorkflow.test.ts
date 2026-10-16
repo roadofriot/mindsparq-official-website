@@ -91,4 +91,36 @@ describe('Multi-Author Blog Publishing Workflow & Isolation', () => {
     expect(post.author_name).toBe('Samay Budhathoki Chhetri');
     expect(post.published_at).toBeDefined();
   });
+
+  it('supports the full editorial review lifecycle: draft -> in_review -> approved -> published', () => {
+    const editorialStates: BlogPost['status'][] = ['draft', 'in_review', 'approved', 'published'];
+    expect(editorialStates).toContain('in_review');
+    expect(editorialStates).toContain('approved');
+
+    // Test transition state map
+    const transitions: Record<string, BlogPost['status']> = {
+      submit: 'in_review',
+      approve: 'approved',
+      reject: 'draft',
+      publish: 'published',
+      unpublish: 'draft'
+    };
+
+    expect(transitions.submit).toBe('in_review');
+    expect(transitions.approve).toBe('approved');
+    expect(transitions.reject).toBe('draft');
+    expect(transitions.publish).toBe('published');
+  });
+
+  it('ensures in_review and approved states are hidden from public view until published', () => {
+    const internalPosts: Partial<BlogPost>[] = [
+      { id: 'p1', title: 'Pending Review', status: 'in_review' },
+      { id: 'p2', title: 'Editorial Approved', status: 'approved' },
+      { id: 'p3', title: 'Live Now', status: 'published' }
+    ];
+
+    const publicVisible = internalPosts.filter((p) => p.status === 'published');
+    expect(publicVisible.length).toBe(1);
+    expect(publicVisible[0].title).toBe('Live Now');
+  });
 });

@@ -139,7 +139,7 @@ export async function savePost(
 
 export async function updatePostStatus(
   id: string,
-  newStatus: 'draft' | 'review' | 'published' | 'archived'
+  newStatus: 'draft' | 'review' | 'in_review' | 'approved' | 'published' | 'archived'
 ): Promise<{ data: BlogPost | null; error: Error | null }> {
   if (!isSupabaseConfigured) {
     return { data: null, error: new Error('Supabase is not configured.') };
@@ -167,11 +167,13 @@ export async function updatePostStatus(
     const actionKey =
       newStatus === 'published'
         ? 'blog.publish'
+        : newStatus === 'approved'
+        ? 'blog.approve'
         : newStatus === 'archived'
         ? 'blog.archive'
-        : newStatus === 'review'
+        : newStatus === 'review' || newStatus === 'in_review'
         ? 'blog.submit_review'
-        : 'blog.unpublish';
+        : 'blog.revisions_requested';
 
     await recordAuditLog(actionKey, 'blog_posts', id, { newStatus, title: data.title });
   }

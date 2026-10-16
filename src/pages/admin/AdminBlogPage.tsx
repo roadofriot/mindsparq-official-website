@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { marked } from 'marked';
 import { getAllPosts, savePost, deletePost, updatePostStatus } from '../../services/blogService';
 import { BlogPost, ContentVersion } from '../../types/database';
 import {
@@ -23,7 +24,10 @@ import {
   Loader2,
   Eye,
   History,
-  RotateCcw
+  RotateCcw,
+  Columns,
+  Send,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -48,6 +52,7 @@ export const AdminBlogPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingInline, setUploadingInline] = useState(false);
   const [mediaNotice, setMediaNotice] = useState<string | null>(null);
+  const [showSplitPreview, setShowSplitPreview] = useState(false);
 
   // Revision History State
   const [historyPost, setHistoryPost] = useState<BlogPost | null>(null);
@@ -56,6 +61,16 @@ export const AdminBlogPage: React.FC = () => {
   const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
 
   const canPublish = isSuperAdmin || isOwner || isAdmin || hasPermission('content.publish');
+
+  // Real-time markdown parser for split preview
+  const parsedMarkdownHtml = useMemo(() => {
+    if (!editingPost?.content) return '';
+    try {
+      return marked.parse(editingPost.content, { breaks: true, gfm: true }) as string;
+    } catch {
+      return '<p>Error rendering markdown preview</p>';
+    }
+  }, [editingPost?.content]);
 
 
   const handleUploadInlineImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,7 +168,10 @@ export const AdminBlogPage: React.FC = () => {
     }
   };
 
-  const handleQuickStatus = async (post: BlogPost, newStatus: 'draft' | 'review' | 'published' | 'archived') => {
+  const handleQuickStatus = async (
+    post: BlogPost,
+    newStatus: 'draft' | 'review' | 'in_review' | 'approved' | 'published' | 'archived'
+  ) => {
     if (newStatus === 'published' && !canPublish) {
       showNotification('Permission denied: Administrative authorization is required to publish articles.', 'error');
       return;
@@ -271,7 +289,8 @@ export const AdminBlogPage: React.FC = () => {
   // Metrics
   const totalCount = posts.length;
   const publishedCount = posts.filter((p) => p.status === 'published').length;
-  const reviewCount = posts.filter((p) => p.status === 'review').length;
+  const reviewCount = posts.filter((p) => p.status === 'review' || p.status === 'in_review').length;
+  const approvedCount = posts.filter((p) => p.status === 'approved').length;
   const draftCount = posts.filter((p) => p.status === 'draft').length;
   const archivedCount = posts.filter((p) => p.status === 'archived').length;
 
@@ -287,6 +306,10 @@ export const AdminBlogPage: React.FC = () => {
         ? true
         : statusFilter === 'My Posts'
         ? p.author_id === user?.id
+        : statusFilter === 'In Review' || statusFilter === 'review'
+        ? p.status === 'review' || p.status === 'in_review'
+        : statusFilter === 'Approved'
+        ? p.status === 'approved'
         : p.status === statusFilter.toLowerCase();
 
     const matchesCategory =
@@ -301,7 +324,10 @@ export const AdminBlogPage: React.FC = () => {
     switch (status) {
       case 'published':
         return { bg: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', label: 'Published' };
+      case 'approved':
+        return { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981', label: 'Approved' };
       case 'review':
+      case 'in_review':
         return { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', label: 'In Review' };
       case 'archived':
         return { bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', label: 'Archived' };
@@ -387,6 +413,10 @@ export const AdminBlogPage: React.FC = () => {
           <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b', marginTop: '4px' }}>{reviewCount}</div>
         </div>
         <div className="card" style={{ padding: '16px 20px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981', textTransform: 'uppercase' }}>Approved</span>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>{approvedCount}</div>
+        </div>
+        <div className="card" style={{ padding: '16px 20px', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#38bdf8', textTransform: 'uppercase' }}>Drafts</span>
           <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#38bdf8', marginTop: '4px' }}>{draftCount}</div>
         </div>
@@ -466,7 +496,7 @@ export const AdminBlogPage: React.FC = () => {
 
         {/* Status Pills */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-          {['All', 'My Posts', 'Published', 'Review', 'Draft', 'Archived'].map((status) => {
+          {['All', 'My Posts', 'Published', 'In Review', 'Approved', 'Draft', 'Archived'].map((status) => {
             const isSelected = statusFilter.toLowerCase() === status.toLowerCase();
             return (
               <button
@@ -486,7 +516,7 @@ export const AdminBlogPage: React.FC = () => {
                   transition: 'all var(--transition-fast)'
                 }}
               >
-                {status === 'Review' ? 'In Review' : status}
+                {status}
               </button>
             );
           })}
@@ -715,8 +745,8 @@ export const AdminBlogPage: React.FC = () => {
                           {post.status === 'draft' && (
                             <button
                               type="button"
-                              onClick={() => handleQuickStatus(post, 'review')}
-                              title="Submit for review"
+                              onClick={() => handleQuickStatus(post, 'in_review')}
+                              title="Submit article to editorial queue for review"
                               style={{
                                 padding: '4px 8px',
                                 borderRadius: 'var(--radius-sm)',
@@ -724,35 +754,86 @@ export const AdminBlogPage: React.FC = () => {
                                 border: '1px solid rgba(245, 158, 11, 0.3)',
                                 color: '#f59e0b',
                                 fontSize: '0.75rem',
-                                fontWeight: 500,
-                                cursor: 'pointer'
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
                               }}
                             >
-                              Submit
+                              <Send size={12} />
+                              <span>Submit</span>
                             </button>
                           )}
 
-                          {canPublish && post.status !== 'published' && (
+                          {post.status === 'in_review' && canPublish && (
+                            <div style={{ display: 'inline-flex', gap: '4px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStatus(post, 'approved')}
+                                title="Approve article for publication"
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                                  color: '#10b981',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <Check size={12} />
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStatus(post, 'draft')}
+                                title="Request revisions - return to draft"
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                                  color: '#ef4444',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          )}
+
+                          {post.status === 'approved' && canPublish && (
                             <button
                               type="button"
                               onClick={() => handleQuickStatus(post, 'published')}
-                              title="Publish article immediately"
+                              title="Publish approved article live immediately"
                               style={{
                                 padding: '4px 8px',
                                 borderRadius: 'var(--radius-sm)',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                border: '1px solid rgba(34, 197, 94, 0.3)',
+                                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                                border: '1px solid rgba(34, 197, 94, 0.4)',
                                 color: '#22c55e',
                                 fontSize: '0.75rem',
-                                fontWeight: 500,
-                                cursor: 'pointer'
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
                               }}
                             >
-                              Publish
+                              <CheckCircle2 size={12} />
+                              <span>Publish</span>
                             </button>
                           )}
 
-                          {canPublish && post.status === 'published' && (
+                          {post.status === 'published' && canPublish && (
                             <button
                               type="button"
                               onClick={() => handleQuickStatus(post, 'draft')}
@@ -838,14 +919,15 @@ export const AdminBlogPage: React.FC = () => {
             className="card"
             style={{
               width: '100%',
-              maxWidth: '820px',
+              maxWidth: showSplitPreview ? '1180px' : '820px',
               maxHeight: '90vh',
               overflowY: 'auto',
               backgroundColor: 'var(--color-surface)',
               borderRadius: 'var(--radius-xl)',
               padding: '28px',
               border: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-2xl)'
+              boxShadow: 'var(--shadow-2xl)',
+              transition: 'max-width 0.2s ease'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -1007,7 +1089,8 @@ export const AdminBlogPage: React.FC = () => {
                     }}
                   >
                     <option value="draft">Draft (Private to author)</option>
-                    <option value="review">Submit for Review</option>
+                    <option value="in_review">In Review (Submit for editorial approval)</option>
+                    {canPublish && <option value="approved">Approved (Editorial Sign-off)</option>}
                     {canPublish && <option value="published">Published (Publicly live)</option>}
                     {canPublish && <option value="archived">Archived (Unlisted)</option>}
                   </select>
@@ -1074,7 +1157,7 @@ export const AdminBlogPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Main Content with Media Toolbar */}
+              {/* Main Content with Media Toolbar & Split Preview */}
               <div style={{ marginBottom: '18px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
                   <label style={{ fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
@@ -1082,7 +1165,31 @@ export const AdminBlogPage: React.FC = () => {
                   </label>
 
                   {/* Formatting Toolbar */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    {/* Split Live Preview Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setShowSplitPreview(!showSplitPreview)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: showSplitPreview ? 'rgba(56, 189, 248, 0.2)' : 'var(--color-surface-elevated)',
+                        border: `1px solid ${showSplitPreview ? '#38bdf8' : 'var(--color-border)'}`,
+                        color: showSplitPreview ? '#38bdf8' : 'var(--color-text-secondary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="Toggle side-by-side Markdown live preview"
+                    >
+                      <Columns size={13} />
+                      <span>{showSplitPreview ? 'Hide Preview' : 'Split Live Preview'}</span>
+                    </button>
+
                     {/* Inline Image Upload */}
                     <label
                       style={{
@@ -1159,25 +1266,69 @@ export const AdminBlogPage: React.FC = () => {
                   </div>
                 </div>
 
-                <textarea
-                  required
-                  rows={8}
-                  placeholder="Write the full article content here. You can use the buttons above to insert images and YouTube videos..."
-                  value={editingPost.content || ''}
-                  onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                <div
                   style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--color-surface-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
-                    fontSize: '0.875rem',
-                    fontFamily: 'monospace',
-                    lineHeight: 1.6,
-                    resize: 'vertical'
+                    display: 'grid',
+                    gridTemplateColumns: showSplitPreview ? '1fr 1fr' : '1fr',
+                    gap: '12px'
                   }}
-                />
+                >
+                  <textarea
+                    required
+                    rows={showSplitPreview ? 14 : 8}
+                    placeholder="Write the full article content here. You can use markdown syntax (# headings, **bold**, lists, etc.)..."
+                    value={editingPost.content || ''}
+                    onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                    style={{
+                      width: '100%',
+                      minHeight: showSplitPreview ? '360px' : '180px',
+                      padding: '12px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--color-surface-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: '0.875rem',
+                      fontFamily: 'monospace',
+                      lineHeight: 1.6,
+                      resize: 'vertical'
+                    }}
+                  />
+
+                  {showSplitPreview && (
+                    <div
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-surface-elevated)',
+                        padding: '14px 18px',
+                        overflowY: 'auto',
+                        maxHeight: '420px',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.6,
+                        color: 'var(--color-text-primary)'
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.6875rem',
+                          fontWeight: 700,
+                          color: '#38bdf8',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          marginBottom: '10px',
+                          borderBottom: '1px solid var(--color-border)',
+                          paddingBottom: '4px'
+                        }}
+                      >
+                        Live Markdown Preview
+                      </div>
+                      <div
+                        className="prose-content"
+                        dangerouslySetInnerHTML={{ __html: parsedMarkdownHtml }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Cover Image Section */}
@@ -1265,7 +1416,7 @@ export const AdminBlogPage: React.FC = () => {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
@@ -1281,6 +1432,68 @@ export const AdminBlogPage: React.FC = () => {
                   >
                     Cancel
                   </button>
+
+                  {/* Quick editorial submission button */}
+                  {editingPost.status === 'draft' && (
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={(e) => {
+                        setEditingPost({ ...editingPost, status: 'in_review' });
+                        setTimeout(() => {
+                          const form = (e.target as HTMLElement).closest('form');
+                          form?.requestSubmit();
+                        }, 50);
+                      }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '10px 18px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        color: '#f59e0b',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        cursor: saving ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      <Send size={14} />
+                      <span>Submit for Review</span>
+                    </button>
+                  )}
+
+                  {canPublish && editingPost.status === 'in_review' && (
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={(e) => {
+                        setEditingPost({ ...editingPost, status: 'approved' });
+                        setTimeout(() => {
+                          const form = (e.target as HTMLElement).closest('form');
+                          form?.requestSubmit();
+                        }, 50);
+                      }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '10px 18px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                        color: '#10b981',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        cursor: saving ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      <Check size={14} />
+                      <span>Approve Article</span>
+                    </button>
+                  )}
+
                   <button
                     type="submit"
                     disabled={saving}

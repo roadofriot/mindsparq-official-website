@@ -150,7 +150,7 @@ export interface BlogPost {
   author_id?: string | null;
   author_name: string;
   category: string;
-  status: 'draft' | 'review' | 'published' | 'archived';
+  status: 'draft' | 'review' | 'in_review' | 'approved' | 'published' | 'archived';
   published_at: string | null;
   created_by?: string | null;
   updated_by?: string | null;

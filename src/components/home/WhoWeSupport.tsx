@@ -93,12 +93,12 @@ export const WhoWeSupport: React.FC = () => {
 
               <div style={{ padding: 'var(--space-5)', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
-                  {group.title}
+                  {language === 'ne' && (group as any).titleNepali ? (group as any).titleNepali : group.title}
                 </h3>
                 <ExpandableText
-                  text={group.description}
-                  maxLength={70}
-                  style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}
+                  text={language === 'ne' && (group as any).descriptionNepali ? (group as any).descriptionNepali : group.description}
+                  maxLength={85}
+                  style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
                 />
               </div>
             </div>

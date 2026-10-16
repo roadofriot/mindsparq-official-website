@@ -107,7 +107,7 @@ export const FocusStrip: React.FC = () => {
                     letterSpacing: '0.04em'
                   }}
                 >
-                  {area.badge}
+                  {language === 'ne' && (area as any).badgeNepali ? (area as any).badgeNepali : area.badge}
                 </span>
                 <span
                   style={{
@@ -129,12 +129,12 @@ export const FocusStrip: React.FC = () => {
               {/* Text Content with Truncation */}
               <div style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                 <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
-                  {area.title}
+                  {language === 'ne' && (area as any).titleNepali ? (area as any).titleNepali : area.title}
                 </h3>
                 <ExpandableText
-                  text={area.description}
-                  maxLength={75}
-                  style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}
+                  text={language === 'ne' && (area as any).descriptionNepali ? (area as any).descriptionNepali : area.description}
+                  maxLength={85}
+                  style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}
                 />
               </div>
             </div>

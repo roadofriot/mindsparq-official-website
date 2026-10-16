@@ -55,7 +55,7 @@ export const Hero: React.FC = () => {
 
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 6000);
+    }, 5000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -129,144 +129,169 @@ export const Hero: React.FC = () => {
               borderRadius: 'var(--radius-2xl)',
               overflow: 'hidden',
               boxShadow: 'var(--shadow-2xl)',
-              backgroundColor: '#0a0f1d',
+              backgroundColor: '#070b14',
               border: '1px solid var(--color-border)',
-              minHeight: 'clamp(460px, 50vh, 580px)',
+              minHeight: 'clamp(360px, 42vw, 520px)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center'
+              justifyContent: 'flex-end'
             }}
           >
-            {/* Slide Image Background */}
-            <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-              <picture>
-                {activeSlide.mobile_image_url && (
-                  <source media="(max-width: 768px)" srcSet={activeSlide.mobile_image_url} />
-                )}
-                <img
-                  src={activeSlide.image_url}
-                  alt={activeSlide.alt_text}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-                />
-              </picture>
-
-              {/* Directional Scrim: Dark on left for text readability, clear on right for image visibility */}
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(90deg, rgba(8, 12, 22, 0.84) 0%, rgba(8, 12, 22, 0.55) 45%, rgba(8, 12, 22, 0.15) 100%)'
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to top, rgba(8, 12, 22, 0.75) 0%, transparent 40%)'
-                }}
-              />
-            </div>
-
-            {/* Slide Content Frosted Glass Card (Protects text from color fade & banner clash) */}
-            <div
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                margin: 'clamp(20px, 3.5vw, 40px)',
-                maxWidth: '620px',
-                padding: 'clamp(20px, 2.8vw, 32px)',
-                borderRadius: 'var(--radius-2xl)',
-                backgroundColor: 'rgba(10, 15, 30, 0.85)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.16)',
-                boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.7)',
-                color: '#ffffff'
-              }}
-            >
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  padding: '4px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'rgba(14, 165, 233, 0.2)',
-                  border: '1px solid rgba(56, 189, 248, 0.5)',
-                  color: '#38bdf8',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  marginBottom: 'var(--space-3)'
-                }}
-              >
-                <Sparkles size={13} />
-                <span>Featured Announcement</span>
-              </div>
-
-              <h1
-                style={{
-                  fontSize: 'clamp(1.4rem, 2.8vw, 2.15rem)',
-                  fontWeight: 800,
-                  lineHeight: 1.25,
-                  marginBottom: 'var(--space-3)',
-                  color: '#ffffff',
-                  letterSpacing: '-0.02em',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.5)'
-                }}
-              >
-                {activeSlide.title}
-              </h1>
-
-              {activeSlide.subtitle && (
-                <p
+            {/* All Slide Images with Smooth Cross-Fade Transition */}
+            {slides.map((slide, idx) => {
+              const isCurrent = idx === currentSlideIndex;
+              return (
+                <div
+                  key={slide.id}
+                  aria-hidden={!isCurrent}
                   style={{
-                    fontSize: 'clamp(0.875rem, 1.2vw, 1rem)',
-                    lineHeight: 1.6,
-                    color: '#e2e8f0',
-                    marginBottom: 'var(--space-5)',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.4)'
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: isCurrent ? 1 : 0,
+                    opacity: isCurrent ? 1 : 0,
+                    visibility: isCurrent ? 'visible' : 'hidden',
+                    transition: 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: isCurrent ? 'auto' : 'none'
                   }}
                 >
-                  {activeSlide.subtitle}
-                </p>
-              )}
+                  <picture>
+                    {slide.mobile_image_url && (
+                      <source media="(max-width: 768px)" srcSet={slide.mobile_image_url} />
+                    )}
+                    <img
+                      src={slide.image_url}
+                      alt={slide.alt_text}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center'
+                      }}
+                    />
+                  </picture>
+                </div>
+              );
+            })}
 
-              {activeSlide.cta_label && activeSlide.cta_url && (
-                <Link
-                  to={activeSlide.cta_url}
-                  className="btn btn-primary"
+            {/* Subtle Bottom Vignette (Leaves 75%+ of banner completely clear & vivid) */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to top, rgba(5, 8, 16, 0.72) 0%, rgba(5, 8, 16, 0.22) 28%, transparent 55%)',
+                pointerEvents: 'none',
+                zIndex: 2
+              }}
+            />
+
+            {/* Compact Shady Translucent Caption Card (Leaves logo & flyer artwork visible) */}
+            {activeSlide.title && activeSlide.subtitle !== '__HIDE_TEXT__' && (
+              <div
+                style={{
+                  position: 'relative',
+                  zIndex: 3,
+                  margin: '0 clamp(16px, 2.5vw, 32px) var(--space-4)',
+                  maxWidth: 'min(480px, 90%)',
+                  padding: '12px 18px',
+                  borderRadius: '16px',
+                  backgroundColor: 'rgba(8, 14, 26, 0.52)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.16)',
+                  boxShadow: '0 10px 30px -8px rgba(0, 0, 0, 0.5)',
+                  color: '#ffffff',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
+                <div
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 'var(--space-2)',
-                    padding: '10px 22px',
-                    fontSize: '0.9375rem',
+                    gap: '6px',
+                    padding: '2px 8px',
+                    borderRadius: '9999px',
+                    backgroundColor: 'rgba(14, 165, 233, 0.22)',
+                    border: '1px solid rgba(56, 189, 248, 0.45)',
+                    color: '#38bdf8',
+                    fontSize: '0.6875rem',
                     fontWeight: 700,
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.45)'
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    marginBottom: '6px'
                   }}
                 >
-                  <span>{activeSlide.cta_label}</span>
-                  <ArrowRight size={16} />
-                </Link>
-              )}
-            </div>
+                  <Sparkles size={11} />
+                  <span>Featured Announcement</span>
+                </div>
+
+                <h2
+                  style={{
+                    fontSize: 'clamp(0.95rem, 1.8vw, 1.25rem)',
+                    fontWeight: 700,
+                    lineHeight: 1.3,
+                    marginBottom: activeSlide.subtitle ? '4px' : '0',
+                    color: '#ffffff',
+                    letterSpacing: '-0.01em',
+                    textShadow: '0 2px 6px rgba(0,0,0,0.85)'
+                  }}
+                >
+                  {activeSlide.title}
+                </h2>
+
+                {activeSlide.subtitle && (
+                  <p
+                    style={{
+                      fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
+                      lineHeight: 1.45,
+                      color: '#cbd5e1',
+                      marginBottom: activeSlide.cta_label && activeSlide.cta_url ? '10px' : '0',
+                      textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {activeSlide.subtitle}
+                  </p>
+                )}
+
+                {activeSlide.cta_label && activeSlide.cta_url && (
+                  <Link
+                    to={activeSlide.cta_url}
+                    className="btn btn-primary"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 16px',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      borderRadius: '9999px',
+                      boxShadow: '0 3px 12px rgba(37, 99, 235, 0.4)'
+                    }}
+                  >
+                    <span>{activeSlide.cta_label}</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                )}
+              </div>
+            )}
 
             {/* Carousel Controls (Previous / Next / Pause / Indicators) */}
             <div
               style={{
                 position: 'relative',
-                zIndex: 2,
+                zIndex: 3,
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px clamp(20px, 3vw, 36px)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.12)',
-                backgroundColor: 'rgba(8, 12, 22, 0.65)',
-                backdropFilter: 'blur(10px)',
-                marginTop: 'auto'
+                padding: '10px clamp(16px, 2.5vw, 32px)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(6, 10, 18, 0.55)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)'
               }}
             >
               {/* Dots */}
@@ -280,7 +305,7 @@ export const Hero: React.FC = () => {
                       width: idx === currentSlideIndex ? '28px' : '8px',
                       height: '8px',
                       borderRadius: 'var(--radius-full)',
-                      backgroundColor: idx === currentSlideIndex ? '#ffffff' : 'rgba(255, 255, 255, 0.4)',
+                      backgroundColor: idx === currentSlideIndex ? '#38bdf8' : 'rgba(255, 255, 255, 0.4)',
                       border: 'none',
                       cursor: 'pointer',
                       transition: 'all var(--transition-fast)'
@@ -289,7 +314,7 @@ export const Hero: React.FC = () => {
                 ))}
               </div>
 
-              {/* Prev / Next Buttons */}
+              {/* Prev / Next / Pause Buttons */}
               <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
                 <button
                   type="button"
@@ -299,54 +324,57 @@ export const Hero: React.FC = () => {
                     width: '32px',
                     height: '32px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.18)',
                     color: '#ffffff',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
                   }}
                 >
-                  {isPaused ? <Play size={14} /> : <Pause size={14} />}
+                  {isPaused ? <Play size={13} /> : <Pause size={13} />}
                 </button>
                 <button
                   type="button"
                   onClick={prevSlide}
                   aria-label="Previous slide"
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '34px',
+                    height: '34px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.18)',
                     color: '#ffffff',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
                   }}
                 >
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={18} />
                 </button>
                 <button
                   type="button"
                   onClick={nextSlide}
                   aria-label="Next slide"
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '34px',
+                    height: '34px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.18)',
                     color: '#ffffff',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
                   }}
                 >
-                  <ChevronRight size={20} />
+                  <ChevronRight size={18} />
                 </button>
               </div>
             </div>

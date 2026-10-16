@@ -33,7 +33,7 @@ export const AdminCarouselPage: React.FC = () => {
       cta_label: 'Explore Programs',
       cta_url: '/programs',
       sort_order: items.length + 1,
-      status: 'draft'
+      status: 'published'
     });
     setSaveError(null);
     setIsModalOpen(true);
@@ -67,14 +67,20 @@ export const AdminCarouselPage: React.FC = () => {
       setSaveError('Desktop image URL is required.');
       return;
     }
+    // Auto-populate alt text if empty so users are not blocked
     if (!editingItem.alt_text?.trim()) {
-      setSaveError('Descriptive alt text is required for accessibility.');
-      return;
+      editingItem.alt_text = editingItem.title || 'MindSparQ Hero Carousel Banner';
+    }
+
+    // If saving the fallback slide, treat it as a new insert in the database
+    const itemToSave = { ...editingItem };
+    if (itemToSave.id === 'mindsparq-innovation-banner-slide') {
+      delete itemToSave.id;
     }
 
     setSaving(true);
     setSaveError(null);
-    const { data, error } = await saveCarouselItem(editingItem);
+    const { data, error } = await saveCarouselItem(itemToSave);
 
     if (error) {
       setSaveError(error.message);
@@ -274,12 +280,25 @@ export const AdminCarouselPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={editingItem.subtitle || ''}
+                  value={editingItem.subtitle === '__HIDE_TEXT__' ? '' : (editingItem.subtitle || '')}
                   onChange={(e) => setEditingItem({ ...editingItem, subtitle: e.target.value })}
                   placeholder="e.g. Next-generation cognitive skill development in Nepal"
                   className="input-field"
                   style={{ width: '100%' }}
                 />
+              </div>
+
+              <div style={{ marginBottom: 'var(--space-4)', padding: '10px 14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface-hover)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <input
+                  type="checkbox"
+                  id="hideTextOverlay"
+                  checked={editingItem.subtitle === '__HIDE_TEXT__'}
+                  onChange={(e) => setEditingItem({ ...editingItem, subtitle: e.target.checked ? '__HIDE_TEXT__' : '' })}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                <label htmlFor="hideTextOverlay" style={{ fontSize: 'var(--font-xs)', cursor: 'pointer', margin: 0, color: 'var(--color-text)' }}>
+                  <strong>Hide text overlay card on this slide</strong> (Recommended if your uploaded banner image already includes text, flyer typography, or phone numbers)
+                </label>
               </div>
 
               <ImageUploadField

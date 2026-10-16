@@ -6,8 +6,25 @@ import { recordAuditLog } from './auditService';
 // CAROUSEL MANAGEMENT
 // ==========================================
 
+export const SLIDE_2_FALLBACK: CarouselItem = {
+  id: 'mindsparq-innovation-banner-slide',
+  title: 'MindSparQ Education & Technology',
+  subtitle: 'Empowering Minds, Sparking Innovation in Coding, Robotics, AI & Drone Tech.',
+  image_url: 'https://bhdcvdddngwtxdbhfeeg.supabase.co/storage/v1/object/public/public-media/public/2026/5af5bd64-1d5d-4a87-8579-422889ea2644_WhatsApp_Image_2026-09-22_at_4.jpeg',
+  mobile_image_url: null,
+  alt_text: 'MindSparQ Education & Technology - Empowering Minds, Sparking Innovation in AI, Coding, Robotics & Drone Technology',
+  cta_label: 'Explore Programs',
+  cta_url: '/programs',
+  sort_order: 2,
+  status: 'published',
+  starts_at: null,
+  ends_at: null,
+  created_at: '2026-10-16T01:49:30.884Z',
+  updated_at: '2026-10-16T01:49:30.884Z'
+};
+
 export async function getPublishedCarouselItems(): Promise<CarouselItem[]> {
-  if (!isSupabaseConfigured) return [];
+  if (!isSupabaseConfigured) return [SLIDE_2_FALLBACK];
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
@@ -18,19 +35,27 @@ export async function getPublishedCarouselItems(): Promise<CarouselItem[]> {
 
   if (error) {
     console.warn('[MindSparQ Content] Error fetching carousel slides:', error.message);
-    return [];
+    return [SLIDE_2_FALLBACK];
   }
 
   // Filter starts_at / ends_at window client-side as well
-  return ((data as CarouselItem[]) || []).filter((item) => {
+  const published = ((data as CarouselItem[]) || []).filter((item) => {
     if (item.starts_at && item.starts_at > now) return false;
     if (item.ends_at && item.ends_at < now) return false;
     return true;
   });
+
+  // Ensure both uploaded banners are active and cycling on the homepage
+  const hasSlide2 = published.some((p) => p.image_url?.includes('5af5bd64'));
+  if (!hasSlide2 && published.length > 0) {
+    published.push(SLIDE_2_FALLBACK);
+  }
+
+  return published;
 }
 
 export async function getAllCarouselItems(): Promise<CarouselItem[]> {
-  if (!isSupabaseConfigured) return [];
+  if (!isSupabaseConfigured) return [SLIDE_2_FALLBACK];
 
   const { data, error } = await supabase
     .from('carousel_items')
@@ -39,10 +64,16 @@ export async function getAllCarouselItems(): Promise<CarouselItem[]> {
 
   if (error) {
     console.error('[MindSparQ Content] Error fetching all carousel slides:', error);
-    return [];
+    return [SLIDE_2_FALLBACK];
   }
 
-  return (data as CarouselItem[]) || [];
+  const items = (data as CarouselItem[]) || [];
+  const hasSlide2 = items.some((p) => p.image_url?.includes('5af5bd64'));
+  if (!hasSlide2 && items.length > 0) {
+    items.push(SLIDE_2_FALLBACK);
+  }
+
+  return items;
 }
 
 export async function saveCarouselItem(

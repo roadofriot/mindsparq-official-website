@@ -449,3 +449,75 @@ export async function getUserBookmarks(): Promise<Bookmark[]> {
 
   return (data as Bookmark[]) || [];
 }
+
+export interface EnrichedBookmark {
+  bookmark: Bookmark;
+  title: string;
+  slug: string;
+  categoryOrLevel: string;
+  url: string;
+  summary?: string;
+}
+
+export async function getEnrichedUserBookmarks(): Promise<EnrichedBookmark[]> {
+  const bookmarks = await getUserBookmarks();
+  if (!bookmarks || bookmarks.length === 0) return [];
+
+  const postIds = bookmarks.filter((b) => b.target_type === 'blog_post').map((b) => b.target_id);
+  const courseIds = bookmarks.filter((b) => b.target_type === 'course').map((b) => b.target_id);
+
+  const postsMap = new Map<string, { title: string; slug: string; category?: string; summary?: string }>();
+  const coursesMap = new Map<string, { title: string; slug: string; level?: string; summary?: string }>();
+
+  if (postIds.length > 0 && isSupabaseConfigured) {
+    try {
+      const { data: posts } = await supabase
+        .from('blog_posts')
+        .select('id, title, slug, category, summary')
+        .in('id', postIds);
+      if (posts) {
+        posts.forEach((p) => postsMap.set(p.id, p));
+      }
+    } catch (e) {
+      console.warn('[MindSparQ Blog] Could not enrich blog bookmarks:', e);
+    }
+  }
+
+  if (courseIds.length > 0 && isSupabaseConfigured) {
+    try {
+      const { data: courses } = await supabase
+        .from('courses')
+        .select('id, title, slug, level, summary')
+        .in('id', courseIds);
+      if (courses) {
+        courses.forEach((c) => coursesMap.set(c.id, c));
+      }
+    } catch (e) {
+      console.warn('[MindSparQ Blog] Could not enrich course bookmarks:', e);
+    }
+  }
+
+  return bookmarks.map((b) => {
+    if (b.target_type === 'blog_post') {
+      const p = postsMap.get(b.target_id);
+      return {
+        bookmark: b,
+        title: p?.title || 'Saved Blog Article',
+        slug: p?.slug || '',
+        categoryOrLevel: p?.category || 'Article',
+        url: p?.slug ? `/blog/${p.slug}` : '/blog',
+        summary: p?.summary
+      };
+    } else {
+      const c = coursesMap.get(b.target_id);
+      return {
+        bookmark: b,
+        title: c?.title || 'Saved Course',
+        slug: c?.slug || '',
+        categoryOrLevel: c?.level || 'Course',
+        url: c?.slug ? `/courses/${c.slug}` : '/courses',
+        summary: c?.summary
+      };
+    }
+  });
+}

@@ -416,3 +416,82 @@ export async function updateLessonProgress(
 
   return { error };
 }
+
+export interface EnrolledCourseProgress {
+  enrollment: Enrollment;
+  course: Course;
+  modules: CourseModule[];
+  totalLessons: number;
+  completedLessons: number;
+  progressPercent: number;
+  isCompleted: boolean;
+  nextLesson: Lesson | null;
+}
+
+/**
+ * Fetch all lesson progress checkpoints for current authenticated user
+ */
+export async function getUserLessonProgress(): Promise<LessonProgress[]> {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('lesson_progress')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('[MindSparQ Courses] Error fetching user lesson progress:', error);
+      return [];
+    }
+
+    return (data as LessonProgress[]) || [];
+  } catch (err) {
+    console.warn('[MindSparQ Courses] Offline fallback for lesson progress:', err);
+    return [];
+  }
+}
+
+/**
+ * Calculate comprehensive progress metrics across all enrolled courses
+ */
+export async function getEnrolledCoursesWithProgress(): Promise<EnrolledCourseProgress[]> {
+  const enrollments = await getUserEnrollments();
+  if (!enrollments || enrollments.length === 0) return [];
+
+  const allProgress = await getUserLessonProgress();
+  const completedLessonIds = new Set(
+    allProgress.filter((p) => p.status === 'completed').map((p) => p.lesson_id)
+  );
+
+  const results: EnrolledCourseProgress[] = [];
+
+  for (const enr of enrollments) {
+    if (!enr.course) continue;
+    const modules = await getCourseModulesWithLessons(enr.course.id);
+    const allLessons = modules.flatMap((m) => m.lessons || []);
+    const totalLessons = allLessons.length;
+    const completedCount = allLessons.filter((l) => completedLessonIds.has(l.id)).length;
+    const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+    const isCompleted = totalLessons > 0 && completedCount === totalLessons;
+
+    // Find the next uncompleted lesson, or fall back to first lesson
+    const nextLesson = allLessons.find((l) => !completedLessonIds.has(l.id)) || (allLessons.length > 0 ? allLessons[0] : null);
+
+    results.push({
+      enrollment: enr,
+      course: enr.course,
+      modules,
+      totalLessons,
+      completedLessons: completedCount,
+      progressPercent,
+      isCompleted,
+      nextLesson
+    });
+  }
+
+  return results;
+}

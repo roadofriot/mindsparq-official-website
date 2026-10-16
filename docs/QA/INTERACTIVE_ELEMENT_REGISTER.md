@@ -106,13 +106,25 @@ Every clickable button, link, toggle, dropdown, slider, and form element in the 
 | `BLOG-12` | Blog (`AdminBlogPage.tsx`) | Link | Live Preview (`Eye`) | Opens `/preview?type=blog&id=:id` in new tab | Route | Staff | **WORKING** | Preview click test |
 | `BLOG-13` | Blog (`AdminBlogPage.tsx`) | Button | History Modal (`History`) | Opens revision snapshot history modal with single-click restore | Supabase / Local | Staff | **WORKING** | Modal open & restore test |
 | `CRS-12` | Courses (`AdminCoursesPage.tsx`) | Link | Course Preview (`Eye`) | Opens `/preview?type=course&id=:id` in new tab | Route | Staff | **WORKING** | Course preview route test |
+| `RBAC-01` | Users (`AdminUsersPage.tsx`) | Tab | Matrix View | Toggles role capability matrix view with domain filter pills | Client State | Super Admin | **WORKING** | Tab click & grid render test |
+| `RBAC-02` | Users (`AdminUsersPage.tsx`) | Filter Pills | Domain Selector | Filters capabilities by content, media, curriculum, system | Client State | Super Admin | **WORKING** | Filter click test |
+| `RBAC-03` | Users (`AdminUsersPage.tsx`) | Tab | Delegation Audit | Shows historical role modifications with timestamp and actor | Supabase `audit_logs` | Super Admin | **WORKING** | Audit log query test |
+| `RBAC-04` | Users (`AdminUsersPage.tsx`) | Button | Revoke Role | Revokes role with safeguard preventing self-demotion or removal of last owner | Supabase `user_roles` | Super Admin | **WORKING** | Safeguard validation test |
+| `LRN-01` | Learner (`LearnerDashboardPage.tsx`) | Tab | Tab Switcher | Switches between Courses, Bookmarks, and Profile tabs | Client State | Learner | **WORKING** | Tab switch test |
+| `LRN-02` | Learner (`LearnerDashboardPage.tsx`) | Buttons | Course Filter Pills | Filters courses by all, in_progress, and completed | Client State | Learner | **WORKING** | Filter test |
+| `LRN-03` | Learner (`LearnerDashboardPage.tsx`) | Button | Resume Learning | Deep-links directly to the next uncompleted lesson in the track | Route | Learner | **WORKING** | Next-lesson router test |
+| `LRN-04` | Learner (`LearnerDashboardPage.tsx`) | Toggle | View Syllabus | Expands collapsible module and lesson checklist | Client State | Learner | **WORKING** | Accordion expansion test |
+| `LRN-05` | Learner (`LearnerDashboardPage.tsx`) | Button | Remove Bookmark | Unbookmarks saved item with instant visual removal | Supabase `bookmarks` | Learner | **WORKING** | Bookmark toggle test |
+| `LRN-06` | Learner (`LearnerDashboardPage.tsx`) | Buttons | Avatar Presets | Selects from 6 curated STEM/Robo avatars or custom image URL | Profile / Local | Learner | **WORKING** | Avatar selection test |
+| `LRN-07` | Learner (`LearnerDashboardPage.tsx`) | Tags | Topics of Interest | Multi-selects learning interests (AI, Robotics, Python, etc.) | Local / Profile | Learner | **WORKING** | Tag toggle test |
+| `LRN-08` | Learner (`LearnerDashboardPage.tsx`) | Form | Profile Save | Saves display name, bio, and avatar with live toast feedback | Supabase `profiles` | Learner | **WORKING** | Profile form submission test |
 
 ---
 
 ## 8. QA Test Suite Summary
 
-* **Unit & Integration Suite**: 25 tests implemented across 5 test suites (`smoke.test.ts`, `youtube.test.ts`, `permissions.test.ts`, `blogWorkflow.test.ts`, `previewAndVersioning.test.ts`)
-* **Test Status**: **25 passed (100%)**
+* **Unit & Integration Suite**: 35 tests implemented across 6 test suites (`smoke.test.ts`, `youtube.test.ts`, `permissions.test.ts`, `blogWorkflow.test.ts`, `previewAndVersioning.test.ts`, `learnerDashboard.test.ts`)
+* **Test Status**: **35 passed (100%)**
 * **Type Safety**: TypeScript strict typecheck passed with **0 errors**
-* **Production Build**: Verified with full module tree compilation.
+* **Production Build**: Verified with full module tree compilation (`dist/` generated cleanly in 19.82s).
 

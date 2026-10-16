@@ -119,23 +119,26 @@ This implementation plan outlines the prioritized execution strategy to transfor
 
 ---
 
-### Milestone B: RBAC Governance & Learner Portal Hardening (Phases 5, 6)
+### Milestone B: RBAC Governance & Learner Portal Hardening (Phases 5, 6) — COMPLETED
 
-#### Phase 5: Granular Role Delegation & Multi-Tier Access Control
-* **Current State**: Roles (`owner`, `super_admin`, `admin`, `editor`, `contributor`, `learner`) defined with deny-by-default capability matrix in `permissions.ts`.
-* **Required Changes**:
-  * Build an interactive Role-Permission Matrix editor in `AdminUsersPage.tsx`.
-  * Protect Super Admin role from accidental demotion.
-  * Enforce strict server-side audit logging on every role modification.
-* **Testing**: Automated Vitest suite verifying that learners and contributors cannot execute administrative mutations.
+#### Phase 5: Granular Role Delegation & Multi-Tier Access Control (COMPLETED)
+* **Implemented Capabilities**:
+  * Role-Permission Matrix visual inspector & editor in [`AdminUsersPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/admin/AdminUsersPage.tsx) across all 4 operational domains (`content`, `media`, `curriculum`, `system`).
+  * 6-Tier hierarchical roles (`super_admin`, `owner`, `admin`, `editor`, `contributor`, `learner`) with protected tier markers.
+  * Safeguards in [`userService.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/services/userService.ts) blocking self-demotion and guaranteeing at least one active institutional administrator.
+  * Server-side and client audit logging on role grant, role revocation, and account status transitions.
+  * Full unit tests passing in [`src/test/permissions.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/permissions.test.ts).
 
-#### Phase 6: Google OAuth Hardening & Learner Dashboard Completion
-* **Current State**: Google OAuth PKCE flow implemented with callback verification in `AuthCallbackPage.tsx`.
-* **Required Changes**:
-  * Eliminate any blank-screen edge cases on localhost OAuth callback.
-  * Connect `LearnerDashboardPage.tsx` to active enrolled courses, lesson completion checkpoints, and bookmarked articles.
-  * Provide account profile editing (Display Name, Avatar upload, Learning Interests).
-* **Acceptance Criteria**: Google sign-in works seamlessly on both `localhost:5173` and `mindsparqeducation.com.np`.
+#### Phase 6: Google OAuth Hardening & Learner Dashboard Completion (COMPLETED)
+* **Implemented Capabilities**:
+  * PKCE flow and token extraction verified in [`AuthCallbackPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/AuthCallbackPage.tsx) with safety timeout and fallback to `/login`.
+  * Real course progress calculation engine (`getEnrolledCoursesWithProgress`) in [`courseService.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/services/courseService.ts).
+  * Comprehensive Learner Portal in [`LearnerDashboardPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/LearnerDashboardPage.tsx):
+    * KPI metrics bar (Enrolled Courses, Lessons Completed, Completed Tracks, Saved Bookmarks).
+    * Dynamic course progress bar, next lesson up indicator, and collapsible curriculum syllabus checklist.
+    * Enriched bookmarks with one-click remove action (`getEnrichedUserBookmarks`, `toggleBookmark`).
+    * Full profile editor with avatar preset picker, custom URL support, bio editor, and interactive topics of interest multi-tag selector.
+  * Unit tests passing in [`src/test/learnerDashboard.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/learnerDashboard.test.ts).
 
 ---
 

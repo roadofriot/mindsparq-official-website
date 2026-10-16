@@ -7,7 +7,13 @@ import {
   inviteStaffMember,
   UserWithRoles
 } from '../../services/userService';
-import { RoleKey } from '../../types/database';
+import { RoleKey, AuditLog } from '../../types/database';
+import { getAuditLogs } from '../../services/auditService';
+import {
+  ROLE_PERMISSIONS,
+  CAPABILITY_DEFINITIONS,
+  ROLE_DEFINITIONS
+} from '../../lib/permissions';
 import {
   Users,
   UserPlus,
@@ -15,9 +21,16 @@ import {
   ShieldCheck,
   AlertCircle,
   CheckCircle2,
-  X
+  X,
+  Lock,
+  Check,
+  Minus,
+  History,
+  ArrowRight,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
 
 export const AdminUsersPage: React.FC = () => {
   const { user: currentUser, isOwner, isSuperAdmin } = useAuth();
@@ -27,6 +40,15 @@ export const AdminUsersPage: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [actionMsg, setActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Tab & Matrix Navigation State
+  const [activeTab, setActiveTab] = useState<'team' | 'matrix' | 'audit'>('team');
+  const [domainFilter, setDomainFilter] = useState<'all' | 'content' | 'media' | 'curriculum' | 'system'>('all');
+  const [selectedMatrixRole, setSelectedMatrixRole] = useState<RoleKey | null>(null);
+
+  // Role Audit Logs State
+  const [roleAuditLogs, setRoleAuditLogs] = useState<AuditLog[]>([]);
+  const [loadingAudit, setLoadingAudit] = useState(false);
 
   // Invite Modal State
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -46,9 +68,47 @@ export const AdminUsersPage: React.FC = () => {
       .finally(() => setLoading(false));
   };
 
+  const fetchAuditLogs = () => {
+    setLoadingAudit(true);
+    getAuditLogs(100)
+      .then((logs) => {
+        const filtered = logs.filter(
+          (l) => l.action.startsWith('role.') || l.action.startsWith('user.')
+        );
+        setRoleAuditLogs(filtered);
+      })
+      .finally(() => setLoadingAudit(false));
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchAuditLogs();
   }, []);
+
+  const roleMemberCounts = React.useMemo(() => {
+    const counts: Record<RoleKey, number> = {
+      super_admin: 0,
+      owner: 0,
+      admin: 0,
+      editor: 0,
+      contributor: 0,
+      learner: 0
+    };
+    userList.forEach((u) => {
+      u.roles.forEach((r) => {
+        if (counts[r] !== undefined) {
+          counts[r]++;
+        }
+      });
+    });
+    return counts;
+  }, [userList]);
+
+  const filteredCapabilities = React.useMemo(() => {
+    if (domainFilter === 'all') return CAPABILITY_DEFINITIONS;
+    return CAPABILITY_DEFINITIONS.filter((c) => c.domain === domainFilter);
+  }, [domainFilter]);
+
 
   const showNotification = (text: string, type: 'success' | 'error' = 'success') => {
     setActionMsg({ type, text });
@@ -251,9 +311,78 @@ export const AdminUsersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Filters & Search Toolbar */}
-      <div
-        className="card"
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--color-border)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('team')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 18px',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'team' ? '2px solid #2563eb' : '2px solid transparent',
+            color: activeTab === 'team' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+            fontWeight: activeTab === 'team' ? 700 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer'
+          }}
+        >
+          <Users size={16} />
+          <span>Team Directory ({userList.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('matrix')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 18px',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'matrix' ? '2px solid #2563eb' : '2px solid transparent',
+            color: activeTab === 'matrix' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+            fontWeight: activeTab === 'matrix' ? 700 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer'
+          }}
+        >
+          <ShieldCheck size={16} />
+          <span>Role-Permission Matrix</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('audit')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 18px',
+            border: 'none',
+            background: 'none',
+            borderBottom: activeTab === 'audit' ? '2px solid #2563eb' : '2px solid transparent',
+            color: activeTab === 'audit' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+            fontWeight: activeTab === 'audit' ? 700 : 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer'
+          }}
+        >
+          <History size={16} />
+          <span>Role Delegation Audit</span>
+        </button>
+      </div>
+
+      {activeTab === 'team' && (
+        <>
+          {/* Filters & Search Toolbar */}
+          <div
+            className="card"
+
         style={{
           padding: '16px',
           borderRadius: 'var(--radius-xl)',
@@ -617,8 +746,371 @@ export const AdminUsersPage: React.FC = () => {
           </div>
         )}
       </div>
+      </>
+      )}
+
+      {/* =========================================================================
+          TAB 2: ROLE-PERMISSION MATRIX
+      ========================================================================= */}
+      {activeTab === 'matrix' && (
+        <div>
+          {/* Institutional Safeguard Callout */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderRadius: 'var(--radius-lg)',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              border: '1px solid rgba(37, 99, 235, 0.25)',
+              marginBottom: 'var(--space-6)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '14px'
+            }}
+          >
+            <ShieldCheck size={24} style={{ color: '#38bdf8', flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                Server-Enforced Role-Based Access Control (RBAC)
+              </div>
+              <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                Every administrative capability is strictly enforced at the PostgreSQL database layer via Row Level Security (RLS) policies.
+                Super Admin and Owner roles are protected against accidental demotion. All privilege changes are cryptographically recorded in the system audit trail.
+              </p>
+            </div>
+          </div>
+
+          {/* Role Overview Tier Cards */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 'var(--space-4)',
+              marginBottom: 'var(--space-6)'
+            }}
+          >
+            {(Object.keys(ROLE_DEFINITIONS) as RoleKey[]).map((rKey) => {
+              const def = ROLE_DEFINITIONS[rKey];
+              const count = roleMemberCounts[rKey] || 0;
+              const isSelected = selectedMatrixRole === rKey;
+
+              return (
+                <div
+                  key={rKey}
+                  onClick={() => setSelectedMatrixRole(isSelected ? null : rKey)}
+                  className="card"
+                  style={{
+                    padding: '16px',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: isSelected ? 'rgba(37, 99, 235, 0.12)' : 'var(--color-surface)',
+                    border: `1px solid ${isSelected ? '#38bdf8' : 'var(--color-border)'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.6875rem',
+                        fontWeight: 700,
+                        backgroundColor: def.badgeBg,
+                        color: def.badgeColor,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {def.isProtected && <Lock size={10} />}
+                      <span>{def.label}</span>
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                      Tier {def.level}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                    {count} {count === 1 ? 'Member' : 'Members'}
+                  </div>
+
+                  <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.4, margin: '0 0 10px', minHeight: '32px' }}>
+                    {def.description}
+                  </p>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.6875rem' }}>
+                    <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+                      {ROLE_PERMISSIONS[rKey].length} Capabilities
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRoleFilter(rKey);
+                        setActiveTab('team');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-text-muted)',
+                        cursor: 'pointer',
+                        padding: '2px 4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '2px'
+                      }}
+                    >
+                      <span>Filter Team</span>
+                      <ArrowRight size={10} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Domain Filter Pills */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginRight: '4px' }}>
+              Filter by Domain:
+            </span>
+            {[
+              { id: 'all', label: 'All Capabilities' },
+              { id: 'content', label: 'Content & Editorial' },
+              { id: 'media', label: 'Media & Storage' },
+              { id: 'curriculum', label: 'Curriculum & Workshops' },
+              { id: 'system', label: 'System & Governance' }
+            ].map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => setDomainFilter(d.id as any)}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  border: domainFilter === d.id ? '1px solid #2563eb' : '1px solid var(--color-border)',
+                  backgroundColor: domainFilter === d.id ? '#2563eb' : 'var(--color-surface)',
+                  color: domainFilter === d.id ? '#ffffff' : 'var(--color-text-secondary)',
+                  cursor: 'pointer'
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Interactive Matrix Table */}
+          <div
+            className="card"
+            style={{
+              padding: '20px',
+              borderRadius: 'var(--radius-xl)',
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              overflowX: 'auto'
+            }}
+          >
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.8125rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
+                  <th style={{ padding: '12px 14px', width: '30%' }}>Capability & Security Scope</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Learner</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Contributor</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Editor</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Admin</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Lock size={12} color="#ef4444" />
+                      <span>Super Admin</span>
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCapabilities.map((cap, idx) => {
+                  return (
+                    <tr
+                      key={cap.key}
+                      style={{
+                        borderBottom: '1px solid var(--color-border)',
+                        backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)'
+                      }}
+                    >
+                      <td style={{ padding: '12px 14px' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                          {cap.label}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                          {cap.description}
+                        </div>
+                        <div style={{ fontSize: '0.6875rem', fontFamily: 'monospace', color: '#64748b', marginTop: '2px' }}>
+                          {cap.key}
+                        </div>
+                      </td>
+
+                      {(['learner', 'contributor', 'editor', 'admin', 'super_admin'] as RoleKey[]).map((rKey) => {
+                        const hasCap = ROLE_PERMISSIONS[rKey].includes(cap.key);
+
+                        return (
+                          <td key={rKey} style={{ padding: '12px 14px', textAlign: 'center' }}>
+                            {hasCap ? (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                  color: '#10b981'
+                                }}
+                                title={`${cap.label} is GRANTED to ${ROLE_DEFINITIONS[rKey].label}`}
+                              >
+                                <Check size={14} />
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  color: 'var(--color-text-muted)'
+                                }}
+                                title={`${cap.label} is DENIED to ${ROLE_DEFINITIONS[rKey].label}`}
+                              >
+                                <Minus size={14} />
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB 3: ROLE DELEGATION AUDIT LOG
+      ========================================================================= */}
+      {activeTab === 'audit' && (
+        <div
+          className="card"
+          style={{
+            padding: '20px',
+            borderRadius: 'var(--radius-xl)',
+            backgroundColor: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            overflowX: 'auto'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 4px', color: 'var(--color-text-primary)' }}>
+                Role Delegation & Privilege History
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
+                Chronological security log of role grants, revocations, and account status updates.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchAuditLogs}
+              disabled={loadingAudit}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-surface-elevated)',
+                color: 'var(--color-text-primary)',
+                fontSize: '0.8125rem',
+                cursor: 'pointer'
+              }}
+            >
+              <RefreshCw size={13} className={loadingAudit ? 'spin' : ''} />
+              <span>Refresh Log</span>
+            </button>
+          </div>
+
+          {loadingAudit ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+              Loading audit entries...
+            </div>
+          ) : roleAuditLogs.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+              No role delegation audit events recorded yet. Role assignments and revocations will be listed here.
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.8125rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
+                  <th style={{ padding: '10px 12px' }}>Timestamp</th>
+                  <th style={{ padding: '10px 12px' }}>Action</th>
+                  <th style={{ padding: '10px 12px' }}>Target User</th>
+                  <th style={{ padding: '10px 12px' }}>Details</th>
+                  <th style={{ padding: '10px 12px' }}>Initiator</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roleAuditLogs.map((log) => (
+                  <tr key={log.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', color: 'var(--color-text-secondary)', fontSize: '0.75rem' }}>
+                      {new Date(log.created_at).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <span
+                        style={{
+                          fontSize: '0.6875rem',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          backgroundColor:
+                            log.action === 'role.assign'
+                              ? 'rgba(16, 185, 129, 0.15)'
+                              : log.action === 'role.revoke'
+                              ? 'rgba(239, 68, 68, 0.15)'
+                              : 'rgba(56, 189, 248, 0.15)',
+                          color:
+                            log.action === 'role.assign'
+                              ? '#10b981'
+                              : log.action === 'role.revoke'
+                              ? '#ef4444'
+                              : '#38bdf8'
+                        }}
+                      >
+                        {log.action}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px 12px', color: 'var(--color-text-primary)' }}>
+                      {log.target_id || 'N/A'}
+                    </td>
+                    <td style={{ padding: '10px 12px', color: 'var(--color-text-secondary)', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+                      {JSON.stringify(log.metadata || {})}
+                    </td>
+                    <td style={{ padding: '10px 12px', color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+                      {log.actor_email || log.actor_user_id || 'System'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {/* Invite Member Modal */}
+
       {isInviteOpen && (
         <div
           style={{

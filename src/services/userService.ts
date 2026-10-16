@@ -136,6 +136,19 @@ export async function revokeUserRole(
     return { error: new Error('Permission denied: Only a Super Admin can modify owner privileges.') };
   }
 
+  // Safeguard: Prevent accidental demotion of the last remaining Super Admin / Owner
+  if (['super_admin', 'owner'].includes(roleKey)) {
+    const { count } = await supabase
+      .from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .in('role_key', ['super_admin', 'owner']);
+
+    if (count !== null && count <= 1) {
+      return { error: new Error('Critical Security Policy: Cannot revoke the last remaining Super Admin or Owner. An institution must have at least one active institutional administrator.') };
+    }
+  }
+
+
   const { error } = await supabase
     .from('user_roles')
     .delete()

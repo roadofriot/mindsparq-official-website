@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { hasCapability, isStaffRole, isAdminOrOwnerRole } from '../lib/permissions';
+import {
+  hasCapability,
+  isStaffRole,
+  isAdminOrOwnerRole,
+  CAPABILITY_DEFINITIONS,
+  ROLE_DEFINITIONS,
+  ROLE_PERMISSIONS
+} from '../lib/permissions';
 
 describe('Permissions & Role-Based Access Control (RBAC)', () => {
   it('denies all privileged capabilities to anonymous visitors with empty roles', () => {
@@ -56,6 +63,54 @@ describe('Permissions & Role-Based Access Control (RBAC)', () => {
     expect(isStaffRole(['super_admin'])).toBe(true);
     expect(isAdminOrOwnerRole(['super_admin'])).toBe(true);
     expect(isAdminOrOwnerRole(['learner'])).toBe(false);
+  });
+
+  it('exposes well-formed CAPABILITY_DEFINITIONS across all 4 operational domains', () => {
+    expect(CAPABILITY_DEFINITIONS.length).toBeGreaterThan(10);
+    const domains = new Set(CAPABILITY_DEFINITIONS.map((c) => c.domain));
+    expect(domains.has('content')).toBe(true);
+    expect(domains.has('media')).toBe(true);
+    expect(domains.has('curriculum')).toBe(true);
+    expect(domains.has('system')).toBe(true);
+
+    CAPABILITY_DEFINITIONS.forEach((cap) => {
+      expect(cap.key).toBeDefined();
+      expect(cap.label.length).toBeGreaterThan(0);
+      expect(cap.description.length).toBeGreaterThan(0);
+      expect(['content', 'media', 'curriculum', 'system']).toContain(cap.domain);
+    });
+  });
+
+  it('exposes ROLE_DEFINITIONS with strict hierarchy tiers and protection markers', () => {
+    const roleKeys = Object.keys(ROLE_DEFINITIONS);
+    expect(roleKeys.length).toBe(6);
+
+    const superAdminDef = ROLE_DEFINITIONS['super_admin'];
+    const ownerDef = ROLE_DEFINITIONS['owner'];
+    const learnerDef = ROLE_DEFINITIONS['learner'];
+
+    expect(superAdminDef).toBeDefined();
+    expect(superAdminDef.isProtected).toBe(true);
+    expect(superAdminDef.level).toBe(5);
+
+    expect(ownerDef).toBeDefined();
+    expect(ownerDef.isProtected).toBe(true);
+    expect(ownerDef.level).toBe(5);
+
+    expect(learnerDef).toBeDefined();
+    expect(learnerDef.isProtected).toBeFalsy();
+    expect(learnerDef.level).toBe(1);
+  });
+
+  it('guarantees Super Admin and Owner have all defined capabilities in ROLE_PERMISSIONS', () => {
+    const allCapabilityKeys = CAPABILITY_DEFINITIONS.map((c) => c.key);
+    const superAdminCaps = ROLE_PERMISSIONS['super_admin'];
+    const ownerCaps = ROLE_PERMISSIONS['owner'];
+
+    allCapabilityKeys.forEach((capKey) => {
+      expect(superAdminCaps).toContain(capKey);
+      expect(ownerCaps).toContain(capKey);
+    });
   });
 });
 

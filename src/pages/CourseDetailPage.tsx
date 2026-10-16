@@ -212,7 +212,7 @@ export const CourseDetailPage: React.FC = () => {
 
       {/* Course Overview & Syllabus */}
       <section className="container" style={{ marginTop: 'var(--space-12)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-12)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'var(--space-12)' }}>
           {/* Main: Curriculum Outline */}
           <div style={{ flex: '1 1 600px' }}>
             <h2 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)', marginBottom: 'var(--space-6)' }}>

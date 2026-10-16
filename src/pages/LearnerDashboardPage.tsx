@@ -936,7 +936,7 @@ export const LearnerDashboardPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 'var(--space-4)' }}>
                 {bookmarks.map((b) => (
                   <div
                     key={b.bookmark.id}
@@ -1020,7 +1020,7 @@ export const LearnerDashboardPage: React.FC = () => {
         {/* TAB 3: PROFILE & PREFERENCES */}
         {/* ============================================================== */}
         {activeTab === 'profile' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-8)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'var(--space-8)' }}>
             {/* Form */}
             <div className="card" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>

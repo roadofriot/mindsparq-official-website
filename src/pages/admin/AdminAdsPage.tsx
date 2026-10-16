@@ -173,7 +173,7 @@ export const AdminAdsPage: React.FC = () => {
       </div>
 
       {/* Main Grid: Form + Live Preview */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-8)', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'var(--space-8)', alignItems: 'start' }}>
         {/* Editor Form */}
         <div className="card" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)' }}>
           <form onSubmit={handleSave}>

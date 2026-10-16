@@ -24,6 +24,8 @@ const EventsPage = lazy(() => import('./pages/EventsPage').then((m) => ({ defaul
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage').then((m) => ({ default: m.EventDetailPage })));
 const BlogPage = lazy(() => import('./pages/BlogPage').then((m) => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })));
+const TeamPage = lazy(() => import('./pages/TeamPage').then((m) => ({ default: m.TeamPage })));
+const TeamProfilePage = lazy(() => import('./pages/TeamProfilePage').then((m) => ({ default: m.TeamProfilePage })));
 const LearnerDashboardPage = lazy(() => import('./pages/LearnerDashboardPage').then((m) => ({ default: m.LearnerDashboardPage })));
 
 // CMS Admin Console (code-split)
@@ -34,6 +36,8 @@ const AdminMediaPage = lazy(() => import('./pages/admin/AdminMediaPage').then((m
 const AdminProgramsPage = lazy(() => import('./pages/admin/AdminProgramsPage').then((m) => ({ default: m.AdminProgramsPage })));
 const AdminCoursesPage = lazy(() => import('./pages/admin/AdminCoursesPage').then((m) => ({ default: m.AdminCoursesPage })));
 const AdminBlogPage = lazy(() => import('./pages/admin/AdminBlogPage').then((m) => ({ default: m.AdminBlogPage })));
+const AdminTeamProfilesPage = lazy(() => import('./pages/admin/AdminTeamProfilesPage').then((m) => ({ default: m.AdminTeamProfilesPage })));
+const AdminStaffProfilePage = lazy(() => import('./pages/admin/AdminStaffProfilePage').then((m) => ({ default: m.AdminStaffProfilePage })));
 const AdminEventsPage = lazy(() => import('./pages/admin/AdminEventsPage').then((m) => ({ default: m.AdminEventsPage })));
 const AdminCommentsPage = lazy(() => import('./pages/admin/AdminCommentsPage').then((m) => ({ default: m.AdminCommentsPage })));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
@@ -107,6 +111,10 @@ export const App: React.FC = () => {
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogPostPage />} />
 
+                {/* Team & Faculty */}
+                <Route path="team" element={<TeamPage />} />
+                <Route path="team/:slug" element={<TeamProfilePage />} />
+
                 {/* General Pages */}
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
@@ -153,6 +161,8 @@ export const App: React.FC = () => {
                 <Route path="programs" element={<AdminProgramsPage />} />
                 <Route path="courses" element={<AdminCoursesPage />} />
                 <Route path="blog" element={<AdminBlogPage />} />
+                <Route path="team" element={<AdminTeamProfilesPage />} />
+                <Route path="profile" element={<AdminStaffProfilePage />} />
                 <Route path="events" element={<AdminEventsPage />} />
                 <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="users" element={<AdminUsersPage />} />

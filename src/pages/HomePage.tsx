@@ -7,6 +7,7 @@ import { LearningApproach } from '../components/home/LearningApproach';
 import { WhoWeSupport } from '../components/home/WhoWeSupport';
 import { AiRoboticsFeature } from '../components/home/AiRoboticsFeature';
 import { AboutSnippet } from '../components/home/AboutSnippet';
+import { MeetOurTeamSection } from '../components/home/MeetOurTeamSection';
 import { InquiryCta } from '../components/home/InquiryCta';
 import { updatePageSeo, generateOrganizationSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
@@ -50,6 +51,8 @@ export const HomePage: React.FC = () => {
         return <AiRoboticsFeature key="ai_robotics_feature" />;
       case 'about_snippet':
         return <AboutSnippet key="about_snippet" />;
+      case 'meet_our_team':
+        return <MeetOurTeamSection key="meet_our_team" />;
       case 'inquiry_cta':
         return <InquiryCta key="inquiry_cta" />;
       default:
@@ -67,6 +70,7 @@ export const HomePage: React.FC = () => {
         <WhoWeSupport />
         <AiRoboticsFeature />
         <AboutSnippet />
+        <MeetOurTeamSection />
         <InquiryCta />
       </div>
     );

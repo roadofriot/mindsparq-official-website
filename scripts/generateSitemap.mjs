@@ -23,6 +23,7 @@ const STATIC_ROUTES = [
   { path: '/courses', priority: '0.9', changefreq: 'weekly' },
   { path: '/events', priority: '0.8', changefreq: 'weekly' },
   { path: '/blog', priority: '0.8', changefreq: 'weekly' },
+  { path: '/team', priority: '0.8', changefreq: 'weekly' },
   { path: '/contact', priority: '0.7', changefreq: 'monthly' },
   { path: '/privacy-policy', priority: '0.3', changefreq: 'yearly' }
 ];
@@ -39,6 +40,10 @@ const SEED_ARTICLES = [
   { slug: 'pedagogical-foundations-abacus-butwal', updated_at: '2026-09-01' },
   { slug: 'hands-on-robotics-in-nepal-classrooms', updated_at: '2026-09-12' },
   { slug: 'cognitive-resilience-through-mental-math', updated_at: '2026-09-22' }
+];
+
+const SEED_TEAM_PROFILES = [
+  { slug: 'samay-budhathoki-chhetri', updated_at: '2026-10-16' }
 ];
 
 async function generateSitemap() {
@@ -72,6 +77,16 @@ async function generateSitemap() {
     <lastmod>${a.updated_at}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>`);
+  }
+
+  // 4. Add Dynamic Team Profiles
+  for (const t of SEED_TEAM_PROFILES) {
+    urls.push(`  <url>
+    <loc>${BASE_URL}/team/${t.slug}</loc>
+    <lastmod>${t.updated_at}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>`);
   }
 

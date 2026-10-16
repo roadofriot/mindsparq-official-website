@@ -11,7 +11,8 @@ import {
   getBookmarkStatus,
   toggleBookmark
 } from '../services/blogService';
-import { BlogPost, BlogComment } from '../types/database';
+import { BlogPost, BlogComment, TeamProfile } from '../types/database';
+import { getPublicTeamProfiles } from '../services/teamService';
 import { useAuth } from '../context/AuthContext';
 import {
   Calendar,
@@ -36,6 +37,7 @@ import {
   Mail,
   ChevronRight
 } from 'lucide-react';
+import { SocialIcon } from '../components/ui/SocialIcon';
 import { sharePublicContent, getSocialShareUrls } from '../services/socialService';
 import { updatePageSeo, generateArticleSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
@@ -147,6 +149,7 @@ export const BlogPostPage: React.FC = () => {
   const { user } = useAuth();
 
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [authorProfile, setAuthorProfile] = useState<TeamProfile | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,6 +205,18 @@ export const BlogPostPage: React.FC = () => {
 
           const bkmk = await getBookmarkStatus('blog_post', resolvedPost.id);
           if (mounted) setIsBookmarked(bkmk);
+
+          // Fetch matching verified team profile for author attribution
+          getPublicTeamProfiles().then((teamList) => {
+            if (!mounted) return;
+            const matched = teamList.find(
+              (tp) =>
+                (resolvedPost.author_profile_id && tp.id === resolvedPost.author_profile_id) ||
+                tp.display_name.toLowerCase() === resolvedPost.author_name.toLowerCase() ||
+                tp.slug === resolvedPost.author_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            );
+            if (matched) setAuthorProfile(matched);
+          });
         }
       })
       .catch(() => {
@@ -469,28 +484,60 @@ export const BlogPostPage: React.FC = () => {
 
             {/* Author Credential */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--space-6)' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  color: '#38bdf8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '0.875rem'
-                }}
-              >
-                <User size={18} />
-              </div>
+              {authorProfile ? (
+                <Link
+                  to={`/team/${authorProfile.slug}`}
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '0.875rem',
+                    textDecoration: 'none'
+                  }}
+                  title={`View ${authorProfile.display_name}'s Profile`}
+                >
+                  {authorProfile.display_name.slice(0, 2).toUpperCase()}
+                </Link>
+              ) : (
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  <User size={18} />
+                </div>
+              )}
               <div>
                 <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                  {post.author_name}
+                  {authorProfile ? (
+                    <Link
+                      to={`/team/${authorProfile.slug}`}
+                      style={{ color: 'inherit', textDecoration: 'none' }}
+                      className="hover-underline"
+                    >
+                      {authorProfile.display_name}
+                    </Link>
+                  ) : (
+                    post.author_name
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                  MindSparQ Education & Technology Contributor
+                  {authorProfile ? authorProfile.public_title : 'MindSparQ Education & Technology Faculty'}
                 </div>
               </div>
             </div>
@@ -687,7 +734,8 @@ export const BlogPostPage: React.FC = () => {
                 borderRadius: 'var(--radius-xl)',
                 backgroundColor: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
-                marginBottom: 'var(--space-10)'
+                marginBottom: 'var(--space-10)',
+                flexWrap: 'wrap'
               }}
             >
               <div
@@ -700,21 +748,63 @@ export const BlogPostPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '1.25rem',
                   flexShrink: 0
                 }}
               >
-                <User size={28} />
+                {authorProfile ? authorProfile.display_name.slice(0, 2).toUpperCase() : <User size={28} />}
               </div>
-              <div>
+              <div style={{ flex: 1, minWidth: 'min(100%, 260px)' }}>
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#38bdf8', fontWeight: 700, marginBottom: '2px' }}>
-                  Article Author & Contributor
+                  {authorProfile?.team_category ? `${authorProfile.team_category.replace('_', ' ')} • Faculty Byline` : 'Article Author & Faculty'}
                 </div>
-                <h4 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '0 0 6px', color: 'var(--color-text-primary)' }}>
-                  {post.author_name}
+                <h4 style={{ fontSize: '1.125rem', fontWeight: 800, margin: '0 0 4px', color: 'var(--color-text-primary)' }}>
+                  {authorProfile ? (
+                    <Link to={`/team/${authorProfile.slug}`} style={{ color: 'inherit', textDecoration: 'none' }} className="hover-underline">
+                      {authorProfile.display_name}
+                    </Link>
+                  ) : (
+                    post.author_name
+                  )}
                 </h4>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                  Educator and curriculum innovator at MindSparQ Education & Technology. Committed to bringing practical AI, robotics, soroban mental math, and experiential coding to schools across Nepal.
+                <p style={{ margin: '0 0 10px', fontSize: '0.875rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                  {authorProfile ? authorProfile.short_bio : 'Educator and curriculum innovator at MindSparQ Education & Technology. Committed to bringing practical AI, robotics, soroban mental math, and experiential coding to schools across Nepal.'}
                 </p>
+
+                {authorProfile && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {authorProfile.social_links?.linkedin && (
+                        <a href={authorProfile.social_links.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-secondary)' }} aria-label="LinkedIn">
+                          <SocialIcon platform="linkedin" size={15} />
+                        </a>
+                      )}
+                      {authorProfile.social_links?.facebook && (
+                        <a href={authorProfile.social_links.facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-secondary)' }} aria-label="Facebook">
+                          <SocialIcon platform="facebook" size={15} />
+                        </a>
+                      )}
+                      {authorProfile.social_links?.instagram && (
+                        <a href={authorProfile.social_links.instagram} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-secondary)' }} aria-label="Instagram">
+                          <SocialIcon platform="instagram" size={15} />
+                        </a>
+                      )}
+                      {authorProfile.social_links?.youtube && (
+                        <a href={authorProfile.social_links.youtube} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-secondary)' }} aria-label="YouTube">
+                          <SocialIcon platform="youtube" size={15} />
+                        </a>
+                      )}
+                    </div>
+                    <Link
+                      to={`/team/${authorProfile.slug}`}
+                      style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#38bdf8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <span>View Faculty Profile</span>
+                      <ChevronRight size={14} />
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 

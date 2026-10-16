@@ -156,6 +156,8 @@ export interface BlogPost {
   updated_by?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
+  author_profile_id?: string | null;
+  review_feedback?: string | null;
   created_at: string;
   updated_at: string;
   likes_count?: number;
@@ -255,4 +257,51 @@ export interface ContentVersion {
   created_at: string;
   restored_at?: string | null;
 }
+
+export type TeamCategory = 'leadership' | 'teaching' | 'program_leads' | 'operations' | 'advisory';
+export type TeamReviewStatus = 'draft' | 'pending_review' | 'changes_requested' | 'approved' | 'published' | 'unpublished';
+
+export interface TeamSocialLinks {
+  linkedin?: string;
+  facebook?: string;
+  instagram?: string;
+  youtube?: string;
+  github?: string;
+  twitter?: string;
+  website?: string;
+}
+
+export interface TeamProfile {
+  id: string;
+  user_id: string | null;
+  slug: string;
+  display_name: string;
+  display_name_nepali: string | null;
+  public_title: string;
+  public_title_nepali: string | null;
+  team_category: TeamCategory;
+  short_bio: string;
+  bio: string;
+  profile_image_path: string | null;
+  education: string | null;
+  qualifications: string[] | null;
+  teaching_subjects: string[] | null;
+  responsibilities: string[] | null;
+  social_links: TeamSocialLinks;
+  is_featured_founder: boolean;
+  is_public: boolean;
+  review_status: TeamReviewStatus;
+  review_notes: string | null;
+  sort_order: number;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  published_at: string | null;
+  published_by: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 

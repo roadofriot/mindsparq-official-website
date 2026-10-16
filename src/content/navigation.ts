@@ -12,6 +12,7 @@ export const navItems: NavItem[] = [
 ];
 
 export const exploreNavItems: NavItem[] = [
+  { label: 'Meet Our Team', href: '/team' },
   { label: 'Blog & Insights', href: '/blog' },
   { label: 'Events & Exhibitions', href: '/events' }
 ];
@@ -33,6 +34,7 @@ export const footerLinks = {
   ],
   company: [
     { label: 'About MindSparQ', href: '/about' },
+    { label: 'Meet Our Team', href: '/team' },
     { label: 'Learning Approach', href: '/about#approach' },
     { label: 'Contact & Location', href: '/contact' },
     { label: 'Privacy Policy', href: '/privacy-policy' }

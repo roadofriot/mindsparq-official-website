@@ -21,7 +21,8 @@ import {
   X,
   Sparkles,
   Layers,
-  Palette
+  Palette,
+  UserCheck
 } from 'lucide-react';
 import { AdminAiCopilotDrawer } from './AdminAiCopilotDrawer';
 
@@ -43,6 +44,8 @@ export const AdminLayout: React.FC = () => {
     { label: 'Courses & Lessons', href: '/admin/courses', icon: BookOpen },
     { label: 'Events & Workshops', href: '/admin/events', icon: Calendar },
     { label: 'Comment Moderation', href: '/admin/comments', icon: MessageSquare },
+    { label: 'Team Profiles', href: '/admin/team', icon: Users },
+    { label: 'My Faculty Profile', href: '/admin/profile', icon: UserCheck },
     ...((isSuperAdmin || isOwner)
       ? [
           { label: 'Team & Access', href: '/admin/users', icon: Users },

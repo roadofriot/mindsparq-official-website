@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { marked } from 'marked';
 import { getAllPosts, savePost, deletePost, updatePostStatus } from '../../services/blogService';
-import { BlogPost, ContentVersion } from '../../types/database';
+import { BlogPost, ContentVersion, TeamProfile } from '../../types/database';
+import { getPublicTeamProfiles } from '../../services/teamService';
 import {
   createContentVersion,
   getContentVersions,
@@ -39,6 +40,7 @@ import { ImageUploadField } from '../../components/admin/ImageUploadField';
 export const AdminBlogPage: React.FC = () => {
   const { user, isOwner, isAdmin, isSuperAdmin, hasPermission } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [teamProfiles, setTeamProfiles] = useState<TeamProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -116,6 +118,7 @@ export const AdminBlogPage: React.FC = () => {
     getAllPosts()
       .then((data) => setPosts(data))
       .finally(() => setLoading(false));
+    getPublicTeamProfiles().then(setTeamProfiles).catch(() => {});
   };
 
   useEffect(() => {
@@ -1021,27 +1024,67 @@ export const AdminBlogPage: React.FC = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px' }}>
-                    Credited Author Name *
+                    Credited Author Name & Profile Link *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Samay Budhathoki Chhetri"
-                    value={editingPost.author_name || ''}
-                    onChange={(e) => setEditingPost({ ...editingPost, author_name: e.target.value })}
-                    style={{
-                      width: '100%',
-                      height: '42px',
-                      padding: '0 12px',
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'var(--color-surface-elevated)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)',
-                      fontSize: '0.875rem'
-                    }}
-                  />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Samay Budhathoki Chhetri"
+                      value={editingPost.author_name || ''}
+                      onChange={(e) => setEditingPost({ ...editingPost, author_name: e.target.value })}
+                      style={{
+                        flex: 1,
+                        height: '42px',
+                        padding: '0 12px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-surface-elevated)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                    {teamProfiles.length > 0 && (
+                      <select
+                        value={editingPost.author_profile_id || ''}
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          const selectedProfile = teamProfiles.find((tp) => tp.id === selectedId);
+                          setEditingPost({
+                            ...editingPost,
+                            author_profile_id: selectedId || null,
+                            author_name: selectedProfile ? selectedProfile.display_name : editingPost.author_name
+                          });
+                        }}
+                        style={{
+                          height: '42px',
+                          padding: '0 10px',
+                          borderRadius: 'var(--radius-md)',
+                          backgroundColor: 'var(--color-surface-elevated)',
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                          fontSize: '0.75rem',
+                          maxWidth: '160px'
+                        }}
+                      >
+                        <option value="">Link Profile...</option>
+                        {teamProfiles.map((tp) => (
+                          <option key={tp.id} value={tp.id}>
+                            {tp.display_name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {/* Review Feedback Alert (if changes requested) */}
+              {editingPost.review_feedback && (
+                <div style={{ padding: '12px 16px', borderRadius: 'var(--radius-md)', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', marginBottom: '14px', fontSize: '0.8125rem' }}>
+                  <strong>Editorial Revision Feedback:</strong> {editingPost.review_feedback}
+                </div>
+              )}
 
               {/* Category & Status Row */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>

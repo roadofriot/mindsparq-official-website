@@ -13,7 +13,8 @@ import {
   BookOpen, 
   Calendar, 
   LogOut, 
-  GraduationCap
+  GraduationCap,
+  Users
 } from 'lucide-react';
 import { navItems, exploreNavItems } from '../../content/navigation';
 import { useThemeContext } from '../../context/ThemeContext';
@@ -36,6 +37,17 @@ export const Header: React.FC = () => {
     setMobileMenuOpen(false);
     setSettingsOpen(false);
   }, [location.pathname]);
+
+  // Lock document body scroll when mobile navigation drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [mobileMenuOpen]);
 
   // Handle escape key and clicks outside to close dropdown
   useEffect(() => {
@@ -505,6 +517,25 @@ export const Header: React.FC = () => {
                     Explore & Insights
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <Link
+                      to="/team"
+                      onClick={() => setSettingsOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 10px',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-text-secondary)',
+                        textDecoration: 'none',
+                        fontSize: '0.8125rem',
+                        fontWeight: 500
+                      }}
+                      className="header-dropdown-item"
+                    >
+                      <Users size={14} style={{ color: 'var(--color-primary-600)' }} />
+                      <span>Meet Our Team & Faculty</span>
+                    </Link>
                     <Link
                       to="/blog"
                       onClick={() => setSettingsOpen(false)}

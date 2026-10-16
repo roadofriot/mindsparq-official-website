@@ -113,6 +113,7 @@ create table if not exists public.courses (
   description text not null,
   cover_image_url text null check (cover_image_url is null or char_length(cover_image_url) <= 1024),
   level text not null default 'Beginner' check (level in ('Beginner', 'Intermediate', 'Advanced', 'All Levels')),
+  age_group text not null default 'all_ages' check (age_group in ('elementary', 'middle_school', 'high_school', 'all_ages')),
   estimated_duration text null check (estimated_duration is null or char_length(estimated_duration) <= 100),
   visibility text not null default 'public' check (visibility in ('public', 'unlisted', 'private')),
   access_type text not null default 'free' check (access_type in ('free', 'invite_only')),
@@ -124,7 +125,11 @@ create table if not exists public.courses (
   updated_at timestamptz not null default timezone('utc'::text, now())
 );
 
+alter table public.courses add column if not exists age_group text not null default 'all_ages' 
+  check (age_group in ('elementary', 'middle_school', 'high_school', 'all_ages'));
+
 create index if not exists idx_courses_status_vis on public.courses(status, visibility);
+create index if not exists idx_courses_age_group on public.courses(age_group);
 
 -- 2.7 Course Modules Table
 create table if not exists public.course_modules (
@@ -151,12 +156,19 @@ create table if not exists public.lessons (
   video_provider text null check (video_provider is null or video_provider in ('youtube', 'vimeo')),
   video_id text null check (video_id is null or video_id ~* '^[a-zA-Z0-9_-]{5,30}$'),
   duration_minutes integer null check (duration_minutes is null or duration_minutes >= 0),
+  resource_url text null check (resource_url is null or char_length(resource_url) <= 1024),
+  resource_title text null check (resource_title is null or char_length(resource_title) <= 255),
+  resource_type text null check (resource_type is null or char_length(resource_type) <= 50),
   sort_order integer not null default 0,
   status text not null default 'published' check (status in ('draft', 'published', 'archived')),
   created_at timestamptz not null default timezone('utc'::text, now()),
   updated_at timestamptz not null default timezone('utc'::text, now()),
   unique (module_id, slug)
 );
+
+alter table public.lessons add column if not exists resource_url text null;
+alter table public.lessons add column if not exists resource_title text null;
+alter table public.lessons add column if not exists resource_type text null;
 
 create index if not exists idx_lessons_module_sort on public.lessons(module_id, sort_order);
 
@@ -198,7 +210,7 @@ create table if not exists public.blog_posts (
   author_id uuid references auth.users(id) on delete set null,
   author_name text not null default 'MindSparQ Team' check (char_length(author_name) <= 100),
   category text not null default 'Education' check (char_length(category) <= 50),
-  status text not null default 'draft' check (status in ('draft', 'review', 'published', 'archived')),
+  status text not null default 'draft' check (status in ('draft', 'review', 'in_review', 'approved', 'published', 'archived')),
   published_at timestamptz null,
   created_by uuid references auth.users(id) on delete set null,
   updated_by uuid references auth.users(id) on delete set null,
@@ -213,6 +225,10 @@ alter table public.blog_posts add column if not exists created_by uuid reference
 alter table public.blog_posts add column if not exists updated_by uuid references auth.users(id) on delete set null;
 alter table public.blog_posts add column if not exists seo_title text null check (char_length(seo_title) <= 200);
 alter table public.blog_posts add column if not exists seo_description text null check (char_length(seo_description) <= 350);
+
+alter table public.blog_posts drop constraint if exists blog_posts_status_check;
+alter table public.blog_posts add constraint blog_posts_status_check 
+  check (status in ('draft', 'review', 'in_review', 'approved', 'published', 'archived'));
 
 create index if not exists idx_blog_status_published on public.blog_posts(status, published_at desc);
 
@@ -331,6 +347,35 @@ create table if not exists public.audit_logs (
 
 create index if not exists idx_audit_created_at on public.audit_logs(created_at desc);
 create index if not exists idx_audit_actor on public.audit_logs(actor_user_id);
+
+-- 2.20 Content Versions Table (Immutable historical snapshots)
+create table if not exists public.content_versions (
+  id uuid primary key default gen_random_uuid(),
+  content_type text not null,
+  content_id text not null,
+  version_number integer not null default 1,
+  title text not null,
+  snapshot_data jsonb not null,
+  change_summary text null,
+  created_by_id uuid references auth.users(id) on delete set null,
+  created_by_name text null,
+  created_at timestamptz not null default timezone('utc'::text, now())
+);
+
+create index if not exists idx_content_versions_lookup on public.content_versions(content_type, content_id, version_number desc);
+
+-- 2.21 Preview Access Tokens Table (Time-limited cryptographic tokens)
+create table if not exists public.preview_access_tokens (
+  id uuid primary key default gen_random_uuid(),
+  token text not null unique,
+  content_type text not null,
+  content_id text not null,
+  created_by uuid references auth.users(id) on delete set null,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default timezone('utc'::text, now())
+);
+
+create index if not exists idx_preview_tokens_lookup on public.preview_access_tokens(token, expires_at);
 
 
 -- 3. SECURITY DEFINER HELPER FUNCTIONS
@@ -585,6 +630,26 @@ create policy "Admins and Super Admins can view audit logs"
 drop policy if exists "Staff can insert audit logs" on public.audit_logs;
 create policy "Staff can insert audit logs"
   on public.audit_logs for insert with check (public.is_staff(auth.uid()));
+
+-- 5.9 Content Versions Policies
+alter table public.content_versions enable row level security;
+drop policy if exists "Staff can view content versions" on public.content_versions;
+create policy "Staff can view content versions"
+  on public.content_versions for select using (public.is_staff(auth.uid()));
+
+drop policy if exists "Staff can insert content versions" on public.content_versions;
+create policy "Staff can insert content versions"
+  on public.content_versions for insert with check (public.is_staff(auth.uid()));
+
+-- 5.10 Preview Access Tokens Policies
+alter table public.preview_access_tokens enable row level security;
+drop policy if exists "Anyone can validate preview tokens" on public.preview_access_tokens;
+create policy "Anyone can validate preview tokens"
+  on public.preview_access_tokens for select using (true);
+
+drop policy if exists "Staff can generate preview tokens" on public.preview_access_tokens;
+create policy "Staff can generate preview tokens"
+  on public.preview_access_tokens for insert with check (public.is_staff(auth.uid()));
 
 
 -- 6. STORAGE BUCKETS (public-media & private-resources)

@@ -71,6 +71,15 @@ Every clickable button, link, toggle, dropdown, slider, and form element in the 
 | `CRS-02` | Courses (`CoursesPage.tsx`) | Buttons | Category Filter Pills | Filters courses by category (AI, Robotics, Coding) | Client State | Guest | **WORKING** | Pill click test |
 | `CRS-03` | Course Detail (`CourseDetailPage.tsx`) | Accordion | Curriculum Modules | Expands/collapses module syllabus and lesson list | Client State | Guest | **WORKING** | Accordion toggle test |
 | `CRS-04` | Lesson View (`LessonViewPage.tsx`) | Video Player | YouTube Video Embed | Plays lesson video via sanitized YouTube iframe | Embedded | Enrolled Learner | **WORKING** | YouTube ID parser test |
+| `CRS-05` | Courses (`CoursesPage.tsx`) | Filter Pills | Age Group Target Filter | Filters courses by age (Elementary 6-10, Middle School 11-14, High School 15+, All Ages) | Client State | Guest | **WORKING** | Filter click & card badge test |
+| `CRS-06` | Lesson View (`LessonViewPage.tsx`) | Button | Download Lesson Resource | Direct download or external open of syllabus worksheets & attachments | Database | Enrolled Learner | **WORKING** | Attachment link verification |
+| `BLOG-14` | Blog (`AdminBlogPage.tsx`) | Button | Split Markdown Preview | Toggles side-by-side real-time live preview while editing Markdown article | Client State | Staff | **WORKING** | Live render synchronization test |
+| `BLOG-15` | Blog (`AdminBlogPage.tsx`) | Buttons | Editorial Lifecycle Actions | Transitions post through draft -> in_review -> approved -> published with audit logging | Supabase `blog_posts` | Editor / Admin | **WORKING** | Vitest blogWorkflow test suite |
+| `MED-01` | Media (`AdminMediaPage.tsx`) | Dropzone | Batch Drag & Drop Upload | Multi-file simultaneous upload with progress tracking and automatic deduplication | Supabase Storage / DB | Staff | **WORKING** | Vitest mediaWorkflow test suite |
+| `MED-02` | Media (`AdminMediaPage.tsx`) | Modal | Pre-Deletion Safety Check | Inspects blogs, courses, lessons, and carousels for active embeds before deletion | Supabase / Services | Staff | **WORKING** | Usage query and modal test |
+| `MED-03` | Media (`AdminMediaPage.tsx`) | Select | Filter & Sort Controls | Filters by type (image, document, audio), visibility, and sorts by size / date | Client State | Staff | **WORKING** | Filter & sorting state test |
+| `SEO-01` | SEO Engine (`src/utils/seo.ts`) | Service | Dynamic Meta & JSON-LD | Injects OpenGraph, Twitter Cards, canonical tags, and Schema.org structured data | Document Head | Guest | **WORKING** | Vitest seoAndSitemap test suite |
+| `SEO-02` | Sitemap Script (`generateSitemap.mjs`) | Script | Dynamic Sitemap Builder | Generates `public/sitemap.xml` covering static and dynamic course & article routes | Filesystem | Build pipeline | **WORKING** | Build execution check |
 
 ---
 
@@ -123,8 +132,9 @@ Every clickable button, link, toggle, dropdown, slider, and form element in the 
 
 ## 8. QA Test Suite Summary
 
-* **Unit & Integration Suite**: 35 tests implemented across 6 test suites (`smoke.test.ts`, `youtube.test.ts`, `permissions.test.ts`, `blogWorkflow.test.ts`, `previewAndVersioning.test.ts`, `learnerDashboard.test.ts`)
-* **Test Status**: **35 passed (100%)**
+* **Unit & Integration Suite**: **48 tests** implemented across 9 test suites (`smoke.test.ts`, `youtube.test.ts`, `permissions.test.ts`, `previewAndVersioning.test.ts`, `learnerDashboard.test.ts`, `curriculumWorkflow.test.ts`, `blogWorkflow.test.ts`, `mediaWorkflow.test.ts`, `seoAndSitemap.test.ts`)
+* **Test Status**: **48 passed (100%)**
 * **Type Safety**: TypeScript strict typecheck passed with **0 errors**
-* **Production Build**: Verified with full module tree compilation (`dist/` generated cleanly in 19.82s).
+* **Production Build**: Verified with full module tree compilation (`dist/` generated cleanly).
+
 

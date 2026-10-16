@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Compass, Sparkles, BookOpen, Cpu, ChevronLeft, ChevronRight, Pause, Play, Phone, MessageCircle } from 'lucide-react';
+import { ArrowRight, Sparkles, BookOpen, Cpu, ChevronLeft, ChevronRight, Pause, Play, Phone, MessageCircle } from 'lucide-react';
 import { siteConfig } from '../../content/site';
 import { getPublishedCarouselItems } from '../../services/contentService';
 import { CarouselItem } from '../../types/database';

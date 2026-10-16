@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  getAllAdSlots,
   getAdSlot,
   saveAdSlot,
   resetAdSlotsToDefault,
@@ -254,7 +253,7 @@ export const AdminAdsPage: React.FC = () => {
                 label="Portrait Artwork / Image URL (2:3 Aspect Ratio recommended) *"
                 value={formData.imageUrl}
                 onChange={(url) => setFormData({ ...formData, imageUrl: url })}
-                bucket="course-assets"
+                recommendedDimensions="600 × 900 px (2:3 aspect ratio)"
               />
             </div>
 

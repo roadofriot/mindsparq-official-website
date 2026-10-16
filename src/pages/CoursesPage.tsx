@@ -45,6 +45,7 @@ export const CoursesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
 
   useEffect(() => {
     let mounted = true;
@@ -74,7 +75,13 @@ export const CoursesPage: React.FC = () => {
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.summary.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLevel = selectedLevel === 'All' || c.level === selectedLevel;
-    return matchesSearch && matchesLevel;
+    const matchesAge =
+      selectedAgeGroup === 'all' ||
+      !c.age_group ||
+      c.age_group === selectedAgeGroup ||
+      c.age_group === 'all_ages';
+
+    return matchesSearch && matchesLevel && matchesAge;
   });
 
   return (
@@ -174,6 +181,9 @@ export const CoursesPage: React.FC = () => {
 
           {/* Level Filter Pills */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '4px' }}>
+              Level:
+            </span>
             {['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'].map((level) => {
               const isSelected = selectedLevel === level;
               return (
@@ -195,6 +205,42 @@ export const CoursesPage: React.FC = () => {
                   }}
                 >
                   {level}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Age Group Filter Row */}
+          <div style={{ width: '100%', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '4px' }}>
+              Target Age:
+            </span>
+            {[
+              { id: 'all', label: 'All Age Groups' },
+              { id: 'elementary', label: '🎒 Elementary (Ages 6-10)' },
+              { id: 'middle_school', label: '🚀 Middle School (Ages 11-14)' },
+              { id: 'high_school', label: '⚡ High School (Ages 15+)' }
+            ].map((group) => {
+              const isSelected = selectedAgeGroup === group.id;
+              return (
+                <button
+                  key={group.id}
+                  id={`filter-age-${group.id}`}
+                  onClick={() => setSelectedAgeGroup(group.id)}
+                  style={{
+                    padding: '5px 14px',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid',
+                    borderColor: isSelected ? 'var(--color-primary-600)' : 'var(--color-border)',
+                    backgroundColor: isSelected ? 'var(--color-primary-50)' : 'var(--color-surface-elevated)',
+                    color: isSelected ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
+                    fontWeight: isSelected ? 600 : 500,
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)'
+                  }}
+                >
+                  {group.label}
                 </button>
               );
             })}
@@ -237,7 +283,7 @@ export const CoursesPage: React.FC = () => {
               Try adjusting your search criteria or resetting filters.
             </p>
             <button
-              onClick={() => { setSearchQuery(''); setSelectedLevel('All'); }}
+              onClick={() => { setSearchQuery(''); setSelectedLevel('All'); setSelectedAgeGroup('all'); }}
               className="btn btn-secondary"
             >
               Reset Filters
@@ -278,7 +324,7 @@ export const CoursesPage: React.FC = () => {
                     </div>
                   )}
                   {/* Badges */}
-                  <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: 'var(--space-2)' }}>
+                  <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                     <span
                       style={{
                         padding: '4px 10px',
@@ -292,6 +338,25 @@ export const CoursesPage: React.FC = () => {
                     >
                       FREE ENROLLMENT
                     </span>
+                    {course.age_group && course.age_group !== 'all_ages' && (
+                      <span
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: 'rgba(14, 165, 233, 0.9)',
+                          color: '#ffffff',
+                          fontSize: 'var(--font-xs)',
+                          fontWeight: 700,
+                          backdropFilter: 'blur(4px)'
+                        }}
+                      >
+                        {course.age_group === 'elementary'
+                          ? 'Ages 6-10'
+                          : course.age_group === 'middle_school'
+                          ? 'Ages 11-14'
+                          : 'Ages 15+'}
+                      </span>
+                    )}
                   </div>
                 </div>
 

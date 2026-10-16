@@ -9,7 +9,19 @@ import {
 } from '../services/courseService';
 import { Course, CourseModule, Lesson, LessonProgress } from '../types/database';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, ArrowRight, CheckCircle, Circle, PlayCircle, FileText, BookOpen, AlertTriangle } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  Circle,
+  PlayCircle,
+  FileText,
+  BookOpen,
+  AlertTriangle,
+  Download,
+  ExternalLink,
+  FileCode
+} from 'lucide-react';
 
 export const LessonViewPage: React.FC = () => {
   const { courseSlug, lessonSlug } = useParams<{ courseSlug: string; lessonSlug: string }>();
@@ -254,10 +266,92 @@ export const LessonViewPage: React.FC = () => {
                   lineHeight: 1.8,
                   color: 'var(--color-text)',
                   whiteSpace: 'pre-line',
-                  marginBottom: 'var(--space-12)'
+                  marginBottom: 'var(--space-8)'
                 }}
               >
                 {currentLesson.body_text}
+              </div>
+            )}
+
+            {/* Downloadable Resource Attachment */}
+            {currentLesson.resource_url && (
+              <div
+                className="card"
+                style={{
+                  padding: 'var(--space-5) var(--space-6)',
+                  borderRadius: 'var(--radius-xl)',
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  marginBottom: 'var(--space-8)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-4)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: currentLesson.resource_type === 'scratch'
+                        ? 'rgba(249, 115, 22, 0.12)'
+                        : currentLesson.resource_type === 'code'
+                        ? 'rgba(16, 185, 129, 0.12)'
+                        : 'rgba(14, 165, 233, 0.12)',
+                      color: currentLesson.resource_type === 'scratch'
+                        ? '#f97316'
+                        : currentLesson.resource_type === 'code'
+                        ? '#10b981'
+                        : 'var(--color-primary-600)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {currentLesson.resource_type === 'code' ? (
+                      <FileCode size={24} />
+                    ) : (
+                      <Download size={24} />
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                      <span
+                        style={{
+                          fontSize: 'var(--font-xs)',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          color: 'var(--color-text-secondary)',
+                          letterSpacing: '0.05em'
+                        }}
+                      >
+                        {currentLesson.resource_type === 'scratch'
+                          ? 'Scratch Project'
+                          : currentLesson.resource_type === 'code'
+                          ? 'Starter Code File'
+                          : 'Lesson Worksheet & Material'}
+                      </span>
+                    </div>
+                    <h4 style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--color-text)', margin: '2px 0 0' }}>
+                      {currentLesson.resource_title || 'Downloadable Lesson Resource'}
+                    </h4>
+                  </div>
+                </div>
+
+                <a
+                  href={currentLesson.resource_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-xs)', padding: 'var(--space-2) var(--space-4)' }}
+                >
+                  <Download size={14} />
+                  <span>Download Attachment</span>
+                  <ExternalLink size={12} />
+                </a>
               </div>
             )}
 

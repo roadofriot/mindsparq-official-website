@@ -122,6 +122,7 @@ export async function saveCourse(
     description: course.description,
     cover_image_url: course.cover_image_url || null,
     level: course.level || 'Beginner',
+    age_group: course.age_group || 'all_ages',
     estimated_duration: course.estimated_duration || null,
     visibility: course.visibility || 'public',
     access_type: 'free', // Strictly free courses for this release as specified
@@ -277,6 +278,9 @@ export async function saveLesson(
     duration_minutes: lesson.duration_minutes || null,
     sort_order: lesson.sort_order ?? 0,
     status: lesson.status || 'published',
+    resource_url: lesson.resource_url || null,
+    resource_title: lesson.resource_title || null,
+    resource_type: lesson.resource_type || null,
     updated_at: new Date().toISOString()
   };
 

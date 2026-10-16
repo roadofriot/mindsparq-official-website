@@ -643,7 +643,7 @@ export const AdminCoursesPage: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
                     Level
@@ -658,6 +658,23 @@ export const AdminCoursesPage: React.FC = () => {
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
                     <option value="All Levels">All Levels</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
+                    Target Age Group
+                  </label>
+                  <select
+                    value={editingCourse.age_group || 'all_ages'}
+                    onChange={(e) => setEditingCourse({ ...editingCourse, age_group: e.target.value as any })}
+                    className="input-field"
+                    style={{ width: '100%' }}
+                  >
+                    <option value="all_ages">All Ages (Universal)</option>
+                    <option value="elementary">Elementary (Ages 6-10)</option>
+                    <option value="middle_school">Middle School (Ages 11-14)</option>
+                    <option value="high_school">High School (Ages 15+)</option>
                   </select>
                 </div>
 
@@ -847,7 +864,7 @@ export const AdminCoursesPage: React.FC = () => {
                 </div>
               )}
 
-              <div style={{ marginBottom: 'var(--space-6)' }}>
+              <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
                   Lesson Body & Notes
                 </label>
@@ -859,6 +876,66 @@ export const AdminCoursesPage: React.FC = () => {
                   className="input-field"
                   style={{ width: '100%', resize: 'vertical' }}
                 />
+              </div>
+
+              {/* Downloadable Attachment & Resources */}
+              <div
+                style={{
+                  padding: 'var(--space-4)',
+                  backgroundColor: 'var(--color-surface-hover)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-border)',
+                  marginBottom: 'var(--space-6)'
+                }}
+              >
+                <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 700, margin: '0 0 var(--space-3)' }}>
+                  Downloadable Attachment & Resources (Optional)
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: '4px' }}>
+                      Resource Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingLesson.resource_title || ''}
+                      onChange={(e) => setEditingLesson({ ...editingLesson, resource_title: e.target.value })}
+                      placeholder="e.g. Robot Wiring Diagram (PDF)"
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: '4px' }}>
+                      Resource Type
+                    </label>
+                    <select
+                      value={editingLesson.resource_type || 'worksheet'}
+                      onChange={(e) => setEditingLesson({ ...editingLesson, resource_type: e.target.value as any })}
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    >
+                      <option value="pdf">PDF Worksheet</option>
+                      <option value="scratch">Scratch Project File (.sb3)</option>
+                      <option value="code">Starter Code File</option>
+                      <option value="worksheet">Activity Sheet</option>
+                      <option value="link">External Resource Link</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: '4px' }}>
+                    Download URL or Project Link
+                  </label>
+                  <input
+                    type="text"
+                    value={editingLesson.resource_url || ''}
+                    onChange={(e) => setEditingLesson({ ...editingLesson, resource_url: e.target.value })}
+                    placeholder="https://... (direct PDF link, Scratch shared URL, or GitHub repo)"
+                    className="input-field"
+                    style={{ width: '100%' }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>

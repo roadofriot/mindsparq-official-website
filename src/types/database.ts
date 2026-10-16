@@ -78,6 +78,7 @@ export interface Course {
   description: string;
   cover_image_url: string | null;
   level: 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels';
+  age_group?: 'elementary' | 'middle_school' | 'high_school' | 'all_ages' | null;
   estimated_duration: string | null;
   visibility: 'public' | 'unlisted' | 'private';
   access_type: 'free' | 'invite_only';
@@ -113,6 +114,9 @@ export interface Lesson {
   duration_minutes: number | null;
   sort_order: number;
   status: 'draft' | 'published' | 'archived';
+  resource_url?: string | null;
+  resource_title?: string | null;
+  resource_type?: 'pdf' | 'scratch' | 'code' | 'worksheet' | 'link' | null;
   created_at: string;
   updated_at: string;
 }

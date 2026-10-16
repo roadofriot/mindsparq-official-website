@@ -665,3 +665,43 @@ select:focus {
   border: none;
 }
 
+/* ==========================================================================
+   3-Column Responsive Ad-Rail & Promotion Shell
+   ========================================================================== */
+.site-content-shell {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  gap: var(--space-4, 16px);
+  padding: 0 var(--space-3, 12px);
+  box-sizing: border-box;
+}
+
+.site-center-column {
+  flex: 1;
+  min-width: 0;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.ad-rail-slot {
+  display: none;
+}
+
+.mobile-promo-wrapper {
+  display: block !important;
+}
+
+@media (min-width: 1200px) {
+  .ad-rail-slot {
+    display: block;
+  }
+
+  .mobile-promo-wrapper {
+    display: none !important;
+  }
+}
+

@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { AdRail } from './AdRail';
+import { MobilePromoCard } from './MobilePromoCard';
 import { SocialCommunityHub } from '../home/SocialCommunityHub';
 import { trackPageView } from '../../services/analyticsService';
 
@@ -14,7 +16,12 @@ export const Layout: React.FC = () => {
     trackPageView(pathname).catch(() => {});
   }, [pathname]);
 
-  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/login') || pathname.startsWith('/forgot') || pathname.startsWith('/reset');
+  const isExcludedPage = 
+    pathname.startsWith('/auth') || 
+    pathname.startsWith('/login') || 
+    pathname.startsWith('/forgot') || 
+    pathname.startsWith('/reset') ||
+    pathname.startsWith('/learner');
 
   return (
     <>
@@ -23,9 +30,20 @@ export const Layout: React.FC = () => {
       </a>
       <Header />
       <main id="main-content" tabIndex={-1} style={{ outline: 'none' }}>
-        <Outlet />
+        {isExcludedPage ? (
+          <Outlet />
+        ) : (
+          <div className="site-content-shell">
+            <AdRail side="left" />
+            <div className="site-center-column">
+              <MobilePromoCard />
+              <Outlet />
+            </div>
+            <AdRail side="right" />
+          </div>
+        )}
       </main>
-      {!isAuthPage && <SocialCommunityHub />}
+      {!isExcludedPage && <SocialCommunityHub />}
       <Footer />
     </>
   );

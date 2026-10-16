@@ -36,6 +36,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Visual Section Customizer', href: '/admin/sections', icon: Layers },
     { label: 'Global Design Settings', href: '/admin/design', icon: Palette },
     { label: 'Homepage Carousel', href: '/admin/carousel', icon: Sliders },
+    { label: 'Ad Rails & Promotions', href: '/admin/ads', icon: Sparkles },
     { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
     { label: 'Media Library', href: '/admin/media', icon: Image },
     { label: 'Curriculum Programs', href: '/admin/programs', icon: GraduationCap },

@@ -42,6 +42,7 @@ const AdminAuditLogsPage = lazy(() => import('./pages/admin/AdminAuditLogsPage')
 const AdminAiAssistantPage = lazy(() => import('./pages/admin/AdminAiAssistantPage').then((m) => ({ default: m.AdminAiAssistantPage })));
 const AdminSectionsPage = lazy(() => import('./pages/admin/AdminSectionsPage').then((m) => ({ default: m.AdminSectionsPage })));
 const AdminDesignPage = lazy(() => import('./pages/admin/AdminDesignPage').then((m) => ({ default: m.AdminDesignPage })));
+const AdminAdsPage = lazy(() => import('./pages/admin/AdminAdsPage').then((m) => ({ default: m.AdminAdsPage })));
 const PreviewPage = lazy(() => import('./pages/PreviewPage').then((m) => ({ default: m.PreviewPage })));
 import { applyDesignSettingsToDOM } from './services/siteCustomizerService';
 
@@ -147,6 +148,7 @@ export const App: React.FC = () => {
                 <Route path="sections" element={<AdminSectionsPage />} />
                 <Route path="design" element={<AdminDesignPage />} />
                 <Route path="carousel" element={<AdminCarouselPage />} />
+                <Route path="ads" element={<AdminAdsPage />} />
                 <Route path="media" element={<AdminMediaPage />} />
                 <Route path="programs" element={<AdminProgramsPage />} />
                 <Route path="courses" element={<AdminCoursesPage />} />

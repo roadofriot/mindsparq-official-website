@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Compass, Sparkles, BookOpen, Cpu, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, Compass, Sparkles, BookOpen, Cpu, ChevronLeft, ChevronRight, Pause, Play, Phone, MessageCircle } from 'lucide-react';
 import { siteConfig } from '../../content/site';
 import { getPublishedCarouselItems } from '../../services/contentService';
 import { CarouselItem } from '../../types/database';
@@ -438,18 +438,23 @@ export const Hero: React.FC = () => {
                   alignItems: 'center'
                 }}
               >
-                <Link to="/courses" className="btn btn-primary btn-lg">
-                  <BookOpen size={18} aria-hidden="true" />
-                  <span>Explore Courses</span>
-                </Link>
-                <Link to="/programs" className="btn btn-secondary btn-lg">
-                  <span>Our Programs & Partnerships</span>
+                <Link to="/programs" className="btn btn-primary btn-lg">
+                  <span>Explore Programs</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
-                <Link to="/about" className="btn btn-secondary btn-lg">
-                  <Compass size={18} aria-hidden="true" />
-                  <span>Institutional Profile</span>
-                </Link>
+                <a href="tel:+9779857058666" className="btn btn-secondary btn-lg">
+                  <Phone size={17} aria-hidden="true" />
+                  <span>Call: +977 9857058666</span>
+                </a>
+                <a 
+                  href="https://wa.me/9779857058666?text=Namaste%20MindSparQ%2C%20I%20would%20like%20to%20inquire%20about%20courses%20and%20admissions."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-lg"
+                >
+                  <MessageCircle size={17} color="#16a34a" aria-hidden="true" />
+                  <span>WhatsApp Admissions</span>
+                </a>
               </div>
 
               {/* Credibility verification note */}

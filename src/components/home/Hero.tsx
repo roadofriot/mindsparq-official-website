@@ -77,8 +77,8 @@ export const Hero: React.FC = () => {
     <section 
       style={{
         position: 'relative',
-        paddingTop: 'var(--space-12)',
-        paddingBottom: 'var(--space-16)',
+        paddingTop: 'var(--space-6)',
+        paddingBottom: 'var(--space-12)',
         overflow: 'hidden'
       }}
       onMouseEnter={() => setIsPaused(true)}
@@ -120,7 +120,7 @@ export const Hero: React.FC = () => {
         }}
       />
 
-      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '100%', maxWidth: '1540px', margin: '0 auto', padding: '0 clamp(16px, 2.5vw, 32px)', position: 'relative', zIndex: 1 }}>
         {/* Dynamic Carousel Slide Mode (if published slides exist) */}
         {activeSlide ? (
           <div
@@ -128,38 +128,59 @@ export const Hero: React.FC = () => {
               position: 'relative',
               borderRadius: 'var(--radius-2xl)',
               overflow: 'hidden',
-              boxShadow: 'var(--shadow-xl)',
-              backgroundColor: 'var(--color-surface)',
+              boxShadow: 'var(--shadow-2xl)',
+              backgroundColor: '#0a0f1d',
               border: '1px solid var(--color-border)',
-              minHeight: '440px',
+              minHeight: 'clamp(460px, 50vh, 580px)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-end'
+              justifyContent: 'center'
             }}
           >
             {/* Slide Image Background */}
             <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-              <img
-                src={activeSlide.image_url}
-                alt={activeSlide.alt_text}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              <picture>
+                {activeSlide.mobile_image_url && (
+                  <source media="(max-width: 768px)" srcSet={activeSlide.mobile_image_url} />
+                )}
+                <img
+                  src={activeSlide.image_url}
+                  alt={activeSlide.alt_text}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                />
+              </picture>
+
+              {/* Directional Scrim: Dark on left for text readability, clear on right for image visibility */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(90deg, rgba(8, 12, 22, 0.84) 0%, rgba(8, 12, 22, 0.55) 45%, rgba(8, 12, 22, 0.15) 100%)'
+                }}
               />
               <div
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0.2) 100%)'
+                  background: 'linear-gradient(to top, rgba(8, 12, 22, 0.75) 0%, transparent 40%)'
                 }}
               />
             </div>
 
-            {/* Slide Content Overlay */}
+            {/* Slide Content Frosted Glass Card (Protects text from color fade & banner clash) */}
             <div
               style={{
                 position: 'relative',
                 zIndex: 1,
-                padding: 'var(--space-12) var(--space-8) var(--space-8)',
-                maxWidth: '720px',
+                margin: 'clamp(20px, 3.5vw, 40px)',
+                maxWidth: '620px',
+                padding: 'clamp(20px, 2.8vw, 32px)',
+                borderRadius: 'var(--radius-2xl)',
+                backgroundColor: 'rgba(10, 15, 30, 0.85)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.16)',
+                boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.7)',
                 color: '#ffffff'
               }}
             >
@@ -170,25 +191,29 @@ export const Hero: React.FC = () => {
                   gap: 'var(--space-2)',
                   padding: '4px 12px',
                   borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'rgba(14, 165, 233, 0.9)',
-                  fontSize: 'var(--font-xs)',
+                  backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                  border: '1px solid rgba(56, 189, 248, 0.5)',
+                  color: '#38bdf8',
+                  fontSize: '0.75rem',
                   fontWeight: 700,
                   textTransform: 'uppercase',
-                  marginBottom: 'var(--space-3)',
-                  backdropFilter: 'blur(4px)'
+                  letterSpacing: '0.04em',
+                  marginBottom: 'var(--space-3)'
                 }}
               >
-                <Sparkles size={14} /> Featured Announcement
+                <Sparkles size={13} />
+                <span>Featured Announcement</span>
               </div>
 
               <h1
                 style={{
-                  fontSize: 'var(--font-4xl)',
+                  fontSize: 'clamp(1.4rem, 2.8vw, 2.15rem)',
                   fontWeight: 800,
-                  lineHeight: 1.2,
+                  lineHeight: 1.25,
                   marginBottom: 'var(--space-3)',
                   color: '#ffffff',
-                  textShadow: '0 2px 10px rgba(0,0,0,0.4)'
+                  letterSpacing: '-0.02em',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.5)'
                 }}
               >
                 {activeSlide.title}
@@ -197,11 +222,11 @@ export const Hero: React.FC = () => {
               {activeSlide.subtitle && (
                 <p
                   style={{
-                    fontSize: 'var(--font-lg)',
+                    fontSize: 'clamp(0.875rem, 1.2vw, 1rem)',
                     lineHeight: 1.6,
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    marginBottom: 'var(--space-6)',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.5)'
+                    color: '#e2e8f0',
+                    marginBottom: 'var(--space-5)',
+                    textShadow: '0 1px 4px rgba(0,0,0,0.4)'
                   }}
                 >
                   {activeSlide.subtitle}
@@ -211,16 +236,19 @@ export const Hero: React.FC = () => {
               {activeSlide.cta_label && activeSlide.cta_url && (
                 <Link
                   to={activeSlide.cta_url}
-                  className="btn btn-primary btn-lg"
+                  className="btn btn-primary"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 'var(--space-2)',
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
+                    padding: '10px 22px',
+                    fontSize: '0.9375rem',
+                    fontWeight: 700,
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.45)'
                   }}
                 >
                   <span>{activeSlide.cta_label}</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={16} />
                 </Link>
               )}
             </div>
@@ -230,13 +258,15 @@ export const Hero: React.FC = () => {
               style={{
                 position: 'relative',
                 zIndex: 2,
+                width: '100%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: 'var(--space-4) var(--space-8)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.15)',
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(8px)'
+                padding: '12px clamp(20px, 3vw, 36px)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+                backgroundColor: 'rgba(8, 12, 22, 0.65)',
+                backdropFilter: 'blur(10px)',
+                marginTop: 'auto'
               }}
             >
               {/* Dots */}

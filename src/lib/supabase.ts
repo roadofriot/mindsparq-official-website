@@ -1,14 +1,25 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+function sanitizeEnvValue(val?: unknown): string {
+  if (!val || typeof val !== 'string') return '';
+  let cleaned = val.trim();
+  // Strip accidental prefixes like 'Value: ' or 'Key: ' copied from dashboards
+  cleaned = cleaned.replace(/^(Value|Key|AnonKey|PublishableKey):\s*/i, '').trim();
+  // Strip surrounding quotes if accidentally included
+  cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+  return cleaned;
+}
+
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+const rawAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const supabaseUrl = sanitizeEnvValue(rawUrl);
+const supabaseAnonKey = sanitizeEnvValue(rawAnonKey);
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
   supabaseAnonKey &&
-  typeof supabaseUrl === 'string' &&
   supabaseUrl.startsWith('http') &&
-  typeof supabaseAnonKey === 'string' &&
   supabaseAnonKey.length > 20
 );
 

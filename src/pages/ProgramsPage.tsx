@@ -3,12 +3,22 @@ import { useLocation, Link } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, Info, Sparkles, Filter, Building2, Handshake, Shield } from 'lucide-react';
 import { programs, Program, schoolPartnershipModel } from '../content/programs';
 import { ProgramIcon } from '../components/ui/ProgramIcon';
+import { updatePageSeo } from '../utils/seo';
 
 type FilterCategory = 'all' | 'mathematics' | 'technology' | 'skills' | 'institutional';
 
 export const ProgramsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<FilterCategory>('all');
   const { hash } = useLocation();
+
+  useEffect(() => {
+    updatePageSeo({
+      title: 'Educational Programs & School Partnerships',
+      description: 'Abacus mental arithmetic, robotics lab incubation, coding, and bilingual penmanship programs designed for schools and young learners.',
+      canonicalPath: '/programs',
+      ogType: 'website'
+    });
+  }, []);
 
   useEffect(() => {
     if (hash) {

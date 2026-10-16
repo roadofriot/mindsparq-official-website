@@ -4,6 +4,7 @@ import { getEventBySlug } from '../services/eventService';
 import { Event } from '../types/database';
 import { Calendar, MapPin, ArrowLeft, Share2, ExternalLink, ShieldCheck } from 'lucide-react';
 import { sharePublicContent, getSocialShareUrls } from '../services/socialService';
+import { updatePageSeo } from '../utils/seo';
 
 export const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -16,7 +17,18 @@ export const EventDetailPage: React.FC = () => {
 
     getEventBySlug(slug)
       .then((data) => {
-        if (mounted) setEvent(data);
+        if (mounted) {
+          setEvent(data);
+          if (data) {
+            updatePageSeo({
+              title: data.title,
+              description: data.summary || data.description,
+              canonicalPath: `/events/${data.slug}`,
+              ogType: 'website',
+              ogImage: data.cover_image_url || undefined
+            });
+          }
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);

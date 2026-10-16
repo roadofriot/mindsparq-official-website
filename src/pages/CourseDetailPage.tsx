@@ -4,6 +4,7 @@ import { getCourseBySlug, getCourseModulesWithLessons, isUserEnrolled, enrollInC
 import { Course, CourseModule } from '../types/database';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, Clock, BarChart3, CheckCircle2, PlayCircle, FileText, ArrowRight, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { updatePageSeo, generateCourseSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
 export const CourseDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +27,22 @@ export const CourseDetailPage: React.FC = () => {
         if (!mounted) return;
         if (c) {
           setCourse(c);
+
+          updatePageSeo({
+            title: c.title,
+            description: c.summary || c.description,
+            canonicalPath: `/courses/${c.slug}`,
+            ogType: 'course',
+            ogImage: c.cover_image_url || undefined
+          });
+
+          injectJsonLd(generateCourseSchema({
+            title: c.title,
+            description: c.summary || c.description,
+            slug: c.slug,
+            thumbnail_url: c.cover_image_url
+          }), 'course-detail-jsonld');
+
           const mods = await getCourseModulesWithLessons(c.id);
           if (mounted) {
             setModules(mods);
@@ -46,6 +63,7 @@ export const CourseDetailPage: React.FC = () => {
 
     return () => {
       mounted = false;
+      removeJsonLd('course-detail-jsonld');
     };
   }, [slug, user]);
 

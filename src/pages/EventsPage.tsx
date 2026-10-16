@@ -4,6 +4,7 @@ import { getPublishedEvents } from '../services/eventService';
 import { Event } from '../types/database';
 import { Calendar, MapPin, ArrowRight, Share2, Sparkles, ExternalLink } from 'lucide-react';
 import { sharePublicContent } from '../services/socialService';
+import { updatePageSeo } from '../utils/seo';
 
 const FALLBACK_EVENTS: { upcoming: Event[]; past: Event[] } = {
   upcoming: [
@@ -32,6 +33,13 @@ export const EventsPage: React.FC = () => {
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
 
   useEffect(() => {
+    updatePageSeo({
+      title: 'Community Events & STEM Exhibitions',
+      description: 'Upcoming hackathons, robotics showcases, abacus mental math competitions, and teacher workshops in Butwal, Nepal.',
+      canonicalPath: '/events',
+      ogType: 'website'
+    });
+
     let mounted = true;
     getPublishedEvents()
       .then((data) => {

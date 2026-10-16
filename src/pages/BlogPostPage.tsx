@@ -37,6 +37,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { sharePublicContent, getSocialShareUrls } from '../services/socialService';
+import { updatePageSeo, generateArticleSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
 const FALLBACK_ARTICLES: Record<string, BlogPost> = {
   'why-abacus-training-enhances-mathematical-fluency': {
@@ -178,6 +179,16 @@ export const BlogPostPage: React.FC = () => {
         setPost(resolvedPost);
 
         if (resolvedPost) {
+          updatePageSeo({
+            title: resolvedPost.seo_title || resolvedPost.title,
+            description: resolvedPost.seo_description || resolvedPost.excerpt,
+            canonicalPath: `/blog/${resolvedPost.slug}`,
+            ogType: 'article',
+            ogImage: resolvedPost.cover_image_url || undefined
+          });
+
+          injectJsonLd(generateArticleSchema(resolvedPost), 'blog-post-jsonld');
+
           // Fetch comments
           const cmts = await getCommentsForPost(resolvedPost.id);
           if (mounted) setComments(cmts);
@@ -217,6 +228,7 @@ export const BlogPostPage: React.FC = () => {
 
     return () => {
       mounted = false;
+      removeJsonLd('blog-post-jsonld');
     };
   }, [slug, user]);
 

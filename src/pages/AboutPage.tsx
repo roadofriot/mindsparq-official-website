@@ -18,10 +18,20 @@ import {
 } from 'lucide-react';
 import { siteConfig } from '../content/site';
 import { learningPillars, whoWeSupport, digitalEcosystemModules } from '../content/programs';
+import { updatePageSeo } from '../utils/seo';
 
 export const AboutPage: React.FC = () => {
   const { hash } = useLocation();
   const [profileLanguage, setProfileLanguage] = useState<'en' | 'np'>('en');
+
+  useEffect(() => {
+    updatePageSeo({
+      title: 'About MindSparQ | Empowering Minds & Sparking Innovation',
+      description: 'Learn about MindSparQ Education & Technology, our mission, pedagogical philosophy, leadership, and digital learning ecosystem in Butwal, Nepal.',
+      canonicalPath: '/about',
+      ogType: 'website'
+    });
+  }, []);
 
   useEffect(() => {
     if (hash) {

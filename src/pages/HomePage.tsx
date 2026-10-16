@@ -8,17 +8,30 @@ import { WhoWeSupport } from '../components/home/WhoWeSupport';
 import { AiRoboticsFeature } from '../components/home/AiRoboticsFeature';
 import { AboutSnippet } from '../components/home/AboutSnippet';
 import { InquiryCta } from '../components/home/InquiryCta';
+import { updatePageSeo, generateOrganizationSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
 export const HomePage: React.FC = () => {
   const [sections, setSections] = useState<SiteSection[]>([]);
 
   useEffect(() => {
+    updatePageSeo({
+      title: 'Empowering Young Minds | STEM & Robotics in Nepal',
+      description: 'Pioneering mental arithmetic (abacus), robotics, and computational thinking for schoolchildren in Butwal, Nepal.',
+      canonicalPath: '/',
+      ogType: 'website'
+    });
+    injectJsonLd(generateOrganizationSchema(), 'homepage-org-jsonld');
+
     getSiteSections().then((data) => {
       const visible = data
         .filter((s) => s.is_visible !== false)
         .sort((a, b) => a.sort_order - b.sort_order);
       setSections(visible);
     });
+
+    return () => {
+      removeJsonLd('homepage-org-jsonld');
+    };
   }, []);
 
   const renderSection = (key: string) => {

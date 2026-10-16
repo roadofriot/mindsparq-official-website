@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ShieldCheck, Lock, FileText, CheckCircle2 } from 'lucide-react';
 import { siteConfig } from '../content/site';
+import { updatePageSeo } from '../utils/seo';
 
 export const PrivacyPolicyPage: React.FC = () => {
+  useEffect(() => {
+    updatePageSeo({
+      title: 'Privacy Policy & Student Data Protection',
+      description: 'Information handling, cookie policies, and learner data protection standards at MindSparQ Education & Technology.',
+      canonicalPath: '/privacy-policy',
+      ogType: 'website'
+    });
+  }, []);
+
   return (
     <div style={{ paddingBottom: 'var(--space-20)' }}>
       {/* Header */}

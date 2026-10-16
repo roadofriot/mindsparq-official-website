@@ -4,6 +4,7 @@ import { MapPin, Mail, AlertCircle, CheckCircle2, Send, HelpCircle, Phone, Exter
 import { siteConfig } from '../content/site';
 import { programs } from '../content/programs';
 import { ContactFormData, ValidationErrors, validateContactForm } from '../lib/validation';
+import { updatePageSeo } from '../utils/seo';
 
 export const ContactPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -20,6 +21,15 @@ export const ContactPage: React.FC = () => {
 
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submissionState, setSubmissionState] = useState<'idle' | 'reviewed'>('idle');
+
+  useEffect(() => {
+    updatePageSeo({
+      title: 'Contact MindSparQ | Inquiries & School Partnerships',
+      description: 'Connect with MindSparQ Education & Technology in Butwal, Nepal. Inquire about student enrollment, school partnerships, and STEM workshops.',
+      canonicalPath: '/contact',
+      ogType: 'website'
+    });
+  }, []);
 
   useEffect(() => {
     if (preselectedProgram) {

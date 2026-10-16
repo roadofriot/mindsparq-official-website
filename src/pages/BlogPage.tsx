@@ -17,6 +17,7 @@ import {
   Atom,
   Sparkles
 } from 'lucide-react';
+import { updatePageSeo } from '../utils/seo';
 
 interface PostWithExtra extends BlogPost {
   read_time?: string;
@@ -78,6 +79,13 @@ export const BlogPage: React.FC = () => {
   const [displayCount, setDisplayCount] = useState(6);
 
   useEffect(() => {
+    updatePageSeo({
+      title: 'Educational Articles & Pedagogical Insights',
+      description: 'Pedagogical insights, STEM curriculum updates, and student achievements from MindSparQ in Nepal.',
+      canonicalPath: '/blog',
+      ogType: 'website'
+    });
+
     let mounted = true;
     getPublishedPosts()
       .then((data) => {

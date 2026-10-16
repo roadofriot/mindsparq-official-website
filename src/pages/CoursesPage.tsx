@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getPublishedCourses } from '../services/courseService';
 import { Course } from '../types/database';
 import { BookOpen, Clock, BarChart3, Search, Sparkles, ArrowRight } from 'lucide-react';
+import { updatePageSeo } from '../utils/seo';
 
 // Fallback seed courses if database is not yet populated
 const FALLBACK_COURSES: Course[] = [
@@ -48,6 +49,13 @@ export const CoursesPage: React.FC = () => {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
 
   useEffect(() => {
+    updatePageSeo({
+      title: 'Course Catalog & Curriculum Tracks',
+      description: 'Hands-on curriculum tracks in robotics, AI ethics, abacus speed arithmetic, and foundational programming in Nepal.',
+      canonicalPath: '/courses',
+      ogType: 'website'
+    });
+
     let mounted = true;
     getPublishedCourses()
       .then((data) => {

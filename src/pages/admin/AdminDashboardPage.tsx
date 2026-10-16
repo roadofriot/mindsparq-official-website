@@ -4,6 +4,7 @@ import { getAllPosts, getAllComments } from '../../services/blogService';
 import { getAllEvents } from '../../services/eventService';
 import { getAllCourses } from '../../services/courseService';
 import { getAuditLogs } from '../../services/auditService';
+import { getTrafficStats, TrafficStats } from '../../services/analyticsService';
 import { AuditLog } from '../../types/database';
 import {
   FileText,
@@ -13,7 +14,13 @@ import {
   ShieldCheck,
   PlusCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  TrendingUp,
+  Users,
+  Eye,
+  BarChart3,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -24,6 +31,7 @@ export const AdminDashboardPage: React.FC = () => {
     coursesCount: 0,
     pendingCommentsCount: 0
   });
+  const [traffic, setTraffic] = useState<TrafficStats | null>(null);
   const [recentAudits, setRecentAudits] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,9 +43,10 @@ export const AdminDashboardPage: React.FC = () => {
       getAllEvents(),
       getAllCourses(),
       getAllComments('pending'),
-      getAuditLogs(10)
+      getAuditLogs(10),
+      getTrafficStats()
     ])
-      .then(([posts, events, courses, pendingComments, audits]) => {
+      .then(([posts, events, courses, pendingComments, audits, trafficStats]) => {
         if (!mounted) return;
         setMetrics({
           postsCount: posts.length,
@@ -47,6 +56,7 @@ export const AdminDashboardPage: React.FC = () => {
           pendingCommentsCount: pendingComments.length
         });
         setRecentAudits(audits);
+        setTraffic(trafficStats);
       })
       .catch((err) => console.error('Error fetching admin dashboard metrics:', err))
       .finally(() => {
@@ -67,6 +77,100 @@ export const AdminDashboardPage: React.FC = () => {
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-sm)' }}>
           Real-time database metrics, content publishing workflows, and moderation queue.
         </p>
+      </div>
+
+      {/* Section 1: Visitor Traffic & Audience Engagement */}
+      <div style={{ marginBottom: 'var(--space-8)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BarChart3 size={20} style={{ color: 'var(--color-primary-600)' }} />
+            <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: 800, margin: 0, color: 'var(--color-text)' }}>
+              Visitor Traffic & Public Engagement
+            </h2>
+          </div>
+          <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-secondary)' }}>
+            Real-time daily, weekly, monthly and cumulative visits
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 'var(--space-4)'
+          }}
+        >
+          {/* Today's Visits */}
+          <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', borderLeft: '4px solid var(--color-primary-600)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
+                Today's Visits
+              </span>
+              <Eye size={16} style={{ color: 'var(--color-primary-600)' }} />
+            </div>
+            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
+              {traffic ? traffic.todayVisits.toLocaleString() : '—'}
+            </div>
+            <span style={{ fontSize: '0.6875rem', color: '#10b981', fontWeight: 600 }}>
+              ~{traffic ? traffic.todayUnique : 0} unique visitors today
+            </span>
+          </div>
+
+          {/* Past 7 Days */}
+          <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', borderLeft: '4px solid #10b981' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
+                Past 7 Days
+              </span>
+              <TrendingUp size={16} style={{ color: '#10b981' }} />
+            </div>
+            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
+              {traffic ? traffic.weekVisits.toLocaleString() : '—'}
+            </div>
+            <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>
+              Weekly audience reach
+            </span>
+          </div>
+
+          {/* Past 30 Days */}
+          <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', borderLeft: '4px solid #8b5cf6' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
+                Past 30 Days
+              </span>
+              <Calendar size={16} style={{ color: '#8b5cf6' }} />
+            </div>
+            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
+              {traffic ? traffic.monthVisits.toLocaleString() : '—'}
+            </div>
+            <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>
+              Monthly learning queries
+            </span>
+          </div>
+
+          {/* Total All-Time Visits */}
+          <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', borderLeft: '4px solid #f59e0b' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
+                Total Cumulative Visits
+              </span>
+              <Users size={16} style={{ color: '#f59e0b' }} />
+            </div>
+            <div style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
+              {traffic ? traffic.totalVisits.toLocaleString() : '—'}
+            </div>
+            <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>
+              All-time platform hits
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Content & Publishing Metrics */}
+      <div style={{ marginBottom: 'var(--space-3)' }}>
+        <h2 style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Database & Content Metrics
+        </h2>
       </div>
 
       {/* Metrics Row */}
@@ -159,6 +263,28 @@ export const AdminDashboardPage: React.FC = () => {
             Quick Publishing Actions
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <Link
+              to="/admin/ai-assistant"
+              className="btn btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', borderColor: 'var(--color-primary-600)' }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
+                <Sparkles size={16} /> Launch AI Studio & Assistant
+              </span>
+              <ArrowRight size={14} />
+            </Link>
+
+            <Link
+              to="/admin/sections"
+              className="btn btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)' }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <Layers size={16} /> Customize Homepage Sections
+              </span>
+              <ArrowRight size={14} />
+            </Link>
+
             <Link
               to="/admin/blog"
               className="btn btn-secondary"

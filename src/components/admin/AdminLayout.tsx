@@ -18,7 +18,10 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  Sparkles,
+  Layers,
+  Palette
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -28,8 +31,11 @@ export const AdminLayout: React.FC = () => {
 
   const navLinks = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
-    { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
+    { label: 'AI Studio & Chatbot', href: '/admin/ai-assistant', icon: Sparkles },
+    { label: 'Visual Section Customizer', href: '/admin/sections', icon: Layers },
+    { label: 'Global Design Settings', href: '/admin/design', icon: Palette },
     { label: 'Homepage Carousel', href: '/admin/carousel', icon: Sliders },
+    { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
     { label: 'Media Library', href: '/admin/media', icon: Image },
     { label: 'Curriculum Programs', href: '/admin/programs', icon: GraduationCap },
     { label: 'Courses & Lessons', href: '/admin/courses', icon: BookOpen },

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -38,6 +38,10 @@ const AdminCommentsPage = lazy(() => import('./pages/admin/AdminCommentsPage').t
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
 const AdminAuditLogsPage = lazy(() => import('./pages/admin/AdminAuditLogsPage').then((m) => ({ default: m.AdminAuditLogsPage })));
+const AdminAiAssistantPage = lazy(() => import('./pages/admin/AdminAiAssistantPage').then((m) => ({ default: m.AdminAiAssistantPage })));
+const AdminSectionsPage = lazy(() => import('./pages/admin/AdminSectionsPage').then((m) => ({ default: m.AdminSectionsPage })));
+const AdminDesignPage = lazy(() => import('./pages/admin/AdminDesignPage').then((m) => ({ default: m.AdminDesignPage })));
+import { applyDesignSettingsToDOM } from './services/siteCustomizerService';
 
 const RouteLoadingSpinner: React.FC = () => (
   <div
@@ -62,6 +66,10 @@ const RouteLoadingSpinner: React.FC = () => (
 );
 
 export const App: React.FC = () => {
+  useEffect(() => {
+    applyDesignSettingsToDOM();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -127,6 +135,9 @@ export const App: React.FC = () => {
                 }
               >
                 <Route index element={<AdminDashboardPage />} />
+                <Route path="ai-assistant" element={<AdminAiAssistantPage />} />
+                <Route path="sections" element={<AdminSectionsPage />} />
+                <Route path="design" element={<AdminDesignPage />} />
                 <Route path="carousel" element={<AdminCarouselPage />} />
                 <Route path="media" element={<AdminMediaPage />} />
                 <Route path="programs" element={<AdminProgramsPage />} />

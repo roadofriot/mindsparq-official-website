@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, ArrowUpRight, ShieldCheck, Mail, Phone } from 'lucide-react';
 import { siteConfig } from '../../content/site';
 import { footerLinks } from '../../content/navigation';
 import { Logo } from './Logo';
+import { getPublicVisitorCount } from '../../services/analyticsService';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const [visitorCount, setVisitorCount] = useState<number>(() => getPublicVisitorCount());
+
+  useEffect(() => {
+    setVisitorCount(getPublicVisitorCount());
+  }, []);
 
   return (
     <footer
@@ -169,6 +175,35 @@ export const Footer: React.FC = () => {
           <div>
             © {currentYear} {siteConfig.name}. All rights reserved. Butwal, Nepal.
           </div>
+
+          {/* Public Total Visitor Counter */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 12px',
+              borderRadius: '20px',
+              backgroundColor: 'var(--color-surface-hover)',
+              border: '1px solid var(--color-border)',
+              fontSize: '11px',
+              fontWeight: 500,
+              color: 'var(--color-text-secondary)'
+            }}
+            title="Total visitors engaged with MindSparQ platform"
+          >
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                display: 'inline-block'
+              }}
+            />
+            Total Visits: <strong style={{ color: 'var(--color-text)' }}>{visitorCount.toLocaleString()}</strong>
+          </div>
+
           <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'center' }}>
             <Link to="/privacy-policy" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}>
               Privacy Policy

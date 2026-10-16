@@ -673,10 +673,10 @@ select:focus {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
-  max-width: 1600px;
+  max-width: 1720px;
   margin: 0 auto;
-  gap: var(--space-4, 16px);
-  padding: 0 var(--space-3, 12px);
+  gap: var(--space-5, 20px);
+  padding: 0 var(--space-4, 16px);
   box-sizing: border-box;
 }
 
@@ -689,13 +689,14 @@ select:focus {
 
 .ad-rail-slot {
   display: none;
+  width: 230px;
 }
 
 .mobile-promo-wrapper {
   display: block !important;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .ad-rail-slot {
     display: block;
   }

@@ -91,6 +91,7 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
           position: 'relative',
           width: '100%',
           aspectRatio: '2 / 3',
+          minHeight: '345px',
           backgroundColor: 'var(--color-bg-secondary, #1e293b)',
           overflow: 'hidden'
         }}
@@ -132,16 +133,16 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
             bottom: 0,
             left: 0,
             right: 0,
-            padding: '10px 10px',
+            padding: '12px 12px',
             color: '#ffffff',
             zIndex: 2
           }}
         >
           <h4
             style={{
-              fontSize: '0.8125rem',
+              fontSize: '0.875rem',
               fontWeight: 700,
-              lineHeight: 1.3,
+              lineHeight: 1.35,
               margin: '0 0 6px 0',
               textShadow: '0 1px 3px rgba(0,0,0,0.8)',
               display: '-webkit-box',
@@ -157,14 +158,14 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
-              fontSize: '0.6875rem',
+              gap: '5px',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: '#38bdf8'
             }}
           >
             <span>{isNe ? 'थप जान्नुहोस्' : 'Explore Details'}</span>
-            <ExternalLink size={11} />
+            <ExternalLink size={12} />
           </div>
         </div>
       </div>
@@ -176,7 +177,7 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
       className={`ad-rail-slot ad-rail-${side} ${className}`}
       aria-label={adConfig.isSponsored ? 'Advertisement' : 'Promotions'}
       style={{
-        width: '180px',
+        width: '230px',
         flexShrink: 0,
         alignSelf: 'flex-start',
         position: 'sticky',

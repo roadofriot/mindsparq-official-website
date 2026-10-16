@@ -379,7 +379,7 @@ export const AdminAdsPage: React.FC = () => {
 
           <div
             style={{
-              padding: 'var(--space-6)',
+              padding: 'var(--space-8) var(--space-6)',
               borderRadius: 'var(--radius-xl)',
               backgroundColor: 'var(--color-bg)',
               border: '1px dashed var(--color-border)',
@@ -387,11 +387,11 @@ export const AdminAdsPage: React.FC = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              minHeight: '380px'
+              minHeight: '480px'
             }}
           >
             {formData.isActive ? (
-              <div style={{ width: selectedSlot === 'mobile-inline-promo' ? '100%' : '200px', maxWidth: '320px' }}>
+              <div style={{ width: selectedSlot === 'mobile-inline-promo' ? '100%' : '240px', maxWidth: selectedSlot === 'mobile-inline-promo' ? '460px' : '260px' }}>
                 <div
                   className="card"
                   style={{

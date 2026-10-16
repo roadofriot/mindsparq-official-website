@@ -1,0 +1,23 @@
+# Cloudflare Pages Caching and Security Headers
+# MindSparQ Education & Technology (mindsparqeducation.com.np)
+
+# Global Security Headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Immutable Bundled JavaScript and CSS Assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Favicon, SVGs, and Static Media
+/favicon.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400

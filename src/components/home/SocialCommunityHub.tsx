@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { ExternalLink, MessageCircle, Heart, Eye, Play, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ExternalLink, MessageCircle, Heart, Eye, Play, Sparkles, CheckCircle2, PhoneCall, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import { getActiveSocialLinks } from '../ui/SocialLinksBar';
 
 type PlatformFilter = 'all' | 'facebook' | 'instagram' | 'tiktok' | 'whatsapp' | 'youtube';
@@ -606,52 +606,175 @@ export const SocialCommunityHub: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom Quick Contact Bar - Generous Spacing and Centered Content */}
+        {/* Bottom Quick Contact Bar - Enterprise Elevated Container */}
         <div
           style={{
             marginTop: 'clamp(56px, 7vw, 84px)',
-            padding: 'clamp(var(--space-8), 4vw, var(--space-10)) var(--space-8)',
-            borderRadius: 'var(--radius-2xl)',
-            backgroundColor: 'var(--color-bg)',
-            border: '1.5px solid var(--color-border)',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.04)',
+            padding: 'clamp(32px, 5vw, 44px) clamp(20px, 4vw, 36px)',
+            borderRadius: 'var(--radius-2xl, 24px)',
+            backgroundColor: 'var(--color-surface)',
+            background: 'linear-gradient(135deg, var(--color-surface) 0%, rgba(37, 99, 235, 0.04) 50%, rgba(16, 185, 129, 0.04) 100%)',
+            border: '1px solid rgba(37, 99, 235, 0.22)',
+            boxShadow: '0 20px 48px -12px rgba(37, 99, 235, 0.12), 0 4px 16px rgba(0, 0, 0, 0.04)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            maxWidth: '920px',
-            margin: 'clamp(56px, 7vw, 84px) auto 0 auto'
+            maxWidth: '960px',
+            margin: 'clamp(56px, 7vw, 84px) auto 0 auto',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ maxWidth: '720px', marginBottom: 'var(--space-6)' }}>
-            <h4
+          {/* Top Decorative Gradient Accent Bar */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #2563eb 0%, #10b981 50%, #6366f1 100%)'
+            }}
+          />
+
+          {/* Eyebrow with Pulsing Live Status Dot */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '4px 14px',
+              borderRadius: '999px',
+              backgroundColor: 'rgba(16, 185, 129, 0.12)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              marginBottom: '14px'
+            }}
+          >
+            <span
               style={{
-                fontSize: 'clamp(1.125rem, 2.2vw, 1.375rem)',
-                fontWeight: 800,
-                color: 'var(--color-text)',
-                margin: '0 0 8px 0',
-                lineHeight: 1.3
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.25)'
+              }}
+            />
+            <span
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: '#059669'
               }}
             >
-              {isNe
-                ? 'सिधै MindSparQ शैक्षिक डेस्कसँग कुरा गर्न चाहनुहुन्छ?'
-                : 'Need immediate academic guidance from MindSparQ?'}
-            </h4>
-            <p
-              style={{
-                fontSize: '0.9375rem',
-                color: 'var(--color-text-secondary)',
-                lineHeight: 1.65,
-                margin: 0
-              }}
-            >
-              {isNe
-                ? 'हाम्रो बुटवल कार्यालयमा सिधा सम्पर्क: +977 9857058666 वा info@mindsparqeducation.com.np'
-                : 'Direct line to our Butwal center: +977 9857058666 or info@mindsparqeducation.com.np'}
-            </p>
+              {isNe ? 'प्रत्यक्ष शैक्षिक सहायता डेस्क • बुटवल' : 'Live Academic Guidance Desk • Butwal Center'}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+          {/* Heading */}
+          <h4
+            style={{
+              fontSize: 'clamp(1.25rem, 2.5vw, 1.625rem)',
+              fontWeight: 800,
+              color: 'var(--color-text)',
+              margin: '0 0 10px 0',
+              lineHeight: 1.3
+            }}
+          >
+            {isNe
+              ? 'सिधै MindSparQ शैक्षिक डेस्कसँग कुरा गर्न चाहनुहुन्छ?'
+              : 'Need immediate academic guidance from MindSparQ?'}
+          </h4>
+
+          {/* Subtitle */}
+          <p
+            style={{
+              fontSize: '0.9375rem',
+              color: 'var(--color-text-secondary)',
+              lineHeight: 1.65,
+              maxWidth: '720px',
+              margin: '0 0 20px 0'
+            }}
+          >
+            {isNe
+              ? 'पाठ्यक्रम, ब्याच तालिका वा भर्ना सम्बन्धी कुनै पनि जिज्ञासा भएमा हाम्रा शैक्षिक सल्लाहकारहरूसँग सिधै सम्पर्क गर्नुहोस्।'
+              : 'Direct, zero-pressure academic guidance for parents, students, and school partners seeking course information, batch timings, or demo classes.'}
+          </p>
+
+          {/* Structured Contact Info Chips */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+              marginBottom: '24px'
+            }}
+          >
+            <a
+              href="tel:+9779857058666"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                fontSize: '0.8125rem',
+                color: 'var(--color-text)',
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}
+            >
+              <PhoneCall size={14} style={{ color: '#2563eb' }} />
+              <span>+977 9857058666</span>
+            </a>
+
+            <a
+              href="mailto:info@mindsparqeducation.com.np"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                fontSize: '0.8125rem',
+                color: 'var(--color-text)',
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}
+            >
+              <Mail size={14} style={{ color: '#0891b2' }} />
+              <span>info@mindsparqeducation.com.np</span>
+            </a>
+
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                fontSize: '0.8125rem',
+                color: 'var(--color-text-secondary)',
+                fontWeight: 500
+              }}
+            >
+              <MapPin size={14} style={{ color: '#d97706' }} />
+              <span>Gyanbhoomi Path, Butwal-11, Nepal</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
             <a
               href="https://wa.me/9779857058666?text=Namaste%20MindSparQ%2C%20I%20would%20like%20to%20inquire%20about%20courses%20and%20admissions."
               target="_blank"
@@ -661,26 +784,26 @@ export const SocialCommunityHub: React.FC = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '11px 22px',
+                padding: '12px 24px',
                 borderRadius: '999px',
                 backgroundColor: '#25D366',
                 color: '#ffffff',
                 fontWeight: 700,
-                fontSize: '0.875rem',
+                fontSize: '0.9375rem',
                 textDecoration: 'none',
-                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)',
+                boxShadow: '0 6px 20px rgba(37, 211, 102, 0.35)',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 18px rgba(37, 211, 102, 0.45)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 211, 102, 0.45)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(37, 211, 102, 0.35)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(37, 211, 102, 0.35)';
               }}
             >
-              <MessageCircle size={16} fill="currentColor" />
+              <MessageCircle size={18} fill="currentColor" />
               <span>WhatsApp: +977 9857058666</span>
             </a>
 
@@ -690,10 +813,10 @@ export const SocialCommunityHub: React.FC = () => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '11px 22px',
+                gap: '8px',
+                padding: '12px 24px',
                 borderRadius: '999px',
-                fontSize: '0.875rem',
+                fontSize: '0.9375rem',
                 fontWeight: 700,
                 textDecoration: 'none',
                 transition: 'transform 0.2s ease'
@@ -705,8 +828,40 @@ export const SocialCommunityHub: React.FC = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              {isNe ? 'फोन सम्पर्क गर्नुहोस्' : 'Call Admissions Desk'}
+              <PhoneCall size={16} />
+              <span>{isNe ? 'सिधै फोन गर्नुहोस्' : 'Call Admissions Desk'}</span>
             </a>
+          </div>
+
+          {/* Trust Guarantees Strip */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid var(--color-border)',
+              width: '100%',
+              fontSize: '0.75rem',
+              color: 'var(--color-text-muted)'
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <ShieldCheck size={14} style={{ color: '#10b981' }} />
+              <span>Zero-Pressure Academic Consultation</span>
+            </span>
+            <span>•</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <CheckCircle2 size={14} style={{ color: '#10b981' }} />
+              <span>VAK Certified Faculty Guidance</span>
+            </span>
+            <span>•</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Sparkles size={14} style={{ color: 'var(--color-primary-600)' }} />
+              <span>Free In-Person Center Visit</span>
+            </span>
           </div>
         </div>
       </div>

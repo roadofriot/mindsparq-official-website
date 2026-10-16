@@ -614,30 +614,6 @@ export const Header: React.FC = () => {
             )}
           </div>
 
-          {/* Single Clean Primary CTA Button */}
-          <NavLink
-            to="/contact"
-            className="desktop-cta"
-            style={{
-              display: 'none',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 18px',
-              borderRadius: 'var(--radius-full)',
-              background: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
-              color: '#ffffff',
-              fontSize: '0.8125rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              boxShadow: '0 2px 10px rgba(59, 130, 246, 0.3)',
-              transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)',
-              flexShrink: 0
-            }}
-          >
-            <span>{t('nav.contact', 'Enquire')}</span>
-            <ArrowRight size={14} aria-hidden="true" />
-          </NavLink>
-
           {/* Mobile Menu Toggle Button */}
           <button
             type="button"

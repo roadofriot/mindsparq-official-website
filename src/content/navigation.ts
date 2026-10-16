@@ -5,11 +5,15 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
   { label: 'Programs', href: '/programs' },
   { label: 'Courses', href: '/courses' },
-  { label: 'Events', href: '/events' },
-  { label: 'Blog', href: '/blog' }
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' }
+];
+
+export const exploreNavItems: NavItem[] = [
+  { label: 'Blog & Insights', href: '/blog' },
+  { label: 'Events & Exhibitions', href: '/events' }
 ];
 
 export const footerLinks = {

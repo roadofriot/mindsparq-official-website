@@ -74,6 +74,7 @@ export const AdminAiAssistantPage: React.FC = () => {
   const [tempKeyInput, setTempKeyInput] = useState(apiKey);
   const [isValidatingKey, setIsValidatingKey] = useState(false);
   const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
+  const [dynamicModels, setDynamicModels] = useState<Array<{ id: string; name: string; description?: string }>>([]);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -89,9 +90,14 @@ export const AdminAiAssistantPage: React.FC = () => {
     setIsValidatingKey(false);
 
     if (res.valid) {
+      if (res.availableModels && res.availableModels.length > 0) {
+        setDynamicModels(res.availableModels);
+      }
       setValidationResult({
         valid: true,
-        message: `Verified! Successfully connected to Google Gemini using ${res.modelUsed}.`
+        message: res.error 
+          ? `Verified! ${res.error}` 
+          : `Verified! Successfully connected to Google Gemini using ${res.modelUsed}.`
       });
       setApiKey(tempKeyInput.trim());
       setSelectedModel(res.modelUsed);
@@ -858,9 +864,9 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
                   className="input-field"
                   style={{ width: '100%', cursor: 'pointer' }}
                 >
-                  {SUPPORTED_GEMINI_MODELS.map((m) => (
+                  {(dynamicModels.length > 0 ? dynamicModels : SUPPORTED_GEMINI_MODELS).map((m: any) => (
                     <option key={m.id} value={m.id}>
-                      {m.name} — {m.desc}
+                      {m.name} {m.description ? `— ${m.description}` : m.desc ? `— ${m.desc}` : ''}
                     </option>
                   ))}
                 </select>

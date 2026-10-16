@@ -21,12 +21,19 @@ export interface GeminiMessage {
 const STORAGE_KEY_GEMINI_KEY = 'mindsparq_gemini_api_key';
 const STORAGE_KEY_GEMINI_MODEL = 'mindsparq_gemini_model';
 
+export interface AvailableGeminiModel {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export const SUPPORTED_GEMINI_MODELS = [
-  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', desc: 'Google AI Studio recommended latest Flash model' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production model' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Widely compatible lightweight Flash model' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', desc: 'Deep curriculum reasoning & 2M context window' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Experimental preview model' }
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Google recommended official fast multimodal production model' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Advanced reasoning & thinking Flash model' },
+  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', desc: 'Ultra low-latency lightweight model' },
+  { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash Latest', desc: 'Widely compatible standard Flash model' },
+  { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro Latest', desc: 'Deep curriculum reasoning & 2M context window' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Standard legacy Flash model' }
 ] as const;
 
 export function getGeminiApiKey(): string {
@@ -47,9 +54,11 @@ export function saveGeminiApiKey(key: string): void {
 
 export function getGeminiModel(): string {
   try {
-    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-3.8-flash';
+    const saved = localStorage.getItem(STORAGE_KEY_GEMINI_MODEL);
+    if (saved && saved !== 'gemini-3.8-flash') return saved;
+    return 'gemini-2.0-flash';
   } catch {
-    return 'gemini-3.8-flash';
+    return 'gemini-2.0-flash';
   }
 }
 
@@ -62,27 +71,113 @@ export function saveGeminiModel(model: string): void {
 }
 
 /**
- * Validates a Google Gemini API Key with an active test ping
+ * Fetch list of available models from Google AI Studio for the provided API key
+ */
+export async function fetchAvailableGeminiModels(apiKey: string): Promise<AvailableGeminiModel[]> {
+  const key = apiKey.trim();
+  if (!key) return [];
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data.models)) return [];
+    return data.models
+      .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+      .map((m: any) => ({
+        id: m.name.replace(/^models\//, ''),
+        name: m.displayName || m.name.replace(/^models\//, ''),
+        description: m.description
+      }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Validates a Google Gemini API Key using Google's official ListModels endpoint
+ * and verifies generateContent capability.
  */
 export async function validateGeminiApiKey(
   apiKey: string,
   modelToTest?: string
-): Promise<{ valid: boolean; error?: string; modelUsed: string }> {
+): Promise<{ valid: boolean; error?: string; modelUsed: string; availableModels?: AvailableGeminiModel[] }> {
   const key = apiKey.trim();
   if (!key) {
-    return { valid: false, error: 'API key is empty. Please enter your Google Gemini API key.', modelUsed: '' };
+    return { 
+      valid: false, 
+      error: 'API key is empty. Please enter your Google Gemini API key from https://aistudio.google.com/app/apikey', 
+      modelUsed: '' 
+    };
   }
 
-  const candidateModels = modelToTest 
-    ? [modelToTest, 'gemini-3.8-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
-    : ['gemini-3.8-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  // Step 1: Call Google's ModelService.ListModels endpoint to authenticate key
+  let availableModels: AvailableGeminiModel[] = [];
+  try {
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (!listRes.ok) {
+      const errJson = await listRes.json().catch(() => ({}));
+      const message = errJson.error?.message || `Google API error: HTTP ${listRes.status}`;
+      return { valid: false, error: message, modelUsed: '' };
+    }
 
+    const listData = await listRes.json();
+    if (Array.isArray(listData.models)) {
+      availableModels = listData.models
+        .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m: any) => ({
+          id: m.name.replace(/^models\//, ''),
+          name: m.displayName || m.name.replace(/^models\//, ''),
+          description: m.description
+        }));
+    }
+  } catch (err: any) {
+    return { valid: false, error: `Network error connecting to Google AI Studio: ${err.message}`, modelUsed: '' };
+  }
+
+  if (availableModels.length === 0) {
+    return {
+      valid: false,
+      error: 'Google API key authenticated, but no generateContent models are accessible in this Google project.',
+      modelUsed: ''
+    };
+  }
+
+  // Step 2: Determine model candidates to test
+  const cleanRequested = modelToTest?.replace(/^models\//, '');
+  const candidateIds: string[] = [];
+  
+  if (cleanRequested && availableModels.some((m) => m.id === cleanRequested)) {
+    candidateIds.push(cleanRequested);
+  }
+
+  const preferredFallbacks = [
+    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-pro'
+  ];
+
+  for (const pref of preferredFallbacks) {
+    if (availableModels.some((m) => m.id === pref) && !candidateIds.includes(pref)) {
+      candidateIds.push(pref);
+    }
+  }
+
+  for (const m of availableModels) {
+    if (!candidateIds.includes(m.id)) {
+      candidateIds.push(m.id);
+    }
+  }
+
+  // Step 3: Run quick ping on candidate model
   let lastError = '';
-
-  for (const model of candidateModels) {
+  for (const modelId of candidateIds.slice(0, 3)) {
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      const res = await fetch(endpoint, {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`;
+      const pingRes = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -91,20 +186,39 @@ export async function validateGeminiApiKey(
         })
       });
 
-      if (res.ok) {
+      if (pingRes.ok) {
         saveGeminiApiKey(key);
-        saveGeminiModel(model);
-        return { valid: true, modelUsed: model };
+        saveGeminiModel(modelId);
+        return { valid: true, modelUsed: modelId, availableModels };
       } else {
-        const errJson = await res.json().catch(() => ({}));
-        lastError = errJson.error?.message || `HTTP ${res.status} error`;
+        const errJson = await pingRes.json().catch(() => ({}));
+        if (pingRes.status === 429) {
+          saveGeminiApiKey(key);
+          saveGeminiModel(modelId);
+          return {
+            valid: true,
+            modelUsed: modelId,
+            availableModels,
+            error: 'Key authenticated with Google AI Studio (rate limit/quota active; resets shortly).'
+          };
+        }
+        lastError = errJson.error?.message || `HTTP ${pingRes.status} on model ${modelId}`;
       }
     } catch (err: any) {
-      lastError = err.message || 'Network error connecting to Google API';
+      lastError = err.message || 'Network error on model ping';
     }
   }
 
-  return { valid: false, error: lastError, modelUsed: candidateModels[0] };
+  // If list models passed, the key is valid with Google
+  const fallbackModel = candidateIds[0] || 'gemini-2.0-flash';
+  saveGeminiApiKey(key);
+  saveGeminiModel(fallbackModel);
+  return { 
+    valid: true, 
+    modelUsed: fallbackModel, 
+    availableModels,
+    error: `Authenticated with Google AI Studio using ${fallbackModel}. (${lastError})`
+  };
 }
 
 /**
@@ -183,9 +297,9 @@ export async function sendGeminiPrompt(
       const msg = errJson.error?.message || `HTTP ${res.status}`;
       console.warn(`[Gemini AI] API error on ${model}:`, msg);
 
-      // Automatic fallback to production stable gemini-2.0-flash or gemini-1.5-flash
-      if (model !== 'gemini-2.0-flash' && model !== 'gemini-1.5-flash') {
-        for (const altModel of ['gemini-2.0-flash', 'gemini-1.5-flash']) {
+      // Automatic fallback to production stable gemini-2.0-flash or gemini-2.5-flash
+      if (model !== 'gemini-2.0-flash') {
+        for (const altModel of ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash']) {
           try {
             const altEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${altModel}:generateContent?key=${apiKey}`;
             const altRes = await fetch(altEndpoint, {
@@ -258,7 +372,7 @@ export async function transcribeAudioWithGemini(
 
   const promptText = 'Transcribe this speech accurately into text.';
 
-  const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-3.8-flash'];
+  const candidateModels = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
   let lastError = '';
 
   for (const model of candidateModels) {

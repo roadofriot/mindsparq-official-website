@@ -265,7 +265,7 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
                 cursor: 'pointer'
               }}
             >
-              {SUPPORTED_GEMINI_MODELS.map((m) => (
+              {(dynamicModels.length > 0 ? dynamicModels : SUPPORTED_GEMINI_MODELS).map((m: any) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
                 </option>

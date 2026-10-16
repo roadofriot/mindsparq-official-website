@@ -28,12 +28,13 @@ export interface AvailableGeminiModel {
 }
 
 export const SUPPORTED_GEMINI_MODELS = [
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Google recommended official fast multimodal production model' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Advanced reasoning & thinking Flash model' },
-  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', desc: 'Ultra low-latency lightweight model' },
-  { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash Latest', desc: 'Widely compatible standard Flash model' },
-  { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro Latest', desc: 'Deep curriculum reasoning & 2M context window' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Standard legacy Flash model' }
+  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', desc: 'Google AI Studio recommended latest 2026 Flash reasoning model' },
+  { id: 'argon-4', name: 'Argon 4', desc: 'Next-gen autonomous agent reasoning model' },
+  { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite', desc: 'High-speed, ultra low-latency intelligent model' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Multimodal reasoning & thinking model' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production multimodal workhorse' },
+  { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash Latest', desc: 'Compatible standard Flash model' },
+  { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro Latest', desc: 'Deep curriculum reasoning & 2M context window' }
 ] as const;
 
 export function getGeminiApiKey(): string {
@@ -54,11 +55,9 @@ export function saveGeminiApiKey(key: string): void {
 
 export function getGeminiModel(): string {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY_GEMINI_MODEL);
-    if (saved && saved !== 'gemini-3.8-flash') return saved;
-    return 'gemini-2.0-flash';
+    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-3.8-flash';
   } catch {
-    return 'gemini-2.0-flash';
+    return 'gemini-3.8-flash';
   }
 }
 
@@ -146,22 +145,22 @@ export async function validateGeminiApiKey(
   const cleanRequested = modelToTest?.replace(/^models\//, '');
   const candidateIds: string[] = [];
   
-  if (cleanRequested && availableModels.some((m) => m.id === cleanRequested)) {
+  if (cleanRequested) {
     candidateIds.push(cleanRequested);
   }
 
   const preferredFallbacks = [
-    'gemini-2.0-flash',
+    'gemini-3.8-flash',
+    'argon-4',
+    'gemini-3.5-flash-lite',
     'gemini-2.5-flash',
-    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash',
     'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro-latest',
-    'gemini-1.5-pro'
+    'gemini-1.5-pro-latest'
   ];
 
   for (const pref of preferredFallbacks) {
-    if (availableModels.some((m) => m.id === pref) && !candidateIds.includes(pref)) {
+    if (!candidateIds.includes(pref)) {
       candidateIds.push(pref);
     }
   }

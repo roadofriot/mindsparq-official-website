@@ -315,11 +315,12 @@ export const SocialCommunityHub: React.FC = () => {
           </div>
         </div>
 
-        {/* Cards Grid */}
+        {/* Cards Grid - Balanced and Centered */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
             gap: 'var(--space-6)'
           }}
         >
@@ -335,6 +336,9 @@ export const SocialCommunityHub: React.FC = () => {
                   overflow: 'hidden',
                   borderRadius: 'var(--radius-xl)',
                   backgroundColor: 'var(--color-surface)',
+                  flex: '1 1 320px',
+                  maxWidth: '380px',
+                  minWidth: 'min(100%, 280px)',
                   border: isWhatsApp
                     ? '1.5px solid rgba(37, 211, 102, 0.4)'
                     : '1px solid var(--color-border)',
@@ -602,28 +606,31 @@ export const SocialCommunityHub: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom Quick Contact Bar */}
+        {/* Bottom Quick Contact Bar - Generous Spacing and Centered Content */}
         <div
           style={{
-            marginTop: 'var(--space-10)',
-            padding: 'var(--space-6)',
-            borderRadius: 'var(--radius-xl)',
+            marginTop: 'clamp(56px, 7vw, 84px)',
+            padding: 'clamp(var(--space-8), 4vw, var(--space-10)) var(--space-8)',
+            borderRadius: 'var(--radius-2xl)',
             backgroundColor: 'var(--color-bg)',
-            border: '1px solid var(--color-border)',
+            border: '1.5px solid var(--color-border)',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.04)',
             display: 'flex',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--space-4)'
+            textAlign: 'center',
+            maxWidth: '920px',
+            margin: 'clamp(56px, 7vw, 84px) auto 0 auto'
           }}
         >
-          <div>
+          <div style={{ maxWidth: '720px', marginBottom: 'var(--space-6)' }}>
             <h4
               style={{
-                fontSize: 'var(--font-base)',
-                fontWeight: 700,
+                fontSize: 'clamp(1.125rem, 2.2vw, 1.375rem)',
+                fontWeight: 800,
                 color: 'var(--color-text)',
-                margin: '0 0 4px 0'
+                margin: '0 0 8px 0',
+                lineHeight: 1.3
               }}
             >
               {isNe
@@ -632,8 +639,9 @@ export const SocialCommunityHub: React.FC = () => {
             </h4>
             <p
               style={{
-                fontSize: '0.8125rem',
+                fontSize: '0.9375rem',
                 color: 'var(--color-text-secondary)',
+                lineHeight: 1.65,
                 margin: 0
               }}
             >
@@ -643,7 +651,7 @@ export const SocialCommunityHub: React.FC = () => {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <a
               href="https://wa.me/9779857058666?text=Namaste%20MindSparQ%2C%20I%20would%20like%20to%20inquire%20about%20courses%20and%20admissions."
               target="_blank"
@@ -653,17 +661,26 @@ export const SocialCommunityHub: React.FC = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '9px 18px',
+                padding: '11px 22px',
                 borderRadius: '999px',
                 backgroundColor: '#25D366',
                 color: '#ffffff',
                 fontWeight: 700,
-                fontSize: '0.8125rem',
+                fontSize: '0.875rem',
                 textDecoration: 'none',
-                boxShadow: '0 3px 10px rgba(37, 211, 102, 0.3)'
+                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 18px rgba(37, 211, 102, 0.45)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(37, 211, 102, 0.35)';
               }}
             >
-              <MessageCircle size={15} fill="currentColor" />
+              <MessageCircle size={16} fill="currentColor" />
               <span>WhatsApp: +977 9857058666</span>
             </a>
 
@@ -674,11 +691,18 @@ export const SocialCommunityHub: React.FC = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '9px 18px',
+                padding: '11px 22px',
                 borderRadius: '999px',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                textDecoration: 'none'
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               {isNe ? 'फोन सम्पर्क गर्नुहोस्' : 'Call Admissions Desk'}

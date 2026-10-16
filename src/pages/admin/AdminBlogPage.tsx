@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getAllPosts, savePost, deletePost, updatePostStatus } from '../../services/blogService';
-import { BlogPost } from '../../types/database';
+import { BlogPost, ContentVersion } from '../../types/database';
+import {
+  createContentVersion,
+  getContentVersions,
+  restoreContentVersion
+} from '../../services/versionService';
 import {
   Plus,
   Edit2,
@@ -15,13 +20,17 @@ import {
   Image as ImageIcon,
   Video,
   Heading,
-  Loader2
+  Loader2,
+  Eye,
+  History,
+  RotateCcw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { uploadMedia } from '../../services/mediaService';
 import { extractYouTubeVideoId } from '../../services/courseService';
 import { ImageUploadField } from '../../components/admin/ImageUploadField';
+
 
 export const AdminBlogPage: React.FC = () => {
   const { user, isOwner, isAdmin, isSuperAdmin, hasPermission } = useAuth();
@@ -40,7 +49,14 @@ export const AdminBlogPage: React.FC = () => {
   const [uploadingInline, setUploadingInline] = useState(false);
   const [mediaNotice, setMediaNotice] = useState<string | null>(null);
 
+  // Revision History State
+  const [historyPost, setHistoryPost] = useState<BlogPost | null>(null);
+  const [historyVersions, setHistoryVersions] = useState<ContentVersion[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
+
   const canPublish = isSuperAdmin || isOwner || isAdmin || hasPermission('content.publish');
+
 
   const handleUploadInlineImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !editingPost) return;
@@ -145,10 +161,43 @@ export const AdminBlogPage: React.FC = () => {
 
     const { data, error } = await updatePostStatus(post.id, newStatus);
     if (!error && data) {
+      // Save version snapshot on status transition
+      await createContentVersion(
+        'blog_post',
+        data.id,
+        data.title,
+        data as unknown as Record<string, unknown>,
+        `Status transitioned to ${newStatus}`,
+        user?.user_metadata?.display_name || user?.email || 'Staff'
+      );
       showNotification(`Article "${post.title}" moved to ${newStatus}.`);
       fetchPosts();
     } else {
       showNotification(`Status update failed: ${error?.message || 'Unknown error'}`, 'error');
+    }
+  };
+
+  const handleOpenHistory = async (post: BlogPost) => {
+    setHistoryPost(post);
+    setLoadingHistory(true);
+    const vList = await getContentVersions('blog_post', post.id);
+    setHistoryVersions(vList);
+    setLoadingHistory(false);
+  };
+
+  const handleRestoreVersionFromModal = async (version: ContentVersion) => {
+    if (!window.confirm(`Restore article "${version.title}" to Version ${version.version_number}? Current changes will be archived.`)) {
+      return;
+    }
+    setRestoringVersionId(version.id);
+    const { success, error } = await restoreContentVersion(version);
+    setRestoringVersionId(null);
+    if (success) {
+      showNotification(`Article restored to Version ${version.version_number}!`);
+      setHistoryPost(null);
+      fetchPosts();
+    } else {
+      showNotification(`Restore failed: ${error?.message || 'Unknown error'}`, 'error');
     }
   };
 
@@ -202,12 +251,22 @@ export const AdminBlogPage: React.FC = () => {
     if (error) {
       setSaveError(error.message);
     } else if (data) {
+      // Save version snapshot on every save
+      await createContentVersion(
+        'blog_post',
+        data.id,
+        data.title,
+        data as unknown as Record<string, unknown>,
+        `Saved article in ${data.status} status`,
+        user?.user_metadata?.display_name || user?.email || 'Staff'
+      );
       showNotification(`Article "${data.title}" saved successfully as ${data.status}.`);
       setIsModalOpen(false);
       fetchPosts();
     }
     setSaving(false);
   };
+
 
   // Metrics
   const totalCount = posts.length;
@@ -586,22 +645,71 @@ export const AdminBlogPage: React.FC = () => {
                       {/* Actions */}
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                          {/* Preview Link */}
+                          {/* Device Frame Live Preview */}
                           <Link
-                            to={`/blog/${post.slug}`}
+                            to={`/preview?type=blog&id=${post.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="Preview public view"
+                            title="Device Frame Live Preview (Desktop, Tablet, Mobile)"
                             style={{
-                              padding: '5px',
+                              padding: '5px 8px',
                               borderRadius: 'var(--radius-sm)',
-                              color: 'var(--color-text-secondary)',
-                              display: 'flex',
-                              alignItems: 'center'
+                              color: '#38bdf8',
+                              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              textDecoration: 'none'
                             }}
                           >
-                            <ExternalLink size={15} />
+                            <Eye size={14} />
+                            <span>Preview</span>
                           </Link>
+
+                          {/* Revisions History Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenHistory(post)}
+                            title="View revision snapshot history"
+                            style={{
+                              padding: '5px 8px',
+                              borderRadius: 'var(--radius-sm)',
+                              backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                              border: 'none',
+                              color: '#c084fc',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.75rem',
+                              fontWeight: 500
+                            }}
+                          >
+                            <History size={14} />
+                            <span>History</span>
+                          </button>
+
+                          {/* Public Link (Only for Published) */}
+                          {post.status === 'published' && (
+                            <Link
+                              to={`/blog/${post.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Inspect public article view"
+                              style={{
+                                padding: '5px',
+                                borderRadius: 'var(--radius-sm)',
+                                color: 'var(--color-text-secondary)',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <ExternalLink size={15} />
+                            </Link>
+                          )}
+
 
                           {/* Quick Status Workflow Buttons */}
                           {post.status === 'draft' && (
@@ -1130,43 +1238,204 @@ export const AdminBlogPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--color-surface-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-secondary)',
-                    fontWeight: 500,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    padding: '10px 24px',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 600,
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
-                  }}
-                >
-                  {saving ? 'Saving...' : editingPost.id ? 'Save Changes' : 'Create Article'}
-                </button>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--color-border)', flexWrap: 'wrap' }}>
+                <div>
+                  {editingPost.id && (
+                    <Link
+                      to={`/preview?type=blog&id=${editingPost.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        color: '#38bdf8',
+                        fontWeight: 600,
+                        fontSize: '0.8125rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <Eye size={15} />
+                      <span>Live Preview</span>
+                    </Link>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    style={{
+                      padding: '10px 18px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--color-surface-elevated)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-secondary)',
+                      fontWeight: 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    style={{
+                      padding: '10px 24px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      fontWeight: 600,
+                      cursor: saving ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
+                    }}
+                  >
+                    {saving ? 'Saving...' : editingPost.id ? 'Save Changes' : 'Create Article'}
+                  </button>
+                </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Revision History Modal */}
+      {historyPost && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setHistoryPost(null)}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-xl)',
+              maxWidth: '620px',
+              width: '100%',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              padding: '28px',
+              boxShadow: 'var(--shadow-xl)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <History size={22} color="#c084fc" />
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--color-text-primary)' }}>
+                  Revision History & Snapshots
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHistoryPost(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', lineHeight: 1.5, marginBottom: '20px' }}>
+              Chronological versions captured for <strong>"{historyPost.title}"</strong>. You can inspect drafts or restore any historic snapshot.
+            </p>
+
+            {loadingHistory ? (
+              <div style={{ padding: '30px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                Loading version history...
+              </div>
+            ) : historyVersions.length === 0 ? (
+              <div style={{ padding: '30px', textAlign: 'center', backgroundColor: 'var(--color-surface-elevated)', borderRadius: '8px', color: 'var(--color-text-muted)' }}>
+                No past revisions recorded yet for this article. Revisions will be captured automatically on subsequent edits.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {historyVersions.map((v, idx) => (
+                  <div
+                    key={v.id}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '8px',
+                      backgroundColor: idx === 0 ? 'var(--color-surface-elevated)' : 'var(--color-surface)',
+                      border: `1px solid ${idx === 0 ? '#38bdf8' : 'var(--color-border)'}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: idx === 0 ? 'rgba(56, 189, 248, 0.15)' : 'var(--color-border)',
+                            color: idx === 0 ? '#38bdf8' : 'var(--color-text-secondary)'
+                          }}
+                        >
+                          v{v.version_number} {idx === 0 && '• Latest'}
+                        </span>
+                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                          {v.change_summary || v.title}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                        {new Date(v.created_at).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                        Recorded by: <strong>{v.created_by_name || 'Staff Editor'}</strong>
+                      </span>
+                      {idx !== 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRestoreVersionFromModal(v)}
+                          disabled={restoringVersionId === v.id}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            backgroundColor: '#374151',
+                            color: '#ffffff',
+                            border: 'none',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            cursor: restoringVersionId === v.id ? 'wait' : 'pointer'
+                          }}
+                        >
+                          <RotateCcw size={13} />
+                          <span>Restore</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
     </div>
   );
 };
+

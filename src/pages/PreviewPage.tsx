@@ -17,19 +17,12 @@ import {
   Smartphone,
   RotateCw,
   Share2,
-  Edit3,
   CheckCircle2,
-  Clock,
   History,
   Lock,
   ShieldAlert,
   ArrowLeft,
-  Copy,
-  Check,
   X,
-  ExternalLink,
-  BookOpen,
-  Calendar,
   User,
   Sparkles,
   RefreshCw,
@@ -42,7 +35,8 @@ type Orientation = 'portrait' | 'landscape';
 export const PreviewPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isStaff, user, roles } = useAuth();
+  const { isStaff } = useAuth();
+
 
   const contentType = (searchParams.get('type') || 'blog') as 'blog' | 'course';
   const contentId = searchParams.get('id') || '';

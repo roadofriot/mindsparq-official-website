@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   getAllCourses,
   saveCourse,
@@ -10,9 +11,11 @@ import {
   deleteLesson,
   extractYouTubeVideoId
 } from '../../services/courseService';
+import { createContentVersion } from '../../services/versionService';
 import { Course, CourseModule, Lesson } from '../../types/database';
-import { Plus, Edit2, Trash2, BookOpen, Video, FileText, ChevronRight, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, BookOpen, Video, FileText, ChevronRight, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField';
+
 
 export const AdminCoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -92,6 +95,13 @@ export const AdminCoursesPage: React.FC = () => {
     if (error) {
       setCourseError(error.message);
     } else if (data) {
+      await createContentVersion(
+        'course',
+        data.id,
+        data.title,
+        data as unknown as Record<string, unknown>,
+        `Course saved in ${data.status} status`
+      );
       setIsCourseModalOpen(false);
       fetchCourses();
       if (selectedCourse?.id === data.id) {
@@ -100,6 +110,7 @@ export const AdminCoursesPage: React.FC = () => {
     }
     setSavingCourse(false);
   };
+
 
   const handleDeleteCourse = async (id: string, title: string) => {
     if (!window.confirm(`Are you sure you want to delete course "${title}" and all its modules/lessons?`)) return;
@@ -452,7 +463,28 @@ export const AdminCoursesPage: React.FC = () => {
                         </span>
                       </td>
                       <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: 'var(--space-2)' }}>
+                        <div style={{ display: 'inline-flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                          <Link
+                            to={`/preview?type=course&id=${c.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Device Frame Live Preview (Desktop, Tablet, Mobile)"
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: 'var(--font-xs)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              color: '#38bdf8',
+                              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                              borderRadius: 'var(--radius-sm)',
+                              textDecoration: 'none',
+                              fontWeight: 500
+                            }}
+                          >
+                            <Eye size={13} />
+                            <span>Preview</span>
+                          </Link>
                           <button
                             onClick={() => handleSelectCourse(c)}
                             className="btn btn-secondary"
@@ -461,6 +493,7 @@ export const AdminCoursesPage: React.FC = () => {
                             <span>Curriculum</span>
                             <ChevronRight size={14} />
                           </button>
+
                           <button
                             onClick={() => handleOpenCourseModal(c)}
                             style={{ background: 'none', border: 'none', color: 'var(--color-primary-600)', cursor: 'pointer', padding: '4px' }}

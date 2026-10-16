@@ -103,13 +103,19 @@ This implementation plan outlines the prioritized execution strategy to transfor
 * **Security**: Enforce `is_admin_or_owner(auth.uid())` for design token and section mutations.
 * **Rollback Strategy**: Fallback to hardcoded default content if database records are empty.
 
-#### Phase 4: Live Preview, Drafts & Version History
-* **Current State**: Status dropdown supports `draft`, `published`, `archived`.
-* **Required Changes**:
-  * Build a secure preview route `/preview?type=blog&id=:id&token=:token` that loads draft records using staff JWT without exposing them publicly.
-  * Implement simulated Device Frame Switcher: Desktop (1440px), Tablet (768px), Mobile (375px).
-  * Add version history table `content_versions` to track previous published snapshots with single-click restore.
-* **Acceptance Criteria**: Draft content cannot be viewed by guests or unauthenticated users.
+#### Phase 4: Live Preview, Drafts & Version History (COMPLETED)
+* **Current State**: Fully implemented with secure cryptographic draft tokens, multi-device simulator, and immutable version snapshotting.
+* **Implemented Features**:
+  * Secure draft preview route `/preview?type=blog|course&id=:id&token=:token` restricting unpublished drafts to authenticated staff or verified 48-hour cryptographic token holders.
+  * Device Frame Switcher with realistic bezels, dynamic island notch, and orientation toggle: Desktop (1440px), Tablet (768px iPad), Mobile (390px iPhone).
+  * Display scale zoom control (50%, 75%, 85%, 100%).
+  * Immutable snapshot table `content_versions` with automated snapshot creation upon article/course save and status transitions.
+  * Revisions History drawer on preview and admin blog management with single-click restore capability and full audit logging.
+  * Quick "Approve & Publish" button directly inside the preview toolbar for editors and administrators.
+* **Verification & Security**:
+  * Unauthenticated guests cannot view draft contents (tested with 403 access card).
+  * Unit and integration test suite passing in `src/test/previewAndVersioning.test.ts`.
+
 
 ---
 

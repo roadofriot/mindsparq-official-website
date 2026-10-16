@@ -91,9 +91,28 @@ Every clickable button, link, toggle, dropdown, slider, and form element in the 
 
 ---
 
-## 7. QA Test Suite Summary
+## 7. Live Preview & Version History Engine (`/preview`)
 
-* **Unit & Integration Suite**: 17 tests implemented in `src/test/*.test.ts`
-* **Test Status**: **17 passed (100%)**
+| ID | Page / Component | Element | Label / Role | Expected Behavior | Persistence | Required Role | Current Status | Test Method |
+|---|---|---|---|---|---|---|---|---|
+| `PREV-01` | Preview (`PreviewPage.tsx`) | Button Group | Device Switcher | Toggles viewport between Desktop (1440px), Tablet (768px), Mobile (390px) | Client State | Staff / Token | **WORKING** | Responsive viewport & bezel test |
+| `PREV-02` | Preview (`PreviewPage.tsx`) | Button | Orientation Toggle | Rotates tablet and mobile viewports between Portrait & Landscape | Client State | Staff / Token | **WORKING** | Dimension flip test |
+| `PREV-03` | Preview (`PreviewPage.tsx`) | Select | Zoom Scale (50% - 100%) | Scales device container to fit smaller displays without horizontal scroll | Client State | Staff / Token | **WORKING** | Scale matrix test |
+| `PREV-04` | Preview (`PreviewPage.tsx`) | Button | Share Preview Link | Generates time-limited cryptographic token & copies 48h access link | Crypto Token | Staff | **WORKING** | Token verification test |
+| `PREV-05` | Preview (`PreviewPage.tsx`) | Button | Revisions Drawer | Slides open list of recorded version snapshots with timestamps & authors | Supabase / Local | Staff | **WORKING** | Drawer open & fetch test |
+| `PREV-06` | Preview (`PreviewPage.tsx`) | Button | Restore Snapshot | Reverts draft content to selected historical version with audit log | Supabase / Local | Staff | **WORKING** | Version restoration test |
+| `PREV-07` | Preview (`PreviewPage.tsx`) | Button | Direct Publish | Approves and publishes draft directly from preview header | Supabase | Editor+ | **WORKING** | Instant status update test |
+| `PREV-08` | Preview (`PreviewPage.tsx`) | Card | Access Denied Gate | Blocks unauthenticated guests and prompts for staff sign-in | Supabase Auth | Guest | **WORKING** | 403 access control test |
+| `BLOG-12` | Blog (`AdminBlogPage.tsx`) | Link | Live Preview (`Eye`) | Opens `/preview?type=blog&id=:id` in new tab | Route | Staff | **WORKING** | Preview click test |
+| `BLOG-13` | Blog (`AdminBlogPage.tsx`) | Button | History Modal (`History`) | Opens revision snapshot history modal with single-click restore | Supabase / Local | Staff | **WORKING** | Modal open & restore test |
+| `CRS-12` | Courses (`AdminCoursesPage.tsx`) | Link | Course Preview (`Eye`) | Opens `/preview?type=course&id=:id` in new tab | Route | Staff | **WORKING** | Course preview route test |
+
+---
+
+## 8. QA Test Suite Summary
+
+* **Unit & Integration Suite**: 25 tests implemented across 5 test suites (`smoke.test.ts`, `youtube.test.ts`, `permissions.test.ts`, `blogWorkflow.test.ts`, `previewAndVersioning.test.ts`)
+* **Test Status**: **25 passed (100%)**
 * **Type Safety**: TypeScript strict typecheck passed with **0 errors**
-* **Production Build**: Vite production compilation passed in **10.23s** with clean chunk distribution.
+* **Production Build**: Verified with full module tree compilation.
+

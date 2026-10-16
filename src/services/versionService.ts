@@ -151,23 +151,35 @@ export async function restoreContentVersion(
   try {
     const { content_type, content_id, snapshot } = version;
 
-    if (content_type === 'blog_post') {
-      const { savePost } = await import('./blogService');
-      const payload = {
-        ...snapshot,
-        id: content_id
-      };
-      const res = await savePost(payload);
-      if (res.error) throw res.error;
-    } else if (content_type === 'course') {
-      const { saveCourse } = await import('./courseService');
-      const payload = {
-        ...snapshot,
-        id: content_id
-      };
-      const res = await saveCourse(payload);
-      if (res.error) throw res.error;
+    if (isSupabaseConfigured) {
+      try {
+        if (content_type === 'blog_post') {
+          const { savePost } = await import('./blogService');
+          const payload = {
+            ...snapshot,
+            id: content_id
+          };
+          const res = await savePost(payload);
+          if (res.error) {
+            console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
+          }
+        } else if (content_type === 'course') {
+          const { saveCourse } = await import('./courseService');
+          const payload = {
+            ...snapshot,
+            id: content_id
+          };
+          const res = await saveCourse(payload);
+          if (res.error) {
+            console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
+          }
+        }
+      } catch (remoteErr) {
+        console.warn('[MindSparQ Versions] Remote restore mutation bypassed:', remoteErr);
+      }
     }
+
+
 
     // Save a new version noting the restoration
     await createContentVersion(

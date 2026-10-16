@@ -42,7 +42,9 @@ const AdminAuditLogsPage = lazy(() => import('./pages/admin/AdminAuditLogsPage')
 const AdminAiAssistantPage = lazy(() => import('./pages/admin/AdminAiAssistantPage').then((m) => ({ default: m.AdminAiAssistantPage })));
 const AdminSectionsPage = lazy(() => import('./pages/admin/AdminSectionsPage').then((m) => ({ default: m.AdminSectionsPage })));
 const AdminDesignPage = lazy(() => import('./pages/admin/AdminDesignPage').then((m) => ({ default: m.AdminDesignPage })));
+const PreviewPage = lazy(() => import('./pages/PreviewPage').then((m) => ({ default: m.PreviewPage })));
 import { applyDesignSettingsToDOM } from './services/siteCustomizerService';
+
 
 const RouteLoadingSpinner: React.FC = () => (
   <div
@@ -127,7 +129,11 @@ export const App: React.FC = () => {
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
 
+              {/* Private Draft Preview & Device Frame Simulator */}
+              <Route path="/preview" element={<PreviewPage />} />
+
               {/* CMS Admin Console (Staff Authorization Required) */}
+
               <Route
                 path="/admin"
                 element={

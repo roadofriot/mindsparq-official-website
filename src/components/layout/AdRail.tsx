@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { getAdSlot, AdSlotConfig } from '../../services/adRailService';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -46,52 +46,52 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
         overflow: 'hidden',
         border: '1px solid var(--color-border)',
         backgroundColor: 'var(--color-surface)',
-        boxShadow: '0 4px 18px rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
         transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        width: '100%'
+        width: '100%',
+        minHeight: '560px'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.12)';
+        e.currentTarget.style.boxShadow = '0 16px 36px rgba(0, 0, 0, 0.15)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 18px rgba(0, 0, 0, 0.06)';
+        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)';
       }}
     >
       {/* Badge Overlay */}
       <div
         style={{
           position: 'absolute',
-          top: '8px',
-          left: '8px',
+          top: '12px',
+          left: '12px',
           zIndex: 2,
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '4px',
-          padding: '3px 8px',
+          gap: '5px',
+          padding: '4px 10px',
           borderRadius: '999px',
-          backgroundColor: adConfig.isSponsored ? 'rgba(234, 88, 12, 0.92)' : 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(6px)',
+          backgroundColor: adConfig.isSponsored ? 'rgba(234, 88, 12, 0.95)' : 'rgba(15, 23, 42, 0.88)',
+          backdropFilter: 'blur(8px)',
           color: '#ffffff',
-          fontSize: '0.65rem',
+          fontSize: '0.6875rem',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.25)'
         }}
       >
-        <Sparkles size={11} />
+        <Sparkles size={12} />
         <span>{adConfig.isSponsored ? (isNe ? 'प्रायोजित' : 'Sponsored') : badgeText}</span>
       </div>
 
-      {/* Portrait Image (2:3 Aspect Ratio) */}
+      {/* Tall Portrait Media Container */}
       <div
         style={{
           position: 'relative',
           width: '100%',
-          aspectRatio: '2 / 3',
-          minHeight: '345px',
+          height: '380px',
           backgroundColor: 'var(--color-bg-secondary, #1e293b)',
           overflow: 'hidden'
         }}
@@ -106,10 +106,10 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
             height: '100%',
             objectFit: 'cover',
             display: 'block',
-            transition: 'transform 0.4s ease'
+            transition: 'transform 0.5s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.04)';
+            e.currentTarget.style.transform = 'scale(1.05)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'scale(1)';
@@ -121,32 +121,34 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)',
+            background: 'linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.1) 40%, transparent 70%)',
             pointerEvents: 'none'
           }}
         />
+      </div>
 
-        {/* Title and Action Tag overlay on bottom of card */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '12px 12px',
-            color: '#ffffff',
-            zIndex: 2
-          }}
-        >
+      {/* Content & Action Block extending all the way down */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '16px 16px 18px',
+          backgroundColor: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)'
+        }}
+      >
+        <div>
           <h4
             style={{
-              fontSize: '0.875rem',
+              fontSize: '0.9375rem',
               fontWeight: 700,
               lineHeight: 1.35,
-              margin: '0 0 6px 0',
-              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              margin: '0 0 8px 0',
+              color: 'var(--color-text)',
               display: '-webkit-box',
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden'
             }}
@@ -154,19 +156,44 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
             {adConfig.title}
           </h4>
 
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#38bdf8'
-            }}
-          >
-            <span>{isNe ? 'थप जान्नुहोस्' : 'Explore Details'}</span>
-            <ExternalLink size={12} />
-          </div>
+          {adConfig.altText && (
+            <p
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--color-text-secondary)',
+                lineHeight: 1.45,
+                margin: '0 0 10px 0',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}
+            >
+              {adConfig.altText}
+            </p>
+          )}
+        </div>
+
+        {/* Full-Width Interactive Action Button */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            width: '100%',
+            padding: '9px 12px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--color-primary-600)',
+            color: '#ffffff',
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)',
+            marginTop: '8px'
+          }}
+        >
+          <span>{isNe ? 'थप जानकारी हेर्नुहोस्' : 'Explore Details'}</span>
+          <ArrowRight size={14} />
         </div>
       </div>
     </article>
@@ -177,7 +204,7 @@ export const AdRail: React.FC<AdRailProps> = ({ side, className = '' }) => {
       className={`ad-rail-slot ad-rail-${side} ${className}`}
       aria-label={adConfig.isSponsored ? 'Advertisement' : 'Promotions'}
       style={{
-        width: '230px',
+        width: '280px',
         flexShrink: 0,
         alignSelf: 'flex-start',
         position: 'sticky',

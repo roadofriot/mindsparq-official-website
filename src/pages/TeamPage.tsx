@@ -9,6 +9,7 @@ import { getPublicTeamProfiles } from '../services/teamService';
 import { TeamProfile } from '../types/database';
 import { SocialIcon } from '../components/ui/SocialIcon';
 import { updatePageSeo } from '../utils/seo';
+import { PageBanner } from '../components/ui/PageBanner';
 
 export const TeamPage: React.FC = () => {
   const [profiles, setProfiles] = useState<TeamProfile[]>([]);
@@ -56,27 +57,20 @@ export const TeamPage: React.FC = () => {
 
   return (
     <div style={{ backgroundColor: 'var(--color-bg)', minHeight: '80vh', paddingBottom: 'var(--space-16)' }}>
-      {/* Header Banner */}
-      <section 
-        style={{ 
-          backgroundColor: 'var(--color-surface)', 
-          borderBottom: '1px solid var(--color-border)',
-          paddingTop: 'clamp(var(--space-10), 6vw, var(--space-16))',
-          paddingBottom: 'clamp(var(--space-8), 5vw, var(--space-12))'
-        }}
-      >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-          <div className="eyebrow" style={{ justifyContent: 'center' }}>
-            <span>THE PEOPLE BEHIND MINDSparQ</span>
-          </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: 'var(--color-text)', marginBottom: 'var(--space-4)', lineHeight: 1.15 }}>
-            Meet Our Team & Faculty
-          </h1>
-          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.125rem)', color: 'var(--color-text-secondary)', lineHeight: 1.7, margin: '0 auto' }}>
-            MindSparQ is built by researchers, seasoned educators, and technology specialists united by a single vision: unlocking students' genuine cognitive faculties and sparking technological innovation throughout Nepal.
-          </p>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Users size={14} />}
+        eyebrowText="The People Behind MindSparQ"
+        title="Meet Our Team & Faculty"
+        subtitle="MindSparQ is built by researchers, seasoned educators, and technology specialists united by a single vision: unlocking students' genuine cognitive faculties and sparking technological innovation throughout Nepal."
+        backgroundImageUrl="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { label: 'Executive Leadership', variant: 'primary' },
+          { label: 'Abacus & STEM Faculty', variant: 'primary' },
+          { label: 'Robotics Curriculum Architects', variant: 'accent' },
+          { label: 'Academic Outreach Leads', variant: 'neutral' }
+        ]}
+      />
 
       {/* Main Container */}
       <div className="container" style={{ marginTop: 'var(--space-10)' }}>

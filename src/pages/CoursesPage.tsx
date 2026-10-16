@@ -4,6 +4,7 @@ import { getPublishedCourses } from '../services/courseService';
 import { Course } from '../types/database';
 import { BookOpen, Clock, BarChart3, Search, Sparkles, ArrowRight } from 'lucide-react';
 import { updatePageSeo } from '../utils/seo';
+import { PageBanner } from '../components/ui/PageBanner';
 
 // Fallback seed courses if database is not yet populated
 const FALLBACK_COURSES: Course[] = [
@@ -94,41 +95,20 @@ export const CoursesPage: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: 'var(--space-16)' }}>
-      {/* Header Banner */}
-      <section
-        style={{
-          padding: 'var(--space-16) 0 var(--space-12)',
-          background: 'radial-gradient(ellipse at top, rgba(14, 165, 233, 0.12), transparent 70%)',
-          borderBottom: '1px solid var(--color-border)'
-        }}
-      >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              padding: 'var(--space-1) var(--space-3)',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-primary-50)',
-              color: 'var(--color-primary-600)',
-              fontSize: 'var(--font-xs)',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: 'var(--space-3)'
-            }}
-          >
-            <Sparkles size={14} /> Learning Platform
-          </div>
-          <h1 style={{ fontSize: 'var(--font-4xl)', fontWeight: 800, color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>
-            Course Catalog & Learning Modules
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-lg)', lineHeight: 1.6 }}>
-            Explore verified, structured curricula in Robotics, Mental Math, Vedic Math, and Applied AI. Free enrollment with tracked lesson progression.
-          </p>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Sparkles size={14} />}
+        eyebrowText="Learning Platform & Tracks"
+        title="Course Catalog & Learning Modules"
+        subtitle="Explore verified, structured curricula in Robotics, Mental Math, Vedic Math, and Applied AI. Free enrollment with tracked lesson progression."
+        backgroundImageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { label: 'Beginner to Advanced', variant: 'primary' },
+          { label: 'Project-Based Learning', variant: 'primary' },
+          { label: 'Self-Paced Progression', variant: 'neutral' },
+          { label: 'Verified Certificates', variant: 'accent' }
+        ]}
+      />
 
       {/* Pill-Style Search & Level Filter Bar */}
       <section className="container" style={{ marginTop: 'var(--space-8)', marginBottom: 'var(--space-8)' }}>

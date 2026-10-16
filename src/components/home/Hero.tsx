@@ -184,21 +184,21 @@ export const Hero: React.FC = () => {
               }}
             />
 
-            {/* Compact Shady Translucent Caption Card (Leaves logo & flyer artwork visible) */}
+            {/* Clean Outline Feature Announcement Container (Does not obscure underlying flyer artwork) */}
             {activeSlide.title && activeSlide.subtitle !== '__HIDE_TEXT__' && (
               <div
                 style={{
                   position: 'relative',
                   zIndex: 3,
                   margin: '0 clamp(16px, 2.5vw, 32px) var(--space-4)',
-                  maxWidth: 'min(480px, 90%)',
-                  padding: '12px 18px',
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(8, 14, 26, 0.52)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.16)',
-                  boxShadow: '0 10px 30px -8px rgba(0, 0, 0, 0.5)',
+                  maxWidth: 'min(500px, 92%)',
+                  padding: '14px 20px',
+                  borderRadius: '18px',
+                  backgroundColor: 'rgba(10, 15, 29, 0.12)',
+                  backdropFilter: 'blur(4px)',
+                  WebkitBackdropFilter: 'blur(4px)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.5)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.15)',
                   color: '#ffffff',
                   transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
@@ -208,16 +208,18 @@ export const Hero: React.FC = () => {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '2px 8px',
+                    padding: '3px 10px',
                     borderRadius: '9999px',
-                    backgroundColor: 'rgba(14, 165, 233, 0.22)',
-                    border: '1px solid rgba(56, 189, 248, 0.45)',
+                    backgroundColor: 'rgba(14, 165, 233, 0.15)',
+                    border: '1.5px solid #38bdf8',
                     color: '#38bdf8',
                     fontSize: '0.6875rem',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    marginBottom: '6px'
+                    letterSpacing: '0.05em',
+                    marginBottom: '8px',
+                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.95)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)'
                   }}
                 >
                   <Sparkles size={11} />
@@ -226,13 +228,14 @@ export const Hero: React.FC = () => {
 
                 <h2
                   style={{
-                    fontSize: 'clamp(0.95rem, 1.8vw, 1.25rem)',
-                    fontWeight: 700,
+                    fontSize: 'clamp(1rem, 2vw, 1.35rem)',
+                    fontWeight: 800,
                     lineHeight: 1.3,
-                    marginBottom: activeSlide.subtitle ? '4px' : '0',
+                    marginBottom: activeSlide.subtitle ? '6px' : '0',
                     color: '#ffffff',
                     letterSpacing: '-0.01em',
-                    textShadow: '0 2px 6px rgba(0,0,0,0.85)'
+                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.9), 0 4px 14px rgba(0, 0, 0, 0.85)',
+                    WebkitTextStroke: '0.3px rgba(0, 0, 0, 0.65)'
                   }}
                 >
                   {activeSlide.title}
@@ -241,11 +244,12 @@ export const Hero: React.FC = () => {
                 {activeSlide.subtitle && (
                   <p
                     style={{
-                      fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
-                      lineHeight: 1.45,
-                      color: '#cbd5e1',
-                      marginBottom: activeSlide.cta_label && activeSlide.cta_url ? '10px' : '0',
-                      textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                      fontSize: 'clamp(0.8rem, 1.2vw, 0.925rem)',
+                      lineHeight: 1.5,
+                      color: '#f8fafc',
+                      fontWeight: 600,
+                      marginBottom: activeSlide.cta_label && activeSlide.cta_url ? '12px' : '0',
+                      textShadow: '0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.85)',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',

@@ -5,6 +5,7 @@ import { Event } from '../types/database';
 import { Calendar, MapPin, ArrowRight, Share2, Sparkles, ExternalLink } from 'lucide-react';
 import { sharePublicContent } from '../services/socialService';
 import { updatePageSeo } from '../utils/seo';
+import { PageBanner } from '../components/ui/PageBanner';
 
 const FALLBACK_EVENTS: { upcoming: Event[]; past: Event[] } = {
   upcoming: [
@@ -76,41 +77,20 @@ export const EventsPage: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: 'var(--space-16)' }}>
-      {/* Banner */}
-      <section
-        style={{
-          padding: 'var(--space-16) 0 var(--space-12)',
-          background: 'radial-gradient(ellipse at top, rgba(14, 165, 233, 0.12), transparent 70%)',
-          borderBottom: '1px solid var(--color-border)',
-          textAlign: 'center'
-        }}
-      >
-        <div className="container" style={{ maxWidth: '800px' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              padding: 'var(--space-1) var(--space-3)',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-primary-50)',
-              color: 'var(--color-primary-600)',
-              fontSize: 'var(--font-xs)',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              marginBottom: 'var(--space-3)'
-            }}
-          >
-            <Sparkles size={14} /> Workshops & Exhibitions
-          </div>
-          <h1 style={{ fontSize: 'var(--font-4xl)', fontWeight: 800, color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>
-            Events, Workshops & Competitions
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-lg)', lineHeight: 1.6 }}>
-            Hands-on learning symposiums, robotics challenges, and community workshops across Lumbini Province.
-          </p>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Sparkles size={14} />}
+        eyebrowText="Workshops & Exhibitions"
+        title="Events, Workshops & Competitions"
+        subtitle="Hands-on learning symposiums, robotics challenges, and community workshops across Lumbini Province."
+        backgroundImageUrl="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { label: 'STEM & Robotics Expos', variant: 'primary' },
+          { label: 'Abacus Olympiads', variant: 'primary' },
+          { label: 'Teacher Training Seminars', variant: 'neutral' },
+          { label: 'Free Public Demonstrations', variant: 'accent' }
+        ]}
+      />
 
       {/* Tabs */}
       <section className="container" style={{ marginTop: 'var(--space-8)', marginBottom: 'var(--space-8)' }}>

@@ -5,6 +5,7 @@ import { siteConfig } from '../content/site';
 import { programs } from '../content/programs';
 import { ContactFormData, ValidationErrors, validateContactForm } from '../lib/validation';
 import { updatePageSeo } from '../utils/seo';
+import { PageBanner } from '../components/ui/PageBanner';
 
 export const ContactPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -76,30 +77,19 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: 'var(--space-20)' }}>
-      {/* Header */}
-      <section 
-        style={{
-          paddingTop: 'var(--space-16)',
-          paddingBottom: 'var(--space-12)',
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-border)'
-        }}
-      >
-        <div className="container">
-          <div style={{ maxWidth: '780px' }}>
-            <div className="eyebrow">
-              <Mail size={14} />
-              <span>Contact & Admissions</span>
-            </div>
-            <h1 style={{ fontSize: 'var(--text-4xl)', marginBottom: 'var(--space-4)' }}>
-              Get in Touch with MindSparQ
-            </h1>
-            <p style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
-              Have questions about student enrollment, batch timings, our Butwal center, or establishing a school STEM club partnership? Reach out to us.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Mail size={14} />}
+        eyebrowText="Admissions & Institutional Partnerships"
+        title="Get in Touch with MindSparQ"
+        subtitle="Have questions about student enrollment, batch timings, our Butwal center, or establishing a school STEM club partnership? Reach out to our academic counselors."
+        backgroundImageUrl="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { icon: <MapPin size={13} />, label: 'Butwal-11, Rupandehi, Nepal', variant: 'primary' },
+          { icon: <Phone size={13} />, label: siteConfig.contact.phone || '+977-9800000000', variant: 'neutral' },
+          { icon: <Mail size={13} />, label: siteConfig.contact.email || 'info@mindsparqeducation.com.np', variant: 'accent' }
+        ]}
+      />
 
       {/* Main Form & Location Info */}
       <section className="section-spacing">

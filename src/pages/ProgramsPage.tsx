@@ -6,6 +6,8 @@ import { ProgramIcon } from '../components/ui/ProgramIcon';
 import { updatePageSeo } from '../utils/seo';
 import { useLanguage } from '../context/LanguageContext';
 
+import { PageBanner } from '../components/ui/PageBanner';
+
 type FilterCategory = 'all' | 'mathematics' | 'technology' | 'skills' | 'institutional';
 
 export const ProgramsPage: React.FC = () => {
@@ -39,32 +41,23 @@ export const ProgramsPage: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: 'var(--space-20)' }}>
-      {/* Page Header */}
-      <section 
-        style={{
-          paddingTop: 'var(--space-16)',
-          paddingBottom: 'var(--space-12)',
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-border)'
-        }}
-      >
-        <div className="container">
-          <div style={{ maxWidth: '800px' }}>
-            <div className="eyebrow">
-              <Sparkles size={14} />
-              <span>{isNe ? 'पाठ्यक्रम तथा सिकाइ मार्गहरू' : 'Curriculum & Pathways'}</span>
-            </div>
-            <h1 style={{ fontSize: 'var(--text-4xl)', marginBottom: 'var(--space-4)' }}>
-              {isNe ? 'MindSparQ सिकाइ कार्यक्रमहरू' : 'MindSparQ Learning Programs'}
-            </h1>
-            <p style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
-              {isNe 
-                ? 'मानसिक गणितीय चपलता, कम्प्युटेसनल सिर्जनशीलता र आधुनिक प्रविधिमा व्यवहारिक दक्षता विकास गर्न तयार पारिएका बृहत् पाठ्यक्रमहरू।'
-                : 'Discover our comprehensive range of programs designed to nurture mental calculation agility, computational creativity, and practical literacy in modern technology.'}
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Sparkles size={14} />}
+        eyebrowText={isNe ? 'पाठ्यक्रम तथा सिकाइ मार्गहरू' : 'Curriculum & Pathways'}
+        title={isNe ? 'MindSparQ सिकाइ कार्यक्रमहरू' : 'MindSparQ Learning Programs'}
+        subtitle={isNe 
+          ? 'मानसिक गणितीय चपलता, कम्प्युटेसनल सिर्जनशीलता र आधुनिक प्रविधिमा व्यवहारिक दक्षता विकास गर्न तयार पारिएका बृहत् पाठ्यक्रमहरू।'
+          : 'Discover our comprehensive range of programs designed to nurture mental calculation agility, computational creativity, and practical literacy in modern technology.'}
+        backgroundImageUrl="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { label: 'Abacus & Mental Math', variant: 'primary' },
+          { label: 'Robotics & AI Labs', variant: 'primary' },
+          { label: 'Vedic Math', variant: 'accent' },
+          { label: 'Bilingual Penmanship', variant: 'neutral' },
+          { label: 'School Partnerships', variant: 'neutral' }
+        ]}
+      />
 
       {/* Program Disclaimers & Filter Bar */}
       <section style={{ backgroundColor: 'var(--color-bg)', padding: 'var(--space-8) 0' }}>

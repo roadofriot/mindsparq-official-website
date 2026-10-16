@@ -19,6 +19,7 @@ import {
 import { siteConfig } from '../content/site';
 import { learningPillars, whoWeSupport, digitalEcosystemModules } from '../content/programs';
 import { updatePageSeo } from '../utils/seo';
+import { PageBanner } from '../components/ui/PageBanner';
 
 export const AboutPage: React.FC = () => {
   const { hash } = useLocation();
@@ -44,40 +45,18 @@ export const AboutPage: React.FC = () => {
 
   return (
     <div style={{ paddingBottom: 'var(--space-20)' }}>
-      {/* Page Header */}
-      <section 
-        style={{
-          paddingTop: 'var(--space-16)',
-          paddingBottom: 'var(--space-12)',
-          backgroundColor: 'var(--color-surface)',
-          borderBottom: '1px solid var(--color-border)'
-        }}
-      >
-        <div className="container">
-          <div style={{ maxWidth: '840px' }}>
-            <div className="eyebrow">
-              <Compass size={14} />
-              <span>Institutional Profile & Vision</span>
-            </div>
-            <h1 style={{ fontSize: 'var(--text-4xl)', marginBottom: 'var(--space-4)' }}>
-              Empowering Minds, Sparking Innovation
-            </h1>
-            <p style={{ fontSize: 'var(--text-lg)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }}>
-              <strong>{siteConfig.name}</strong> is an education and technology initiative based in Butwal, Nepal. We integrate foundational cognitive faculties—Abacus, Mental Math, Vedic Mathematics, and Bilingual Penmanship—with forward-looking technological competencies in AI, Coding, Robotics, and digital platforms.
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', alignItems: 'center', fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-              <span className="badge" style={{ backgroundColor: 'var(--color-brand-primary-soft)', color: 'var(--color-brand-primary)' }}>
-                Education • Innovation • AI • STEM • Digital Learning
-              </span>
-              <span>•</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <MapPin size={13} style={{ color: 'var(--color-accent-teal)' }} />
-                Butwal-11, Gyanbhoomi Path, Rupandehi, Nepal
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Page Hero Banner */}
+      <PageBanner
+        eyebrowIcon={<Compass size={14} />}
+        eyebrowText="Institutional Profile & Vision"
+        title="Empowering Minds, Sparking Innovation"
+        subtitle={`${siteConfig.name} is an education and technology initiative based in Butwal, Nepal. We integrate foundational cognitive faculties—Abacus, Mental Math, Vedic Mathematics, and Bilingual Penmanship—with forward-looking technological competencies in AI, Coding, Robotics, and digital platforms.`}
+        backgroundImageUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1600&q=80"
+        badges={[
+          { label: 'Education • Innovation • AI • STEM • Digital Learning', variant: 'primary' },
+          { icon: <MapPin size={13} />, label: 'Butwal-11, Gyanbhoomi Path, Rupandehi, Nepal', variant: 'neutral' }
+        ]}
+      />
 
       {/* Bilingual Institutional Introduction Tabs */}
       <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>

@@ -173,7 +173,7 @@ export const AdminAdsPage: React.FC = () => {
       </div>
 
       {/* Main Grid: Form + Live Preview */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'var(--space-8)', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 'var(--space-8)', alignItems: 'start' }}>
         {/* Editor Form */}
         <div className="card" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)' }}>
           <form onSubmit={handleSave}>
@@ -387,11 +387,11 @@ export const AdminAdsPage: React.FC = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              minHeight: '480px'
+              minHeight: '620px'
             }}
           >
             {formData.isActive ? (
-              <div style={{ width: selectedSlot === 'mobile-inline-promo' ? '100%' : '240px', maxWidth: selectedSlot === 'mobile-inline-promo' ? '460px' : '260px' }}>
+              <div style={{ width: selectedSlot === 'mobile-inline-promo' ? '100%' : '280px', maxWidth: selectedSlot === 'mobile-inline-promo' ? '480px' : '300px' }}>
                 <div
                   className="card"
                   style={{
@@ -406,17 +406,17 @@ export const AdminAdsPage: React.FC = () => {
                   <div
                     style={{
                       position: 'absolute',
-                      top: '8px',
-                      left: '8px',
+                      top: '12px',
+                      left: '12px',
                       zIndex: 2,
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
-                      padding: '3px 8px',
+                      padding: '4px 10px',
                       borderRadius: '999px',
-                      backgroundColor: formData.isSponsored ? 'rgba(234, 88, 12, 0.92)' : 'rgba(15, 23, 42, 0.85)',
+                      backgroundColor: formData.isSponsored ? 'rgba(234, 88, 12, 0.95)' : 'rgba(15, 23, 42, 0.88)',
                       color: '#ffffff',
-                      fontSize: '0.65rem',
+                      fontSize: '0.6875rem',
                       fontWeight: 700,
                       textTransform: 'uppercase'
                     }}
@@ -425,7 +425,7 @@ export const AdminAdsPage: React.FC = () => {
                     <span>{formData.isSponsored ? 'Sponsored' : formData.badge}</span>
                   </div>
 
-                  <div style={{ aspectRatio: selectedSlot === 'mobile-inline-promo' ? '16 / 9' : '2 / 3', overflow: 'hidden' }}>
+                  <div style={{ height: selectedSlot === 'mobile-inline-promo' ? '180px' : '360px', overflow: 'hidden' }}>
                     <img
                       src={formData.imageUrl || 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&fit=crop&w=600&h=900&q=80'}
                       alt={formData.altText}
@@ -433,13 +433,31 @@ export const AdminAdsPage: React.FC = () => {
                     />
                   </div>
 
-                  <div style={{ padding: '10px 12px', backgroundColor: 'var(--color-surface)' }}>
-                    <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, margin: '0 0 4px 0', lineHeight: 1.3 }}>
+                  <div style={{ padding: '16px 16px', backgroundColor: 'var(--color-surface)' }}>
+                    <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: '0 0 6px 0', lineHeight: 1.35 }}>
                       {formData.title || 'Campaign Title'}
                     </h4>
-                    <div style={{ fontSize: '0.6875rem', color: 'var(--color-primary-600)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {formData.altText && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                        {formData.altText}
+                      </p>
+                    )}
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--color-primary-600)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
                       <span>Destination: {formData.destinationUrl}</span>
                       <ExternalLink size={10} />
+                    </div>
+                    <div
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: 'var(--color-primary-600)',
+                        color: '#ffffff',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        textAlign: 'center'
+                      }}
+                    >
+                      Explore Details (Live Button)
                     </div>
                   </div>
                 </div>

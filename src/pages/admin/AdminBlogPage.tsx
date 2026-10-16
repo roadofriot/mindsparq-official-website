@@ -1079,7 +1079,8 @@ export const AdminBlogPage: React.FC = () => {
                 onChange={(url) => setEditingPost({ ...editingPost, cover_image_url: url })}
                 altTextDefault={editingPost.title || 'Article Cover'}
                 placeholder="Or paste external image URL (e.g. Unsplash, Google direct link)..."
-                helperText="Upload cover image directly from your desktop or enter a direct image URL"
+                recommendedDimensions="1200 × 630 px (16:9 / Social OpenGraph standard)"
+                helperText="Best size: 1200 × 630 px. Used for blog listings, article headers, and social media share previews."
               />
 
               {/* SEO Title & Description */}

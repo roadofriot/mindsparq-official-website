@@ -11,6 +11,7 @@ interface ImageUploadFieldProps {
   helperText?: string;
   altTextDefault?: string;
   id?: string;
+  recommendedDimensions?: string;
 }
 
 export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
@@ -20,7 +21,8 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   required = false,
   placeholder = 'https://images.unsplash.com/... or direct image URL',
   helperText,
-  altTextDefault = 'Uploaded Asset'
+  altTextDefault = 'Uploaded Asset',
+  recommendedDimensions
 }) => {
   // Mode: 'device' (default) or 'url'
   const [mode, setMode] = useState<'device' | 'url'>('device');
@@ -120,9 +122,30 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
     <div style={{ marginBottom: '18px' }}>
       {/* Field Label & Source Selection Tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-        <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-          {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
-        </label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+            {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
+          </label>
+          {recommendedDimensions && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 8px',
+                borderRadius: '9999px',
+                backgroundColor: 'rgba(14, 165, 233, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                color: '#0284c7',
+                fontSize: '0.6875rem',
+                fontWeight: 600
+              }}
+              title={`Optimal resolution for this spot: ${recommendedDimensions}`}
+            >
+              <span>📐 {recommendedDimensions}</span>
+            </span>
+          )}
+        </div>
 
         {/* Mode Switcher Tabs */}
         <div
@@ -347,6 +370,25 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                     or drag & drop your image file here (PNG, JPG, WebP, GIF up to 10MB)
                   </div>
+                  {recommendedDimensions && (
+                    <div
+                      style={{
+                        marginTop: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '3px 10px',
+                        borderRadius: '9999px',
+                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                        border: '1px solid rgba(37, 99, 235, 0.25)',
+                        color: '#2563eb',
+                        fontSize: '0.6875rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      <span>📐 Best Resolution: {recommendedDimensions}</span>
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"

@@ -576,7 +576,8 @@ export const AdminCoursesPage: React.FC = () => {
                 onChange={(url) => setEditingCourse({ ...editingCourse, cover_image_url: url })}
                 altTextDefault={editingCourse.title || 'Course Thumbnail'}
                 placeholder="Or paste external course thumbnail URL (https://...)..."
-                helperText="Upload a course thumbnail banner from your desktop or enter an image URL"
+                recommendedDimensions="1200 × 675 px (16:9 widescreen card)"
+                helperText="Optimal 16:9 aspect ratio. Displays on course cards, search results, and curriculum detail headers."
               />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>

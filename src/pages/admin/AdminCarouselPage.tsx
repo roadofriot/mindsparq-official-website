@@ -308,7 +308,8 @@ export const AdminCarouselPage: React.FC = () => {
                 required
                 altTextDefault={editingItem.alt_text || editingItem.title || 'Hero Banner'}
                 placeholder="Or paste external desktop banner URL (https://...)..."
-                helperText="Recommended aspect ratio: 16:9 or 21:9 (e.g. 1920x1080 or 2560x1080)"
+                recommendedDimensions="1920 × 800 px (21:9 Widescreen) or 1920 × 1080 px (16:9)"
+                helperText="Widescreen aspect ratio (21:9 or 16:9). PNG, JPG, or WebP up to 10MB."
               />
 
               <ImageUploadField
@@ -317,7 +318,8 @@ export const AdminCarouselPage: React.FC = () => {
                 onChange={(url) => setEditingItem({ ...editingItem, mobile_image_url: url })}
                 altTextDefault={`${editingItem.title || 'Hero Banner'} Mobile`}
                 placeholder="Or paste external mobile banner URL (https://...)..."
-                helperText="Optional vertical or square banner optimized for smartphone screens"
+                recommendedDimensions="1080 × 1080 px (1:1 Square) or 1080 × 1350 px (4:5 Portrait)"
+                helperText="Optional vertical or square banner optimized for smartphone displays."
               />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>

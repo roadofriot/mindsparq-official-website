@@ -297,7 +297,8 @@ export const AdminProgramsPage: React.FC = () => {
                 onChange={(url) => setEditingProgram({ ...editingProgram, cover_image_url: url })}
                 altTextDefault={editingProgram.title || 'Program Cover'}
                 placeholder="Or paste external program image URL (https://...)..."
-                helperText="Upload an image representing the program from your desktop/device or paste a URL"
+                recommendedDimensions="800 × 600 px (4:3) or 1200 × 800 px (3:2)"
+                helperText="Clean 4:3 or 3:2 aspect ratio. Featured on the public STEM programs directory."
               />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>

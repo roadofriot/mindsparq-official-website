@@ -360,7 +360,8 @@ export const AdminEventsPage: React.FC = () => {
                 onChange={(url) => setEditingEvent({ ...editingEvent, cover_image_url: url })}
                 altTextDefault={editingEvent.title || 'Event Cover'}
                 placeholder="Or paste external event poster URL (https://...)..."
-                helperText="Upload event promotional graphics/banner from your desktop or paste a direct image URL"
+                recommendedDimensions="1200 × 630 px (16:9 Banner) or 1080 × 1080 px (1:1 Poster)"
+                helperText="16:9 banner or 1:1 flyer poster. Displayed on event cards and detail pages."
               />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>

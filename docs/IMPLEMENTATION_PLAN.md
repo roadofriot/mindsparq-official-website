@@ -142,34 +142,37 @@ This implementation plan outlines the prioritized execution strategy to transfor
 
 ---
 
-### Milestone C: Content Engine & SEO Pipeline (Phases 7, 8, 9, 10)
+### Milestone C: Content Engine & SEO Pipeline (Phases 7, 8, 9, 10) — COMPLETED
 
-#### Phase 7: Courses & Curriculum Management
-* **Current State**: Full course CRUD with YouTube video lesson embedding and module hierarchy.
-* **Required Changes**:
-  * Add lesson completion checkbox with progress percentage calculation in `LearnerDashboardPage`.
-  * Support downloadable lesson resource attachments (PDF worksheets, Scratch project files).
-  * Allow course filtering by age group (Elementary 6-10, Middle School 11-14, High School 15+).
+#### Phase 7: Courses & Curriculum Management (COMPLETED - Commit `8d47a41`)
+* **Implemented Capabilities**:
+  * Added `age_group` schema ('elementary' 6-10, 'middle_school' 11-14, 'high_school' 15+, 'all_ages') to `Course` in [`src/types/database.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/types/database.ts) and [`src/services/courseService.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/services/courseService.ts).
+  * Interactive age group filter pills and age tier badges on course catalog cards in [`CoursesPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/CoursesPage.tsx).
+  * Downloadable syllabus resource attachments (`resource_url`, `resource_title`, `resource_type`) with direct download/open buttons in [`LessonViewPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/LessonViewPage.tsx) and resource manager fields in [`AdminCoursesPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/admin/AdminCoursesPage.tsx).
+  * Unit test suite passing in [`src/test/curriculumWorkflow.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/curriculumWorkflow.test.ts).
 
-#### Phase 8: Multi-Author Publishing & Editorial Workflow
-* **Current State**: Multi-author attribution and markdown editor operating in `AdminBlogPage.tsx`.
-* **Required Changes**:
-  * Formalize the editorial lifecycle: `Draft` $\rightarrow$ `In Review` $\rightarrow$ `Approved` $\rightarrow$ `Published`.
-  * Contributors can submit for review; Editors and Admins review, request revisions, or publish.
-  * Rich Markdown live preview alongside editor.
+#### Phase 8: Multi-Author Publishing & Editorial Workflow (COMPLETED - Commit `9ff3ca8`)
+* **Implemented Capabilities**:
+  * Formal editorial review lifecycle: `Draft` $\rightarrow$ `In Review` $\rightarrow$ `Approved` $\rightarrow$ `Published` (or return to `Draft` for revisions).
+  * Contributors can draft and submit articles for review; editors, admins, owners, and super admins can approve and publish with audit logging (`updatePostStatus` in [`blogService.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/services/blogService.ts)).
+  * Split-screen real-time Markdown live preview with side-by-side editing in [`AdminBlogPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/admin/AdminBlogPage.tsx).
+  * Table row quick action buttons (`[Submit]`, `[Approve]`, `[Reject]`, `[Publish]`, `[Unpublish]`), KPI metrics, and filter pills.
+  * Unit tests passing in [`src/test/blogWorkflow.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/blogWorkflow.test.ts).
 
-#### Phase 9: Media Library & Asset Management
-* **Current State**: `AdminMediaPage.tsx` with dual upload modes, category filter, and copy-link button.
-* **Required Changes**:
-  * Add asset usage detection (detects if an image is currently referenced in an active carousel slide or blog post before allowing deletion).
-  * Support bulk upload and drag-and-drop batch processing.
+#### Phase 9: Media Library & Asset Management (COMPLETED - Commit `448e8cf`)
+* **Implemented Capabilities**:
+  * Multi-file batch drag-and-drop upload zone with progress indicator in [`AdminMediaPage.tsx`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/pages/admin/AdminMediaPage.tsx).
+  * Real-time deduplication engine (`findDuplicateAsset`, `uploadMediaBatch`) preventing duplicate uploads by filename and byte-size.
+  * Asset usage detection before deletion (`checkMediaUsage` in [`mediaService.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/services/mediaService.ts)) checking `blog_posts`, `courses`, `lessons`, `carousel_items`, and `site_sections`.
+  * Pre-deletion reference warning modal listing active embeds to prevent broken links on the live site.
+  * Unit tests passing in [`src/test/mediaWorkflow.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/mediaWorkflow.test.ts).
 
-#### Phase 10: Dynamic SEO & Sitemap Generation
-* **Current State**: Page titles and meta descriptions set per page.
-* **Required Changes**:
-  * Dynamic OpenGraph `<meta property="og:image">` injection.
-  * Automated `sitemap.xml` generator script covering all published blog articles, courses, and programs.
-  * Robots.txt directives ensuring `/admin` and `/preview` are never indexed by search engines.
+#### Phase 10: Dynamic SEO & Sitemap Generation (COMPLETED - Commit `0cb8352`)
+* **Implemented Capabilities**:
+  * Dynamic SEO engine in [`src/utils/seo.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/utils/seo.ts) handling `<title>`, canonical `<link rel="canonical">`, OpenGraph previews, Twitter Cards, and Schema.org JSON-LD structured data (`Organization`, `Course`, `BlogPosting`).
+  * Automated dynamic sitemap generator script [`scripts/generateSitemap.mjs`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/scripts/generateSitemap.mjs) generating [`public/sitemap.xml`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/public/sitemap.xml) and linked in `package.json` (`npm run sitemap` and prepended to `npm run build`).
+  * Production [`public/robots.txt`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/public/robots.txt) disallowing search bots from indexing `/admin/` and `/preview/` while advertising `sitemap.xml`.
+  * Unit tests passing in [`src/test/seoAndSitemap.test.ts`](file:///c:/Users/Admin/Desktop/MindSparQ/MindSparQ_Coding/Project/mindsparq-official-website/src/test/seoAndSitemap.test.ts).
 
 ---
 

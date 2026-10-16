@@ -19,6 +19,15 @@ export interface GeminiMessage {
 }
 
 const STORAGE_KEY_GEMINI_KEY = 'mindsparq_gemini_api_key';
+const STORAGE_KEY_GEMINI_MODEL = 'mindsparq_gemini_model';
+
+export const SUPPORTED_GEMINI_MODELS = [
+  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', desc: 'Google AI Studio recommended latest Flash model' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production model' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Widely compatible lightweight Flash model' },
+  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', desc: 'Deep curriculum reasoning & 2M context window' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Experimental preview model' }
+] as const;
 
 export function getGeminiApiKey(): string {
   try {
@@ -36,22 +45,86 @@ export function saveGeminiApiKey(key: string): void {
   }
 }
 
+export function getGeminiModel(): string {
+  try {
+    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-3.8-flash';
+  } catch {
+    return 'gemini-3.8-flash';
+  }
+}
+
+export function saveGeminiModel(model: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_GEMINI_MODEL, model.trim());
+  } catch {
+    // ignore
+  }
+}
+
 /**
- * Call Gemini 2.5 Flash API with text and optional image
+ * Validates a Google Gemini API Key with an active test ping
+ */
+export async function validateGeminiApiKey(
+  apiKey: string,
+  modelToTest?: string
+): Promise<{ valid: boolean; error?: string; modelUsed: string }> {
+  const key = apiKey.trim();
+  if (!key) {
+    return { valid: false, error: 'API key is empty. Please enter your Google Gemini API key.', modelUsed: '' };
+  }
+
+  const candidateModels = modelToTest 
+    ? [modelToTest, 'gemini-3.8-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    : ['gemini-3.8-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+  let lastError = '';
+
+  for (const model of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: 'Ping test' }] }],
+          generationConfig: { maxOutputTokens: 5 }
+        })
+      });
+
+      if (res.ok) {
+        saveGeminiApiKey(key);
+        saveGeminiModel(model);
+        return { valid: true, modelUsed: model };
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        lastError = errJson.error?.message || `HTTP ${res.status} error`;
+      }
+    } catch (err: any) {
+      lastError = err.message || 'Network error connecting to Google API';
+    }
+  }
+
+  return { valid: false, error: lastError, modelUsed: candidateModels[0] };
+}
+
+/**
+ * Call Gemini API with configurable model, text and optional image
  */
 export async function sendGeminiPrompt(
   prompt: string,
   base64Image?: { data: string; mimeType: string },
-  systemInstruction?: string
+  systemInstruction?: string,
+  selectedModel?: string
 ): Promise<string> {
   const apiKey = getGeminiApiKey();
+  const model = selectedModel || getGeminiModel();
 
   if (!apiKey) {
     // Smart institutional fallback generator when key is not yet pasted
     return generateInstitutionalAiFallback(prompt, base64Image ? 'with_image' : 'text');
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const parts: any[] = [];
 
@@ -108,7 +181,33 @@ export async function sendGeminiPrompt(
     if (!res.ok) {
       const errJson = await res.json().catch(() => ({}));
       const msg = errJson.error?.message || `HTTP ${res.status}`;
-      console.warn('[Gemini AI] API error:', msg);
+      console.warn(`[Gemini AI] API error on ${model}:`, msg);
+
+      // Automatic fallback to production stable gemini-2.0-flash or gemini-1.5-flash
+      if (model !== 'gemini-2.0-flash' && model !== 'gemini-1.5-flash') {
+        for (const altModel of ['gemini-2.0-flash', 'gemini-1.5-flash']) {
+          try {
+            const altEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${altModel}:generateContent?key=${apiKey}`;
+            const altRes = await fetch(altEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+
+            if (altRes.ok) {
+              const altJson = await altRes.json();
+              const altText = altJson.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+              if (altText) {
+                saveGeminiModel(altModel);
+                return altText;
+              }
+            }
+          } catch {
+            // continue to next model
+          }
+        }
+      }
+
       return generateInstitutionalAiFallback(prompt, 'api_error', msg);
     }
 
@@ -125,6 +224,92 @@ export async function sendGeminiPrompt(
     console.error('[Gemini AI] Network error:', err);
     return generateInstitutionalAiFallback(prompt, 'network_error', err.message);
   }
+}
+
+/**
+ * Transcribes recorded audio using Google Gemini native multimodal audio understanding.
+ * Works across all browsers (Chrome, Edge, Firefox, Brave, Safari) without relying on Google Speech API.
+ */
+export async function transcribeAudioWithGemini(
+  audioBlob: Blob,
+  languageHint: 'ne-NP' | 'en-US' = 'ne-NP'
+): Promise<string> {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error('Please configure your Google Gemini API Key in the settings bar to enable AI Voice Transcription.');
+  }
+
+  // Convert Blob to Base64 in safe chunks
+  const arrayBuffer = await audioBlob.arrayBuffer();
+  const uint8 = new Uint8Array(arrayBuffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < uint8.length; i += chunkSize) {
+    const chunk = uint8.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+  const base64Audio = btoa(binary);
+
+  const cleanMimeType = (audioBlob.type || 'audio/webm').split(';')[0];
+
+  const systemInstruction = languageHint === 'ne-NP'
+    ? 'You are an expert Nepali & English speech-to-text transcriber for MindSparQ Education in Butwal, Nepal. Transcribe the spoken audio with utmost precision. If spoken in Nepali, transcribe in natural Devanagari script (नेपाली). If spoken in English, transcribe in English. Output ONLY the raw transcribed text. Do NOT add notes, quotes, commentary, markdown headings, or conversational filler.'
+    : 'You are an accurate speech-to-text transcriber. Transcribe the spoken audio verbatim into clean text. Output ONLY the raw transcribed text. Do not add explanations, conversational pleasantries, quotes, or markdown formatting.';
+
+  const promptText = 'Transcribe this speech accurately into text.';
+
+  const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-3.8-flash'];
+  let lastError = '';
+
+  for (const model of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: cleanMimeType,
+                    data: base64Audio
+                  }
+                },
+                {
+                  text: promptText
+                }
+              ]
+            }
+          ],
+          systemInstruction: {
+            parts: [{ text: systemInstruction }]
+          },
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1024
+          }
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const text = json.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+        if (text.trim()) {
+          return text.trim();
+        }
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        lastError = errJson.error?.message || `HTTP ${res.status}`;
+      }
+    } catch (err: any) {
+      lastError = err.message || 'Network error connecting to Gemini API';
+    }
+  }
+
+  throw new Error(lastError || 'Could not transcribe audio with Gemini AI');
 }
 
 /**

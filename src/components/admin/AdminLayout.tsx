@@ -23,6 +23,7 @@ import {
   Layers,
   Palette
 } from 'lucide-react';
+import { AdminAiCopilotDrawer } from './AdminAiCopilotDrawer';
 
 export const AdminLayout: React.FC = () => {
   const { user, profile, roles, isOwner, isAdmin, isSuperAdmin } = useAuth();
@@ -249,6 +250,9 @@ export const AdminLayout: React.FC = () => {
           <Outlet />
         </div>
       </main>
+
+      {/* Persistent AI Copilot Side Drawer across all Admin Pages */}
+      <AdminAiCopilotDrawer />
     </div>
   );
 };

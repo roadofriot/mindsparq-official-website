@@ -1,67 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { getAllSocialLinks, saveSocialLink } from '../../services/socialService';
-import { SocialLink } from '../../types/database';
-import { Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  getActiveSocialLinks,
+  saveActiveSocialLinks,
+  SocialLinksConfig
+} from '../../components/ui/SocialLinksBar';
+import { Check, Save, ExternalLink, Globe } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
-  const [socials, setSocials] = useState<SocialLink[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [links, setLinks] = useState<SocialLinksConfig>(getActiveSocialLinks());
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
-  const fetchSocials = () => {
-    setLoading(true);
-    getAllSocialLinks()
-      .then((data) => setSocials(data))
-      .finally(() => setLoading(false));
+  const handleChange = (platform: keyof SocialLinksConfig, value: string) => {
+    setLinks((prev) => ({
+      ...prev,
+      [platform]: value.trim()
+    }));
   };
 
-  useEffect(() => {
-    fetchSocials();
-  }, []);
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveActiveSocialLinks(links);
+    setSaveMsg('All social media links updated and saved successfully.');
+    setTimeout(() => setSaveMsg(null), 3500);
+  };
 
-  const handleUpdate = async (link: SocialLink, profile_url: string, is_enabled: boolean) => {
-    const { error } = await saveSocialLink({
-      ...link,
-      profile_url,
-      is_enabled
-    });
-
-    if (!error) {
-      setSaveMsg(`Updated ${link.platform} profile URL.`);
-      fetchSocials();
-      setTimeout(() => setSaveMsg(null), 3000);
-    } else {
-      alert('Save failed: ' + error.message);
+  const platformFields: Array<{ key: keyof SocialLinksConfig; label: string; placeholder: string; helper: string }> = [
+    {
+      key: 'facebook',
+      label: 'Facebook Page URL',
+      placeholder: 'https://facebook.com/mindsparqeducation',
+      helper: 'Official MindSparQ Facebook community and news page'
+    },
+    {
+      key: 'instagram',
+      label: 'Instagram Profile URL',
+      placeholder: 'https://instagram.com/mindsparqeducation',
+      helper: 'Visual student showcase, robotics reels, and student awards'
+    },
+    {
+      key: 'whatsapp',
+      label: 'WhatsApp Direct Chat URL',
+      placeholder: 'https://wa.me/9779857058666',
+      helper: 'Direct admission inquiry hotline for parents and students'
+    },
+    {
+      key: 'tiktok',
+      label: 'TikTok Channel URL',
+      placeholder: 'https://www.tiktok.com/@mindsparqeducation',
+      helper: 'Short-form abacus demonstrations and robotics project videos'
+    },
+    {
+      key: 'youtube',
+      label: 'YouTube Channel URL',
+      placeholder: 'https://youtube.com/@mindsparqeducation',
+      helper: 'Curriculum tutorials, competition highlights, and webinar recordings'
+    },
+    {
+      key: 'linkedin',
+      label: 'LinkedIn Institutional URL',
+      placeholder: 'https://linkedin.com/company/mindsparqeducation',
+      helper: 'Institutional partnerships, school MOUs, and educator hiring'
     }
-  };
+  ];
 
   return (
-    <div>
+    <div style={{ maxWidth: '960px' }}>
       <div style={{ marginBottom: 'var(--space-8)' }}>
         <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)' }}>
-          Verified Social Links & Site Settings
+          Social Media Channels & Institutional Links
         </h1>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-sm)' }}>
-          Configure verified official social media profile URLs displayed across the website header and footer.
+          Configure the official profile URLs that power the interactive circular social media badges across the website header and footer.
         </p>
       </div>
 
       {saveMsg && (
         <div
           style={{
-            padding: 'var(--space-3) var(--space-4)',
+            padding: 'var(--space-4)',
             borderRadius: 'var(--radius-md)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid #10b981',
             color: '#10b981',
-            fontSize: 'var(--font-xs)',
-            marginBottom: 'var(--space-4)'
+            fontSize: 'var(--font-sm)',
+            fontWeight: 600,
+            marginBottom: 'var(--space-6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          {saveMsg}
+          <Check size={18} />
+          <span>{saveMsg}</span>
         </div>
       )}
 
-      {/* Security notice regarding tokens */}
+      {/* Developer Guidance Tip */}
       <div
         style={{
           padding: 'var(--space-4)',
@@ -73,72 +107,61 @@ export const AdminSettingsPage: React.FC = () => {
           marginBottom: 'var(--space-8)'
         }}
       >
-        <Shield size={22} style={{ color: 'var(--color-primary-600)', flexShrink: 0 }} />
+        <Globe size={22} style={{ color: 'var(--color-primary-600)', flexShrink: 0 }} />
         <div style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-          <strong>Platform Architecture Standard:</strong> This module stores public canonical profile links only. In compliance with security requirements, provider OAuth client secrets and publish tokens are never saved in browser-exposed databases. Automated API cross-publishing requires separate server-side token encryption and approval.
+          <strong>Where links are stored:</strong> Saving here updates the links immediately in your browser. To make these permanent defaults across fresh devices and code deployments, you can also paste your links into <code>src/content/site.ts</code> under <code>siteConfig.contact.socials</code>.
         </div>
       </div>
 
-      {/* Social Links List */}
-      <div className="card" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)' }}>
-        <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: 700, color: 'var(--color-text)', marginBottom: 'var(--space-4)' }}>
-          Official Profile Links
+      {/* Form */}
+      <form onSubmit={handleSave} className="card" style={{ padding: 'var(--space-8)', borderRadius: 'var(--radius-xl)' }}>
+        <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: 700, color: 'var(--color-text)', marginBottom: 'var(--space-6)' }}>
+          Official Channel URLs
         </h2>
 
-        {loading ? (
-          <p style={{ color: 'var(--color-text-secondary)' }}>Loading links...</p>
-        ) : socials.length === 0 ? (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No social links configured in database.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            {socials.map((link) => (
-              <div
-                key={link.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-4)',
-                  padding: 'var(--space-4)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-surface)',
-                  flexWrap: 'wrap'
-                }}
-              >
-                <div style={{ width: '120px', fontWeight: 700, textTransform: 'capitalize', color: 'var(--color-text)' }}>
-                  {link.platform}
-                </div>
-
-                <div style={{ flex: 1, minWidth: '240px' }}>
-                  <input
-                    type="url"
-                    defaultValue={link.profile_url}
-                    onBlur={(e) => {
-                      if (e.target.value !== link.profile_url) {
-                        handleUpdate(link, e.target.value, link.is_enabled);
-                      }
-                    }}
-                    placeholder={`https://${link.platform}.com/...`}
-                    className="input-field"
-                    style={{ width: '100%', fontSize: 'var(--font-xs)' }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: 'var(--font-xs)', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={link.is_enabled}
-                      onChange={(e) => handleUpdate(link, link.profile_url, e.target.checked)}
-                    />
-                    <span>Enabled</span>
-                  </label>
-                </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          {platformFields.map((field) => (
+            <div key={field.key}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text)' }}>
+                  {field.label}
+                </label>
+                {links[field.key] && (
+                  <a
+                    href={links[field.key]}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: '0.6875rem', color: 'var(--color-primary-600)', display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}
+                  >
+                    Test Link <ExternalLink size={11} />
+                  </a>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <input
+                type="url"
+                value={links[field.key] || ''}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                className="input-field"
+                style={{ width: '100%', fontSize: 'var(--font-sm)' }}
+              />
+              <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', marginTop: '2px', display: 'block' }}>
+                {field.helper}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 'var(--space-8)', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+          >
+            <Save size={16} /> Save Social Channels
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

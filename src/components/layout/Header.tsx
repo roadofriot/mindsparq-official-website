@@ -4,11 +4,14 @@ import { Sun, Moon, Menu, X, ArrowRight, User, Shield } from 'lucide-react';
 import { navItems } from '../../content/navigation';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { Logo } from './Logo';
 
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useThemeContext();
   const { user, isStaff } = useAuth();
+  const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -74,46 +77,60 @@ export const Header: React.FC = () => {
           }}
           className="desktop-nav"
         >
-          {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}
-              style={({ isActive }) => ({
-                position: 'relative',
-                fontSize: '0.875rem',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                padding: '8px 2px',
-                textDecoration: 'none',
-                transition: 'color var(--transition-fast)'
-              })}
-            >
-              {({ isActive }) => (
-                <>
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <span 
-                      style={{
-                        position: 'absolute',
-                        bottom: '-6px',
-                        left: '0',
-                        right: '0',
-                        height: '2px',
-                        borderRadius: '2px',
-                        background: 'linear-gradient(90deg, #38bdf8 0%, #818cf8 100%)',
-                        boxShadow: '0 0 8px rgba(56, 189, 248, 0.6)'
-                      }} 
-                    />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const translatedLabel = 
+              item.href === '/' ? t('nav.home', item.label) :
+              item.href === '/about' ? t('nav.about', item.label) :
+              item.href === '/programs' ? t('nav.programs', item.label) :
+              item.href === '/courses' ? t('nav.courses', item.label) :
+              item.href === '/events' ? t('nav.events', item.label) :
+              item.href === '/blog' ? t('nav.blog', item.label) :
+              item.href === '/contact' ? t('nav.contact', item.label) : item.label;
+
+            return (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) => `header-nav-link ${isActive ? 'active' : ''}`}
+                style={({ isActive }) => ({
+                  position: 'relative',
+                  fontSize: '0.875rem',
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                  padding: '8px 2px',
+                  textDecoration: 'none',
+                  transition: 'color var(--transition-fast)'
+                })}
+              >
+                {({ isActive }) => (
+                  <>
+                    <span>{translatedLabel}</span>
+                    {isActive && (
+                      <span 
+                        style={{
+                          position: 'absolute',
+                          bottom: '-6px',
+                          left: '0',
+                          right: '0',
+                          height: '2px',
+                          borderRadius: '2px',
+                          background: 'linear-gradient(90deg, #38bdf8 0%, #818cf8 100%)',
+                          boxShadow: '0 0 8px rgba(56, 189, 248, 0.6)'
+                        }} 
+                      />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          {/* Language Switcher */}
+          <LanguageSwitcher variant="minimal" />
+
           {/* Minimal Theme Switcher */}
           <button
             type="button"
@@ -272,29 +289,45 @@ export const Header: React.FC = () => {
           }}
           className="mobile-menu-panel"
         >
+          {/* Mobile Language Switcher */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
+            <LanguageSwitcher variant="pill" />
+          </div>
+
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {navItems.map((item) => (
-              <NavLink
-                key={item.href}
-                to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-sm)',
-                  fontWeight: 600,
-                  color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
-                  backgroundColor: isActive ? 'var(--color-brand-primary-soft)' : 'transparent',
-                  textDecoration: 'none'
-                })}
-              >
-                {item.label}
-                <ArrowRight size={14} aria-hidden="true" />
-              </NavLink>
-            ))}
+            {navItems.map((item) => {
+              const translatedLabel = 
+                item.href === '/' ? t('nav.home', item.label) :
+                item.href === '/about' ? t('nav.about', item.label) :
+                item.href === '/programs' ? t('nav.programs', item.label) :
+                item.href === '/courses' ? t('nav.courses', item.label) :
+                item.href === '/events' ? t('nav.events', item.label) :
+                item.href === '/blog' ? t('nav.blog', item.label) :
+                item.href === '/contact' ? t('nav.contact', item.label) : item.label;
+
+              return (
+                <NavLink
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={({ isActive }) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: 'var(--font-sm)',
+                    fontWeight: 600,
+                    color: isActive ? 'var(--color-brand-primary)' : 'var(--color-text-primary)',
+                    backgroundColor: isActive ? 'var(--color-brand-primary-soft)' : 'transparent',
+                    textDecoration: 'none'
+                  })}
+                >
+                  {translatedLabel}
+                  <ArrowRight size={14} aria-hidden="true" />
+                </NavLink>
+              );
+            })}
 
             <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {user ? (

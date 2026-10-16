@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
@@ -72,8 +73,9 @@ export const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <BrowserRouter>
           <Suspense fallback={<RouteLoadingSpinner />}>
             <Routes>
               {/* Main Public Website Layout */}
@@ -154,7 +156,8 @@ export const App: React.FC = () => {
           </Suspense>
         </BrowserRouter>
       </AuthProvider>
-    </ThemeProvider>
+    </LanguageProvider>
+  </ThemeProvider>
   );
 };
 

@@ -78,11 +78,15 @@ export const siteConfig: SiteConfig = {
     sparq: 'Curiosity, inspiration, fresh ideas, innovation, and the spark that initiates discovery.'
   },
   contact: {
-    // Left unpopulated until official owner confirmation as strictly instructed
-    phone: undefined,
-    email: undefined,
-    officeHours: undefined,
-    socials: {}
+    phone: '+977 9857058666',
+    email: 'contact@mindsparqeducation.com.np',
+    officeHours: 'Sunday – Friday: 9:00 AM – 6:00 PM',
+    socials: {
+      facebook: 'https://facebook.com/mindsparqeducation',
+      instagram: 'https://instagram.com/mindsparqeducation',
+      linkedin: 'https://linkedin.com/company/mindsparqeducation',
+      youtube: 'https://youtube.com/@mindsparqeducation'
+    }
   },
   inquiry: {
     deliveryMode: "placeholder-notice",

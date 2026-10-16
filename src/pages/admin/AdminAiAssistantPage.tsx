@@ -15,22 +15,29 @@ import {
   Key,
   Bot,
   User as UserIcon,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
+import { useVoiceInput } from '../../hooks/useVoiceInput';
 import {
   sendGeminiPrompt,
   GeminiMessage,
   getGeminiApiKey,
-  saveGeminiApiKey
+  saveGeminiApiKey,
+  getGeminiModel,
+  saveGeminiModel,
+  validateGeminiApiKey,
+  SUPPORTED_GEMINI_MODELS
 } from '../../services/geminiService';
 
 export const AdminAiAssistantPage: React.FC = () => {
   const navigate = useNavigate();
+  const [selectedModel, setSelectedModel] = useState<string>(getGeminiModel());
   const [messages, setMessages] = useState<GeminiMessage[]>([
     {
       id: 'welcome-msg',
       role: 'assistant',
-      content: `Hello! I am your **MindSparQ Gemini AI Creative Assistant** powered by Gemini 2.5 Flash.\n\nI can help you:\n* ✍️ **Draft STEAM & Robotics blog posts**\n* 🎠 **Write high-converting carousel headlines & alt text**\n* 🎓 **Structure course modules & lesson curricula**\n* 🎙️ **Transcribe your voice directly (Nepali / English)**\n* 🖼️ **Analyze uploaded flyer photos to generate marketing descriptions**\n\nHow can I assist your educational mission today?`,
+      content: `Hello! I am your **MindSparQ Gemini AI Creative Assistant**.\n\nI can help you:\n* ✍️ **Draft STEAM, Robotics & Abacus blog posts**\n* 🎠 **Write high-converting carousel headlines & alt text**\n* 🎓 **Structure course modules & lesson curricula**\n* 🎙️ **Transcribe your voice directly in Nepali (नेपाली) or English**\n* 🖼️ **Analyze uploaded flyer photos to generate marketing descriptions**\n\nHow can I assist your educational mission today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -42,14 +49,31 @@ export const AdminAiAssistantPage: React.FC = () => {
   const [attachedImage, setAttachedImage] = useState<{ data: string; mimeType: string; previewUrl: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Speech Recognition / Voice-to-Text state
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  // Speech Recognition & Gemini Voice-to-Text hook
+  const {
+    isListening,
+    isTranscribing,
+    speechLang,
+    setSpeechLang,
+    voiceMode,
+    setVoiceMode,
+    speechStatusText,
+    errorMessage: voiceError,
+    clearError: clearVoiceError,
+    elapsedSeconds,
+    toggleVoiceRecording,
+    stopVoiceRecording
+  } = useVoiceInput({
+    currentPrompt: inputPrompt,
+    onTranscript: setInputPrompt
+  });
 
   // API Key management state
   const [apiKey, setApiKey] = useState(getGeminiApiKey());
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [tempKeyInput, setTempKeyInput] = useState(apiKey);
+  const [isValidatingKey, setIsValidatingKey] = useState(false);
+  const [validationResult, setValidationResult] = useState<{ valid: boolean; message: string } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,59 +81,25 @@ export const AdminAiAssistantPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isGenerating]);
 
-  // Setup Web Speech Recognition
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US'; // Supports 'ne-NP' or 'en-US'
+  const handleTestValidateKey = async () => {
+    setIsValidatingKey(true);
+    setValidationResult(null);
 
-      recognition.onresult = (event: any) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        if (transcript) {
-          setInputPrompt((prev) => (prev ? `${prev} ${transcript}` : transcript));
-        }
-      };
+    const res = await validateGeminiApiKey(tempKeyInput, selectedModel);
+    setIsValidatingKey(false);
 
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
-
-  const toggleVoiceRecording = () => {
-    if (!recognitionRef.current) {
-      alert('Voice-to-text is not supported by your current browser. Chrome, Edge, or Safari are recommended.');
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+    if (res.valid) {
+      setValidationResult({
+        valid: true,
+        message: `Verified! Successfully connected to Google Gemini using ${res.modelUsed}.`
+      });
+      setApiKey(tempKeyInput.trim());
+      setSelectedModel(res.modelUsed);
     } else {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch {
-        setIsListening(false);
-      }
+      setValidationResult({
+        valid: false,
+        message: res.error || 'Failed to authenticate with Google Gemini API.'
+      });
     }
   };
 
@@ -133,9 +123,8 @@ export const AdminAiAssistantPage: React.FC = () => {
     const query = (textToSend || inputPrompt).trim();
     if (!query && !attachedImage) return;
 
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+    if (isListening) {
+      stopVoiceRecording();
     }
 
     const userMsgId = 'user-' + Date.now();
@@ -158,7 +147,7 @@ export const AdminAiAssistantPage: React.FC = () => {
 Our institution specializes in STEAM education, Abacus Mental Math, Coding, Robotics, Artificial Intelligence, Drone Technology, Vedic Math, DMIT, and Parent/Teacher Training.
 Produce engaging, inspiring, and pedagogically sound responses. When formatting articles or course lessons, provide clean Markdown with headers and bullet points.`;
 
-      const responseText = await sendGeminiPrompt(query, imagePayload, systemInstruction);
+      const responseText = await sendGeminiPrompt(query, imagePayload, systemInstruction, selectedModel);
 
       const assistantMsg: GeminiMessage = {
         id: 'assistant-' + Date.now(),
@@ -238,19 +227,6 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
               <h1 style={{ fontSize: 'var(--font-xl)', fontWeight: 800, margin: 0, color: 'var(--color-text)' }}>
                 MindSparQ Gemini Assistant
               </h1>
-              <span
-                style={{
-                  fontSize: '0.6875rem',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                  color: '#10b981',
-                  border: '1px solid rgba(16, 185, 129, 0.3)'
-                }}
-              >
-                Gemini 2.5 Flash
-              </span>
             </div>
             <p style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
               AI Content Engine for Blog Posts, Carousel Slides, Course Syllabi & Multimodal Flyer Analysis
@@ -258,19 +234,53 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
           </div>
         </div>
 
-        {/* API Key Configure Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setTempKeyInput(apiKey);
-            setIsKeyModalOpen(true);
-          }}
-          className="btn btn-secondary"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', padding: '6px 14px' }}
-        >
-          <Key size={14} />
-          <span>{apiKey ? 'API Key Active (Configured)' : 'Set Google Gemini API Key'}</span>
-        </button>
+        {/* Model Selector & Key Button Group */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <label htmlFor="model-select" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+              Model:
+            </label>
+            <select
+              id="model-select"
+              value={selectedModel}
+              onChange={(e) => {
+                const newModel = e.target.value;
+                setSelectedModel(newModel);
+                saveGeminiModel(newModel);
+              }}
+              style={{
+                padding: '6px 12px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-surface-hover)',
+                color: 'var(--color-text)',
+                cursor: 'pointer'
+              }}
+            >
+              {SUPPORTED_GEMINI_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* API Key Configure Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setTempKeyInput(apiKey);
+              setIsKeyModalOpen(true);
+            }}
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8125rem', padding: '6px 14px' }}
+          >
+            <Key size={14} />
+            <span>{apiKey ? 'API Key Active (Configured)' : 'Set Google Gemini API Key'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Chat Messages Viewport */}
@@ -489,26 +499,202 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
         </div>
       )}
 
+      {/* Voice Error Notification Banner */}
+      {voiceError && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            padding: '8px 14px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '8px',
+            color: '#ef4444',
+            fontSize: '0.8125rem'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+            <span>{voiceError}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {voiceMode === 'browser' && (
+              <button
+                type="button"
+                onClick={() => {
+                  clearVoiceError();
+                  setVoiceMode('gemini');
+                }}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                ✨ Try Gemini AI Voice
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={clearVoiceError}
+              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Active Listening Voice Banner */}
       {isListening && (
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: '8px',
-            padding: '6px 14px',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            padding: '8px 14px',
+            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
             color: '#ef4444',
             borderRadius: 'var(--radius-md)',
             marginBottom: '8px',
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             fontWeight: 600
           }}
         >
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ef4444', animation: 'pulse 1s infinite' }} />
-          <span>Listening... Speak your prompt in Nepali or English. Click mic to finish.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', animation: 'pulse 1s infinite' }} />
+            <span>{speechStatusText || (speechLang === 'ne-NP' ? 'सुन्दैछ... नेपाली वा अंग्रेजीमा बोल्नुहोस्' : 'Listening... Speak in English or Nepali')}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontFamily: 'monospace', fontWeight: 700, backgroundColor: 'rgba(239, 68, 68, 0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+              {Math.floor(elapsedSeconds / 60)}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
+            </span>
+            <button
+              type="button"
+              onClick={stopVoiceRecording}
+              style={{
+                padding: '3px 10px',
+                borderRadius: '6px',
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: 700
+              }}
+            >
+              Stop
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Transcribing Voice Banner (Gemini Multimodal AI) */}
+      {isTranscribing && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            color: '#2563eb',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '8px',
+            fontSize: '0.8125rem',
+            fontWeight: 600
+          }}
+        >
+          <Loader2 size={16} className="animate-spin" />
+          <span>{speechStatusText || '✨ Gemini AI मार्फत अडियो रूपान्तरण हुँदैछ... / Transcribing audio...'}</span>
+        </div>
+      )}
+
+      {/* Voice-to-Text Language Selection & Engine Mode */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', padding: '0 6px', fontSize: '0.75rem', flexWrap: 'wrap', gap: '8px' }}>
+        {/* Language Selection */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>Voice Mic:</span>
+          <button
+            type="button"
+            onClick={() => setSpeechLang('ne-NP')}
+            style={{
+              padding: '3px 8px',
+              borderRadius: '12px',
+              border: 'none',
+              backgroundColor: speechLang === 'ne-NP' ? 'var(--color-primary-600)' : 'var(--color-surface-hover)',
+              color: speechLang === 'ne-NP' ? '#ffffff' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontWeight: speechLang === 'ne-NP' ? 700 : 500
+            }}
+          >
+            🇳🇵 नेपाली (Nepali)
+          </button>
+          <button
+            type="button"
+            onClick={() => setSpeechLang('en-US')}
+            style={{
+              padding: '3px 8px',
+              borderRadius: '12px',
+              border: 'none',
+              backgroundColor: speechLang === 'en-US' ? 'var(--color-primary-600)' : 'var(--color-surface-hover)',
+              color: speechLang === 'en-US' ? '#ffffff' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontWeight: speechLang === 'en-US' ? 700 : 500
+            }}
+          >
+            🇬🇧 English
+          </button>
+        </div>
+
+        {/* Engine Toggle: Browser Speech vs Gemini Multimodal */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>Engine:</span>
+          <button
+            type="button"
+            onClick={() => setVoiceMode('browser')}
+            title="Real-time live typing directly in Chrome/Edge"
+            style={{
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid var(--color-border)',
+              backgroundColor: voiceMode === 'browser' ? 'var(--color-surface-hover)' : 'transparent',
+              color: voiceMode === 'browser' ? 'var(--color-primary-600)' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontWeight: voiceMode === 'browser' ? 700 : 400
+            }}
+          >
+            🌐 Browser Live
+          </button>
+          <button
+            type="button"
+            onClick={() => setVoiceMode('gemini')}
+            title="High-accuracy Gemini Audio Whisper transcription (works on any browser)"
+            style={{
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid var(--color-border)',
+              backgroundColor: voiceMode === 'gemini' ? 'rgba(124, 58, 237, 0.12)' : 'transparent',
+              color: voiceMode === 'gemini' ? '#7c3aed' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontWeight: voiceMode === 'gemini' ? 700 : 400
+            }}
+          >
+            ✨ Gemini AI Audio
+          </button>
+        </div>
+      </div>
 
       {/* Input Formulation Bar */}
       <form
@@ -559,22 +745,23 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
         <button
           type="button"
           onClick={toggleVoiceRecording}
-          title={isListening ? 'Stop voice recording' : 'Speak to AI (Voice-to-Text)'}
+          disabled={isTranscribing}
+          title={isListening ? 'Stop voice recording' : isTranscribing ? 'Transcribing with Gemini AI...' : 'Speak to AI (Voice-to-Text)'}
           style={{
             width: '38px',
             height: '38px',
             borderRadius: '50%',
-            backgroundColor: isListening ? '#ef4444' : 'transparent',
-            color: isListening ? '#ffffff' : 'var(--color-text-secondary)',
+            backgroundColor: isListening ? '#ef4444' : isTranscribing ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+            color: isListening ? '#ffffff' : isTranscribing ? '#2563eb' : 'var(--color-text-secondary)',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: isTranscribing ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s'
           }}
         >
-          {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+          {isTranscribing ? <Loader2 size={18} className="animate-spin" /> : isListening ? <MicOff size={18} /> : <Mic size={18} />}
         </button>
 
         <input
@@ -653,23 +840,92 @@ Produce engaging, inspiring, and pedagogically sound responses. When formatting 
             </div>
 
             <p style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', lineHeight: 1.5 }}>
-              Enter your Google AI Studio API key to enable direct, high-speed neural responses using <strong>Gemini 2.5 Flash</strong>. Keys are stored locally in your browser and used securely.
+              Enter your Google AI Studio API key (from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary-600)', textDecoration: 'underline' }}>aistudio.google.com</a>) to power direct text and multimodal flyer generation.
             </p>
 
             <form onSubmit={handleSaveApiKey}>
+              <div style={{ marginBottom: 'var(--space-3)' }}>
+                <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: '4px' }}>
+                  Default AI Model
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => {
+                    const m = e.target.value;
+                    setSelectedModel(m);
+                    saveGeminiModel(m);
+                  }}
+                  className="input-field"
+                  style={{ width: '100%', cursor: 'pointer' }}
+                >
+                  {SUPPORTED_GEMINI_MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} — {m.desc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: '4px' }}>
                   Google Gemini API Key
                 </label>
-                <input
-                  type="password"
-                  value={tempKeyInput}
-                  onChange={(e) => setTempKeyInput(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="input-field"
-                  style={{ width: '100%' }}
-                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="password"
+                    value={tempKeyInput}
+                    onChange={(e) => {
+                      setTempKeyInput(e.target.value);
+                      setValidationResult(null);
+                    }}
+                    placeholder="AIzaSy..."
+                    className="input-field"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleTestValidateKey}
+                    disabled={isValidatingKey || !tempKeyInput.trim()}
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    {isValidatingKey ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" /> Testing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={14} /> Test & Validate
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {/* Validation Result Notice */}
+              {validationResult && (
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 'var(--space-4)',
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.4,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    backgroundColor: validationResult.valid ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                    border: `1px solid ${validationResult.valid ? '#10b981' : '#ef4444'}`,
+                    color: validationResult.valid ? '#10b981' : '#ef4444'
+                  }}
+                >
+                  {validationResult.valid ? <Check size={16} style={{ flexShrink: 0, marginTop: '2px' }} /> : <X size={16} style={{ flexShrink: 0, marginTop: '2px' }} />}
+                  <div>
+                    <strong>{validationResult.valid ? 'Key Verified Active' : 'Validation Error'}</strong>
+                    <div style={{ marginTop: '2px' }}>{validationResult.message}</div>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                 <button

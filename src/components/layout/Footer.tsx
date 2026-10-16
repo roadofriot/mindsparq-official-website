@@ -5,9 +5,13 @@ import { siteConfig } from '../../content/site';
 import { footerLinks } from '../../content/navigation';
 import { Logo } from './Logo';
 import { getPublicVisitorCount } from '../../services/analyticsService';
+import { SocialLinksBar } from '../ui/SocialLinksBar';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
   const [visitorCount, setVisitorCount] = useState<number>(() => getPublicVisitorCount());
 
   useEffect(() => {
@@ -56,7 +60,7 @@ export const Footer: React.FC = () => {
               <MapPin size={18} style={{ color: 'var(--color-primary-600)', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
               <div>
                 <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
-                  Registered Center
+                  {t('footer.registered_center', 'Registered Center')}
                 </span>
                 <p style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text)', margin: 0, fontWeight: 500 }}>
                   {siteConfig.location.fullFormatted}
@@ -79,6 +83,14 @@ export const Footer: React.FC = () => {
                 )}
               </div>
             )}
+
+            {/* Circular Social Media Channels Bar */}
+            <div style={{ marginTop: 'var(--space-5)' }}>
+              <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '8px' }}>
+                {t('footer.social_connect', 'Connect With Us')}
+              </span>
+              <SocialLinksBar size="sm" />
+            </div>
           </div>
 
           {/* Programs Links */}
@@ -173,40 +185,45 @@ export const Footer: React.FC = () => {
           }}
         >
           <div>
-            © {currentYear} {siteConfig.name}. All rights reserved. Butwal, Nepal.
+            © {currentYear} {siteConfig.name}. {t('footer.all_rights', 'All rights reserved. Butwal, Nepal.')}
           </div>
 
-          {/* Public Total Visitor Counter */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              borderRadius: '20px',
-              backgroundColor: 'var(--color-surface-hover)',
-              border: '1px solid var(--color-border)',
-              fontSize: '11px',
-              fontWeight: 500,
-              color: 'var(--color-text-secondary)'
-            }}
-            title="Total visitors engaged with MindSparQ platform"
-          >
-            <span
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+            {/* Public Total Visitor Counter */}
+            <div
               style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: '#10b981',
-                display: 'inline-block'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                backgroundColor: 'var(--color-surface-hover)',
+                border: '1px solid var(--color-border)',
+                fontSize: '11px',
+                fontWeight: 500,
+                color: 'var(--color-text-secondary)'
               }}
-            />
-            Total Visits: <strong style={{ color: 'var(--color-text)' }}>{visitorCount.toLocaleString()}</strong>
+              title="Total visitors engaged with MindSparQ platform"
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  display: 'inline-block'
+                }}
+              />
+              {t('footer.total_visits', 'Total Visits')}: <strong style={{ color: 'var(--color-text)' }}>{visitorCount.toLocaleString()}</strong>
+            </div>
+
+            {/* Language Switcher in Footer */}
+            <LanguageSwitcher variant="minimal" />
           </div>
 
           <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'center' }}>
             <Link to="/privacy-policy" style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}>
-              Privacy Policy
+              {t('footer.privacy', 'Privacy Policy')}
             </Link>
             <a 
               href="https://mindsparqeducation.com.np" 

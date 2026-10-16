@@ -25,6 +25,141 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { sharePublicContent, getSocialShareUrls } from '../services/socialService';
+import { getSafeYouTubeEmbedUrl } from '../services/courseService';
+
+function renderArticleContent(content: string) {
+  if (!content) return null;
+
+  const paragraphs = content.split(/\n\s*\n/);
+
+  return paragraphs.map((block, idx) => {
+    const trimmed = block.trim();
+    if (!trimmed) return null;
+
+    // 1. YouTube standalone URL or [youtube:ID]
+    const ytMatch = trimmed.match(/^\[youtube:([a-zA-Z0-9_-]{11})\]$/i) ||
+      trimmed.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S*)?$/i);
+
+    if (ytMatch && ytMatch[1]) {
+      const videoId = ytMatch[1];
+      const embedUrl = getSafeYouTubeEmbedUrl(videoId);
+      return (
+        <div
+          key={idx}
+          style={{
+            position: 'relative',
+            width: '100%',
+            paddingBottom: '56.25%',
+            height: 0,
+            overflow: 'hidden',
+            borderRadius: 'var(--radius-xl)',
+            margin: 'var(--space-8) 0',
+            boxShadow: 'var(--shadow-lg)'
+          }}
+        >
+          <iframe
+            src={embedUrl}
+            title={`YouTube Video ${idx}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              border: 'none'
+            }}
+          />
+        </div>
+      );
+    }
+
+    // 2. Markdown Image: ![alt](url)
+    const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      const alt = imgMatch[1];
+      const src = imgMatch[2];
+      return (
+        <figure key={idx} style={{ margin: 'var(--space-8) 0', textAlign: 'center' }}>
+          <img
+            src={src}
+            alt={alt || 'Article visual'}
+            loading="lazy"
+            style={{
+              width: '100%',
+              maxHeight: '520px',
+              objectFit: 'cover',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'var(--shadow-md)'
+            }}
+          />
+          {alt && (
+            <figcaption
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--color-text-muted)',
+                marginTop: 'var(--space-2)',
+                fontStyle: 'italic'
+              }}
+            >
+              {alt}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
+
+    // 3. Headings
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h3
+          key={idx}
+          style={{
+            fontSize: 'var(--text-xl)',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            marginTop: 'var(--space-6)',
+            marginBottom: 'var(--space-3)'
+          }}
+        >
+          {trimmed.replace(/^###\s+/, '')}
+        </h3>
+      );
+    }
+    if (trimmed.startsWith('## ')) {
+      return (
+        <h2
+          key={idx}
+          style={{
+            fontSize: 'var(--text-2xl)',
+            fontWeight: 800,
+            color: 'var(--color-text-primary)',
+            marginTop: 'var(--space-8)',
+            marginBottom: 'var(--space-4)'
+          }}
+        >
+          {trimmed.replace(/^##\s+/, '')}
+        </h2>
+      );
+    }
+
+    // 4. Standard Paragraph
+    return (
+      <p
+        key={idx}
+        style={{
+          fontSize: 'var(--text-base)',
+          lineHeight: 1.85,
+          color: 'var(--color-text-secondary)',
+          marginBottom: 'var(--space-5)'
+        }}
+      >
+        {trimmed}
+      </p>
+    );
+  });
+}
 
 const FALLBACK_ARTICLES: Record<string, BlogPost> = {
   'why-abacus-training-enhances-mathematical-fluency': {
@@ -438,16 +573,13 @@ export const BlogPostPage: React.FC = () => {
         </div>
 
         {/* Article Body */}
+        {/* Article Body */}
         <div
           style={{
-            fontSize: 'var(--font-lg)',
-            lineHeight: 1.85,
-            color: 'var(--color-text)',
-            whiteSpace: 'pre-line',
             marginBottom: 'var(--space-12)'
           }}
         >
-          {post.content}
+          {renderArticleContent(post.content)}
         </div>
 
         {/* Moderated Comments Section */}

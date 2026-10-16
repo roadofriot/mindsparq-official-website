@@ -11,10 +11,17 @@ import {
   CheckCircle2,
   X,
   ExternalLink,
-  User as UserIcon
+  User as UserIcon,
+  Upload,
+  Image as ImageIcon,
+  Video,
+  Heading,
+  Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { uploadMedia } from '../../services/mediaService';
+import { extractYouTubeVideoId } from '../../services/courseService';
 
 export const AdminBlogPage: React.FC = () => {
   const { user, isOwner, isAdmin, isSuperAdmin, hasPermission } = useAuth();
@@ -30,8 +37,64 @@ export const AdminBlogPage: React.FC = () => {
   const [editingPost, setEditingPost] = useState<Partial<BlogPost> | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingInline, setUploadingInline] = useState(false);
+  const [mediaNotice, setMediaNotice] = useState<string | null>(null);
 
   const canPublish = isSuperAdmin || isOwner || isAdmin || hasPermission('content.publish');
+
+  const handleUploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !editingPost) return;
+    const file = e.target.files[0];
+    setUploadingCover(true);
+    setMediaNotice(null);
+    const { data, error } = await uploadMedia(file, editingPost.title || 'Article Cover', undefined, 'public');
+    if (error) {
+      setMediaNotice(`Cover upload failed: ${error.message}`);
+    } else if (data?.storage_path) {
+      setEditingPost({ ...editingPost, cover_image_url: data.storage_path });
+      setMediaNotice('Cover image uploaded successfully!');
+    }
+    setUploadingCover(false);
+  };
+
+  const handleUploadInlineImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !editingPost) return;
+    const file = e.target.files[0];
+    setUploadingInline(true);
+    setMediaNotice(null);
+    const { data, error } = await uploadMedia(file, 'Article visual illustration', undefined, 'public');
+    if (error) {
+      setMediaNotice(`Image upload failed: ${error.message}`);
+    } else if (data?.storage_path) {
+      const cleanAlt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      const mdSnippet = `\n\n![${cleanAlt}](${data.storage_path})\n\n`;
+      setEditingPost({ ...editingPost, content: (editingPost.content || '') + mdSnippet });
+      setMediaNotice('Image inserted into article content!');
+    }
+    setUploadingInline(false);
+  };
+
+  const handleInsertYouTube = () => {
+    if (!editingPost) return;
+    const input = window.prompt('Enter YouTube video URL (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...):');
+    if (!input) return;
+    const videoId = extractYouTubeVideoId(input);
+    if (!videoId) {
+      alert('Invalid YouTube URL. Please provide a standard YouTube video link.');
+      return;
+    }
+    const ytSnippet = `\n\nhttps://www.youtube.com/watch?v=${videoId}\n\n`;
+    setEditingPost({ ...editingPost, content: (editingPost.content || '') + ytSnippet });
+    setMediaNotice('YouTube video embed inserted into article!');
+  };
+
+  const handleInsertHeading = (level: 2 | 3) => {
+    if (!editingPost) return;
+    const hashes = '#'.repeat(level);
+    const snippet = `\n\n${hashes} Section Title\n\n`;
+    setEditingPost({ ...editingPost, content: (editingPost.content || '') + snippet });
+  };
 
   const fetchPosts = () => {
     setLoading(true);
@@ -884,15 +947,122 @@ export const AdminBlogPage: React.FC = () => {
                 />
               </div>
 
-              {/* Main Content */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px' }}>
-                  Main Article Content * (Markdown / Structured Text)
-                </label>
+              {/* Media Notice banner */}
+              {mediaNotice && (
+                <div
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    color: '#0284c7',
+                    fontSize: '0.8125rem',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>{mediaNotice}</span>
+                  <button
+                    type="button"
+                    onClick={() => setMediaNotice(null)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 }}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Main Content with Media Toolbar */}
+              <div style={{ marginBottom: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
+                    Main Article Content * (Markdown, Images & Videos)
+                  </label>
+
+                  {/* Formatting Toolbar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {/* Inline Image Upload */}
+                    <label
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-surface-elevated)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-secondary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: uploadingInline ? 'not-allowed' : 'pointer'
+                      }}
+                      title="Upload an image and insert into the article"
+                    >
+                      {uploadingInline ? <Loader2 size={13} className="spin" /> : <ImageIcon size={13} />}
+                      <span>{uploadingInline ? 'Uploading...' : 'Insert Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUploadInlineImage}
+                        disabled={uploadingInline}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+
+                    {/* YouTube Video Insert */}
+                    <button
+                      type="button"
+                      onClick={handleInsertYouTube}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-surface-elevated)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-secondary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                      title="Insert a YouTube video player into the article"
+                    >
+                      <Video size={13} />
+                      <span>Insert YouTube</span>
+                    </button>
+
+                    {/* Subheading Insert */}
+                    <button
+                      type="button"
+                      onClick={() => handleInsertHeading(3)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-surface-elevated)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-secondary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                      title="Insert a section heading"
+                    >
+                      <Heading size={13} />
+                      <span>Heading</span>
+                    </button>
+                  </div>
+                </div>
+
                 <textarea
                   required
                   rows={8}
-                  placeholder="Write the full article content here. Markdown formatting is supported..."
+                  placeholder="Write the full article content here. You can use the buttons above to insert images and YouTube videos..."
                   value={editingPost.content || ''}
                   onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
                   style={{
@@ -910,25 +1080,102 @@ export const AdminBlogPage: React.FC = () => {
                 />
               </div>
 
-              {/* Cover Image URL */}
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px' }}>
-                  Cover Image URL
-                </label>
+              {/* Cover Image Section */}
+              <div style={{ marginBottom: '18px', padding: '14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
+                    Article Cover Image
+                  </label>
+
+                  {/* Upload Cover Button */}
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '5px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--color-primary-600, #2563eb)',
+                      color: '#ffffff',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      cursor: uploadingCover ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {uploadingCover ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
+                    <span>{uploadingCover ? 'Uploading...' : 'Upload from Device'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleUploadCover}
+                      disabled={uploadingCover}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+
+                {/* Preview Thumbnail if present */}
+                {editingPost.cover_image_url && (
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '140px',
+                      borderRadius: 'var(--radius-md)',
+                      overflow: 'hidden',
+                      marginBottom: '10px',
+                      border: '1px solid var(--color-border)'
+                    }}
+                  >
+                    <img
+                      src={editingPost.cover_image_url}
+                      alt="Cover Preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditingPost({ ...editingPost, cover_image_url: '' })}
+                      style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        padding: '4px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        color: '#ffffff',
+                        border: 'none',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
+                )}
+
+                {/* Manual URL Input Fallback */}
                 <input
                   type="url"
-                  placeholder="https://images.unsplash.com/... or storage URL"
+                  placeholder="Or paste external image URL (e.g. Unsplash, Google direct link)..."
                   value={editingPost.cover_image_url || ''}
                   onChange={(e) => setEditingPost({ ...editingPost, cover_image_url: e.target.value })}
                   style={{
                     width: '100%',
-                    height: '42px',
+                    height: '38px',
                     padding: '0 12px',
                     borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--color-surface-elevated)',
+                    backgroundColor: 'var(--color-surface)',
                     border: '1px solid var(--color-border)',
                     color: 'var(--color-text-primary)',
-                    fontSize: '0.875rem'
+                    fontSize: '0.8125rem'
                   }}
                 />
               </div>

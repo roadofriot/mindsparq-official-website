@@ -78,24 +78,45 @@ export const MeetOurTeamSection: React.FC = () => {
               {/* Founder Avatar & Key Bio */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                  <div
-                    style={{
-                      width: '76px',
-                      height: '76px',
-                      borderRadius: 'var(--radius-full)',
-                      background: 'linear-gradient(135deg, var(--color-primary-600) 0%, #4338ca 100%)',
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem',
-                      fontWeight: 800,
-                      flexShrink: 0,
-                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
-                    }}
-                  >
-                    {founderProfile.display_name.slice(0, 2).toUpperCase()}
-                  </div>
+                  {founderProfile.profile_image_path ? (
+                    <div
+                      style={{
+                        width: '76px',
+                        height: '76px',
+                        borderRadius: 'var(--radius-full)',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '3px solid var(--color-primary-500, #3b82f6)',
+                        boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                        backgroundColor: 'var(--color-surface-hover)'
+                      }}
+                    >
+                      <img
+                        src={founderProfile.profile_image_path}
+                        alt={founderProfile.display_name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: '76px',
+                        height: '76px',
+                        borderRadius: 'var(--radius-full)',
+                        background: 'linear-gradient(135deg, var(--color-primary-600) 0%, #4338ca 100%)',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.5rem',
+                        fontWeight: 800,
+                        flexShrink: 0,
+                        boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)'
+                      }}
+                    >
+                      {founderProfile.display_name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <div>
                     <span
                       style={{
@@ -307,23 +328,43 @@ export const MeetOurTeamSection: React.FC = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                      color: 'var(--color-primary-600)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                      flexShrink: 0
-                    }}
-                  >
-                    {p.display_name.slice(0, 2).toUpperCase()}
-                  </div>
+                  {p.profile_image_path ? (
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1.5px solid var(--color-border)',
+                        backgroundColor: 'var(--color-surface-hover)'
+                      }}
+                    >
+                      <img
+                        src={p.profile_image_path}
+                        alt={p.display_name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                        color: 'var(--color-primary-600)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '1rem',
+                        flexShrink: 0
+                      }}
+                    >
+                      {p.display_name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <div>
                     <h4 style={{ fontSize: 'var(--font-base)', fontWeight: 700, margin: 0 }}>
                       {p.display_name}

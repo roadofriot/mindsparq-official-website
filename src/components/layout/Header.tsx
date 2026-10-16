@@ -91,6 +91,8 @@ export const Header: React.FC = () => {
         return t('nav.programs', item.label);
       case '/courses':
         return t('nav.courses', item.label);
+      case '/team':
+        return t('nav.team', item.label);
       case '/events':
         return t('nav.events', item.label);
       case '/blog':

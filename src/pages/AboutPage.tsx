@@ -14,7 +14,10 @@ import {
   BookOpen, 
   Cpu, 
   Award,
-  Globe
+  Globe,
+  Volume2,
+  Hand,
+  Users
 } from 'lucide-react';
 import { siteConfig } from '../content/site';
 import { learningPillars, whoWeSupport, digitalEcosystemModules } from '../content/programs';
@@ -254,6 +257,25 @@ export const AboutPage: React.FC = () => {
                     Curriculum rigor, teacher empowerment, data privacy compliance, ethical AI education, and building indigenous digital learning tools.
                   </p>
                 </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: 'var(--space-3)' }}>
+                  <Link
+                    to="/team/samay-budhathoki-chhetri"
+                    className="btn btn-secondary"
+                    style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: '0.8125rem', gap: '6px' }}
+                  >
+                    <span>Executive Profile</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                  <Link
+                    to="/team"
+                    className="btn btn-primary"
+                    style={{ flex: 1, justifyContent: 'center', padding: '8px 14px', fontSize: '0.8125rem', gap: '6px' }}
+                  >
+                    <Users size={13} />
+                    <span>Our Faculty</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -402,71 +424,231 @@ export const AboutPage: React.FC = () => {
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
-              padding: 'var(--space-10) var(--space-8)'
+              borderRadius: 'var(--radius-xl)',
+              padding: 'clamp(var(--space-6), 4vw, var(--space-10))',
+              boxShadow: 'var(--shadow-sm)'
             }}
           >
+            {/* Header: Academic Research Context */}
+            <div style={{ maxWidth: '820px', marginBottom: 'var(--space-8)' }}>
+              <div className="eyebrow eyebrow-teal">
+                <BookOpen size={14} />
+                <span>Academic Research & Pedagogical Rigor</span>
+              </div>
+              <h2 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, color: 'var(--color-text)', marginBottom: 'var(--space-4)', lineHeight: 1.25 }}>
+                VAK-Based Multi-Sensory Teaching Strategies
+              </h2>
+              <div 
+                style={{
+                  padding: 'var(--space-4) var(--space-5)',
+                  backgroundColor: 'rgba(45, 212, 191, 0.08)',
+                  borderLeft: '4px solid #14b8a6',
+                  borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+                  marginBottom: 'var(--space-4)'
+                }}
+              >
+                <p style={{ fontSize: '0.9375rem', color: 'var(--color-text)', lineHeight: 1.7, margin: 0, fontStyle: 'italic' }}>
+                  “The Effectiveness of VAK-Based Teaching Strategies in Enhancing Learning Outcomes Among Secondary School Students in Butwal Sub-Metropolitan City, Nepal.”
+                </p>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0f766e', marginTop: '6px' }}>
+                  — Academic Thesis by Founder Samay Budhathoki Chhetri (Sonu Chhetri)
+                </div>
+              </div>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.75, margin: 0 }}>
+                We treat pedagogical research with genuine scientific rigor. Rather than adopting unverified commercial fads or passive rote methods, MindSparQ continuously validates multi-sensory feedback loops to ensure every student grasps mathematical, computational, and technical concepts intuitively.
+              </p>
+            </div>
+
+            {/* 3 Spacious Sensory Modality Cards */}
             <div 
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr',
-                gap: 'var(--space-8)',
-                alignItems: 'center'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+                gap: 'var(--space-6)',
+                marginBottom: 'var(--space-8)'
               }}
-              className="research-grid"
             >
-              <div>
-                <div className="eyebrow eyebrow-teal">
-                  <BookOpen size={14} />
-                  <span>Academic Research & Pedagogy</span>
-                </div>
-                <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-3)' }}>
-                  VAK-Based Teaching Strategies Research
-                </h2>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-3)' }}>
-                  Academic research spearheaded by our founder investigates: <em>“The Effectiveness of VAK-Based Teaching Strategies in Enhancing Learning Outcomes Among Secondary School Students in Butwal Sub-Metropolitan City, Nepal.”</em>
-                </p>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                  We treat pedagogical research with scientific rigor. Rather than adopting unverified commercial fads, MindSparQ continuously tests and incorporates verified sensory feedback methods to ensure multi-modal learning for every student.
-                </p>
-              </div>
-
-              <div 
+              {/* Visual Card */}
+              <div
                 style={{
                   backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-6)',
-                  border: '1px solid var(--color-border)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 'var(--space-3)'
                 }}
               >
-                <h4 style={{ fontSize: 'var(--text-sm)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  The Multi-Sensory Approach
-                </h4>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div>
-                    <strong>Visual (V):</strong> Graphical block diagrams, abacus bead imagery, and circuit visualizers.
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(20, 184, 166, 0.12)',
+                      color: '#14b8a6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Eye size={20} />
                   </div>
                   <div>
-                    <strong>Auditory (A):</strong> Guided mental math dictation, phonetic stroke pacing, and conceptual discussions.
-                  </div>
-                  <div>
-                    <strong>Kinesthetic (K):</strong> Physical bead manipulation, tactile circuit breadboarding, and physical robot assembly.
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#14b8a6' }}>
+                      Sensory Modality 01
+                    </span>
+                    <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
+                      Visual (V) Learning
+                    </h3>
                   </div>
                 </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                  Graphical block logic, mental abacus bead projection (Anzan imagery), interactive circuit visualizers, and spatial flow diagrams that allow learners to see abstract formulas come alive.
+                </p>
+              </div>
+
+              {/* Auditory Card */}
+              <div
+                style={{
+                  backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-3)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                      color: '#6366f1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Volume2 size={20} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#6366f1' }}>
+                      Sensory Modality 02
+                    </span>
+                    <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
+                      Auditory (A) Learning
+                    </h3>
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                  High-tempo mental arithmetic dictation, rhythmic phonetic stroke pacing in handwriting, peer concept debates, and verbal algorithmic breakdowns that reinforce auditory memory.
+                </p>
+              </div>
+
+              {/* Kinesthetic Card */}
+              <div
+                style={{
+                  backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--space-6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-3)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                      color: '#d97706',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Hand size={20} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#d97706' }}>
+                      Sensory Modality 03
+                    </span>
+                    <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: 0, color: 'var(--color-text)' }}>
+                      Kinesthetic (K) Learning
+                    </h3>
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>
+                  Tactile Soroban bead manipulation, physical microcontroller wiring on breadboards, chassis robot assembly, and fine-motor pen grip calibration for genuine hands-on mastery.
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Actions Bar */}
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 'var(--space-4)',
+                paddingTop: 'var(--space-4)',
+                borderTop: '1px solid var(--color-border)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={18} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                  Applied across all Abacus, Vedic Math & Robotics classrooms in Butwal.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <Link
+                  to="/team/samay-budhathoki-chhetri"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    color: 'var(--color-primary-600)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>Founder Research Profile</span>
+                  <ArrowRight size={14} />
+                </Link>
+                <Link
+                  to="/team"
+                  className="btn btn-primary"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 18px',
+                    fontSize: '0.8125rem',
+                    borderRadius: 'var(--radius-full)'
+                  }}
+                >
+                  <Users size={14} />
+                  <span>Meet Our Academic Faculty</span>
+                </Link>
               </div>
             </div>
           </div>
         </div>
-
-        <style>{`
-          @media (min-width: 860px) {
-            .research-grid {
-              grid-template-columns: 1.3fr 0.9fr !important;
-            }
-          }
-        `}</style>
       </section>
 
       {/* Learning Methodology Pillars (Anchor: #approach) */}

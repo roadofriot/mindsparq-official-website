@@ -20,6 +20,7 @@ export const TeamProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<TeamProfile | null>(null);
   const [authoredPosts, setAuthoredPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (!slug) {
@@ -156,27 +157,60 @@ export const TeamProfilePage: React.FC = () => {
             }}
           >
             {/* Avatar Photo Frame */}
-            <div
-              style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: 'var(--radius-full)',
-                background: isFounder 
-                  ? 'linear-gradient(135deg, var(--color-primary-600) 0%, #4338ca 100%)' 
-                  : 'linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)',
-                color: isFounder ? '#ffffff' : 'var(--color-primary-600)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2.5rem',
-                fontWeight: 800,
-                flexShrink: 0,
-                border: '3px solid var(--color-border)',
-                boxShadow: isFounder ? '0 4px 16px rgba(37, 99, 235, 0.35)' : 'none'
-              }}
-            >
-              {profile.display_name.slice(0, 2).toUpperCase()}
-            </div>
+            {profile.profile_image_path && !imageError ? (
+              <div
+                style={{
+                  width: '110px',
+                  height: '110px',
+                  borderRadius: 'var(--radius-full)',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  border: isFounder 
+                    ? '3px solid var(--color-primary-500, #3b82f6)' 
+                    : '2px solid var(--color-border)',
+                  boxShadow: isFounder 
+                    ? '0 6px 20px rgba(37, 99, 235, 0.35)' 
+                    : '0 2px 10px rgba(0, 0, 0, 0.1)',
+                  backgroundColor: 'var(--color-surface-hover)'
+                }}
+              >
+                <img
+                  src={profile.profile_image_path}
+                  alt={profile.display_name}
+                  onError={() => setImageError(true)}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: '110px',
+                  height: '110px',
+                  borderRadius: 'var(--radius-full)',
+                  background: isFounder 
+                    ? 'linear-gradient(135deg, var(--color-primary-600) 0%, #4338ca 100%)' 
+                    : 'linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)',
+                  color: isFounder ? '#ffffff' : 'var(--color-primary-600)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2.5rem',
+                  fontWeight: 800,
+                  flexShrink: 0,
+                  border: isFounder 
+                    ? '3px solid var(--color-primary-500, #3b82f6)' 
+                    : '2px solid var(--color-border)',
+                  boxShadow: isFounder ? '0 4px 16px rgba(37, 99, 235, 0.35)' : 'none'
+                }}
+              >
+                {profile.display_name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
 
             {/* Profile Identity Details */}
             <div style={{ flex: 1, minWidth: 'min(100%, 280px)' }}>

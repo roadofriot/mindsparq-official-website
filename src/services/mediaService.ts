@@ -159,3 +159,172 @@ export async function deleteMediaAsset(asset: MediaAsset): Promise<{ error: Erro
 
   return { error: null };
 }
+
+export interface MediaUsageLocation {
+  type: 'blog_post' | 'course' | 'lesson' | 'carousel_item' | 'site_section';
+  id: string;
+  title: string;
+  field: string;
+}
+
+export interface MediaUsageReport {
+  inUse: boolean;
+  locations: MediaUsageLocation[];
+}
+
+/**
+ * Checks all content models (blogs, courses, syllabus lessons, hero slides, sections)
+ * for active references before an asset is deleted to prevent dead links.
+ */
+export async function checkMediaUsage(asset: MediaAsset): Promise<MediaUsageReport> {
+  const locations: MediaUsageLocation[] = [];
+  if (!isSupabaseConfigured) {
+    return { inUse: false, locations: [] };
+  }
+
+  const path = asset.storage_path;
+  const filename = asset.original_filename;
+
+  try {
+    // 1. Check blog_posts (cover_image_url or content)
+    const { data: blogPosts } = await supabase
+      .from('blog_posts')
+      .select('id, title, cover_image_url, content');
+
+    if (blogPosts) {
+      for (const bp of blogPosts) {
+        if (bp.cover_image_url && (bp.cover_image_url === path || bp.cover_image_url.includes(filename))) {
+          locations.push({ type: 'blog_post', id: bp.id, title: bp.title, field: 'Cover Image' });
+        } else if (bp.content && (bp.content.includes(path) || bp.content.includes(filename))) {
+          locations.push({ type: 'blog_post', id: bp.id, title: bp.title, field: 'Article Content Body' });
+        }
+      }
+    }
+
+    // 2. Check courses (thumbnail_url)
+    const { data: courses } = await supabase
+      .from('courses')
+      .select('id, title, thumbnail_url');
+
+    if (courses) {
+      for (const c of courses) {
+        if (c.thumbnail_url && (c.thumbnail_url === path || c.thumbnail_url.includes(filename))) {
+          locations.push({ type: 'course', id: c.id, title: c.title, field: 'Course Card Thumbnail' });
+        }
+      }
+    }
+
+    // 3. Check lessons (resource_url)
+    const { data: lessons } = await supabase
+      .from('lessons')
+      .select('id, title, resource_url');
+
+    if (lessons) {
+      for (const l of lessons) {
+        if (l.resource_url && (l.resource_url === path || l.resource_url.includes(filename))) {
+          locations.push({ type: 'lesson', id: l.id, title: l.title, field: 'Lesson Attachment Resource' });
+        }
+      }
+    }
+
+    // 4. Check carousel_items (image_url)
+    const { data: carouselItems } = await supabase
+      .from('carousel_items')
+      .select('id, title, image_url');
+
+    if (carouselItems) {
+      for (const ci of carouselItems) {
+        if (ci.image_url && (ci.image_url === path || ci.image_url.includes(filename))) {
+          locations.push({ type: 'carousel_item', id: ci.id, title: ci.title || 'Hero Banner', field: 'Banner Slide Image' });
+        }
+      }
+    }
+
+    // 5. Check site_sections
+    const { data: sections } = await supabase
+      .from('site_sections')
+      .select('id, section_key, title, content');
+
+    if (sections) {
+      for (const s of sections) {
+        const contentStr = typeof s.content === 'string' ? s.content : JSON.stringify(s.content || {});
+        if (contentStr.includes(path) || contentStr.includes(filename)) {
+          locations.push({ type: 'site_section', id: s.id, title: s.title || s.section_key, field: 'Landing Section Content' });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[MindSparQ Media] Usage check warning:', err);
+  }
+
+  return {
+    inUse: locations.length > 0,
+    locations
+  };
+}
+
+/**
+ * Deduplication check: detects if an asset with matching original filename and size already exists.
+ */
+export async function findDuplicateAsset(filename: string, sizeBytes: number): Promise<MediaAsset | null> {
+  if (!isSupabaseConfigured) return null;
+
+  try {
+    const { data } = await supabase
+      .from('media_assets')
+      .select('*')
+      .eq('original_filename', filename)
+      .eq('size_bytes', sizeBytes)
+      .limit(1);
+
+    return (data && data.length > 0) ? (data[0] as MediaAsset) : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface BatchUploadResult {
+  successful: MediaAsset[];
+  duplicates: { file: File; existingAsset: MediaAsset }[];
+  errors: { file: File; error: string }[];
+}
+
+/**
+ * Batch multi-file upload with progress callback and automatic deduplication detection.
+ */
+export async function uploadMediaBatch(
+  files: File[],
+  visibility: 'public' | 'private' = 'public',
+  onProgress?: (completed: number, total: number) => void
+): Promise<BatchUploadResult> {
+  const result: BatchUploadResult = {
+    successful: [],
+    duplicates: [],
+    errors: []
+  };
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
+    // Deduplication check
+    const dup = await findDuplicateAsset(file.name, file.size);
+    if (dup) {
+      result.duplicates.push({ file, existingAsset: dup });
+      onProgress?.(i + 1, files.length);
+      continue;
+    }
+
+    const cleanAlt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    const { data, error } = await uploadMedia(file, cleanAlt, undefined, visibility);
+
+    if (error) {
+      result.errors.push({ file, error: error.message });
+    } else if (data) {
+      result.successful.push(data);
+    }
+
+    onProgress?.(i + 1, files.length);
+  }
+
+  return result;
+}

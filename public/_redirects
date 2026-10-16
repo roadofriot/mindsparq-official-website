@@ -1,0 +1,8 @@
+# Cloudflare Pages Redirects and SPA Routing
+# Force HTTPS and canonical domain
+http://mindsparqeducation.com.np/* https://mindsparqeducation.com.np/:splat 301!
+http://www.mindsparqeducation.com.np/* https://mindsparqeducation.com.np/:splat 301!
+https://www.mindsparqeducation.com.np/* https://mindsparqeducation.com.np/:splat 301!
+
+# Single Page Application (SPA) client-side routing fallback
+/* /index.html 200

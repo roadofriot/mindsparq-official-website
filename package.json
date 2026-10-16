@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "sitemap": "node scripts/generateSitemap.mjs",
+    "build": "node scripts/generateSitemap.mjs && tsc && vite build",
     "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

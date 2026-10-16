@@ -11,7 +11,7 @@ const STEP_IMAGES = [
 ];
 
 export const LearningApproach: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <section className="section-spacing" style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}>

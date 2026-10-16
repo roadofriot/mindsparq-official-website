@@ -28,11 +28,9 @@ export interface AvailableGeminiModel {
 }
 
 export const SUPPORTED_GEMINI_MODELS = [
-  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', desc: 'Google AI Studio recommended latest 2026 Flash reasoning model' },
-  { id: 'argon-4', name: 'Argon 4', desc: 'Next-gen autonomous agent reasoning model' },
-  { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite', desc: 'High-speed, ultra low-latency intelligent model' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production multimodal workhorse (Fast & Reliable)' },
   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Multimodal reasoning & thinking model' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production multimodal workhorse' },
+  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', desc: 'Ultra high-speed low-latency generation' },
   { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash Latest', desc: 'Compatible standard Flash model' },
   { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro Latest', desc: 'Deep curriculum reasoning & 2M context window' }
 ] as const;
@@ -55,9 +53,9 @@ export function saveGeminiApiKey(key: string): void {
 
 export function getGeminiModel(): string {
   try {
-    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-3.8-flash';
+    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-2.0-flash';
   } catch {
-    return 'gemini-3.8-flash';
+    return 'gemini-2.0-flash';
   }
 }
 
@@ -94,7 +92,7 @@ export async function fetchAvailableGeminiModels(apiKey: string): Promise<Availa
 
 /**
  * Validates a Google Gemini API Key using Google's official ListModels endpoint
- * and verifies generateContent capability.
+ * and verifies generateContent capability against models actually provisioned to the key.
  */
 export async function validateGeminiApiKey(
   apiKey: string,
@@ -141,30 +139,34 @@ export async function validateGeminiApiKey(
     };
   }
 
-  // Step 2: Determine model candidates to test
+  // Step 2: Determine model candidates to test STRICTLY from models Google provided
   const cleanRequested = modelToTest?.replace(/^models\//, '');
   const candidateIds: string[] = [];
   
-  if (cleanRequested) {
+  // If the user's requested model exists in Google's available list, prioritize it
+  if (cleanRequested && availableModels.some(m => m.id === cleanRequested)) {
     candidateIds.push(cleanRequested);
   }
 
-  const preferredFallbacks = [
-    'gemini-3.8-flash',
-    'argon-4',
-    'gemini-3.5-flash-lite',
-    'gemini-2.5-flash',
+  // Next prioritize best models that actually exist in availableModels
+  const preferredPriority = [
     'gemini-2.0-flash',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash-lite',
     'gemini-1.5-flash-latest',
-    'gemini-1.5-pro-latest'
+    'gemini-1.5-flash',
+    'gemini-2.5-pro',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-pro'
   ];
 
-  for (const pref of preferredFallbacks) {
-    if (!candidateIds.includes(pref)) {
+  for (const pref of preferredPriority) {
+    if (availableModels.some(m => m.id === pref) && !candidateIds.includes(pref)) {
       candidateIds.push(pref);
     }
   }
 
+  // Fill in any other models from availableModels
   for (const m of availableModels) {
     if (!candidateIds.includes(m.id)) {
       candidateIds.push(m.id);
@@ -208,15 +210,17 @@ export async function validateGeminiApiKey(
     }
   }
 
-  // If list models passed, the key is valid with Google
-  const fallbackModel = candidateIds[0] || 'gemini-2.0-flash';
+  // If ListModels passed, the key is authentic with Google
+  const fallbackModel = candidateIds[0] || availableModels[0]?.id || 'gemini-2.0-flash';
   saveGeminiApiKey(key);
   saveGeminiModel(fallbackModel);
   return { 
     valid: true, 
     modelUsed: fallbackModel, 
     availableModels,
-    error: `Authenticated with Google AI Studio using ${fallbackModel}. (${lastError})`
+    error: lastError 
+      ? `Authenticated with Google AI Studio using ${fallbackModel}. (${lastError})`
+      : `Authenticated with Google AI Studio using ${fallbackModel}.`
   };
 }
 

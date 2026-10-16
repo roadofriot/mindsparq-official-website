@@ -11,7 +11,7 @@ type FilterCategory = 'all' | 'mathematics' | 'technology' | 'skills' | 'institu
 export const ProgramsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<FilterCategory>('all');
   const { hash } = useLocation();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const isNe = language === 'ne';
 
   useEffect(() => {

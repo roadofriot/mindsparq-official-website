@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { SocialCommunityHub } from '../home/SocialCommunityHub';
 import { trackPageView } from '../../services/analyticsService';
 
 export const Layout: React.FC = () => {
@@ -13,6 +14,8 @@ export const Layout: React.FC = () => {
     trackPageView(pathname).catch(() => {});
   }, [pathname]);
 
+  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/login') || pathname.startsWith('/forgot') || pathname.startsWith('/reset');
+
   return (
     <>
       <a href="#main-content" className="skip-link">
@@ -22,6 +25,7 @@ export const Layout: React.FC = () => {
       <main id="main-content" tabIndex={-1} style={{ outline: 'none' }}>
         <Outlet />
       </main>
+      {!isAuthPage && <SocialCommunityHub />}
       <Footer />
     </>
   );

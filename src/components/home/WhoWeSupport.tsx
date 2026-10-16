@@ -14,7 +14,7 @@ const SUPPORT_IMAGES = [
 ];
 
 export const WhoWeSupport: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>

@@ -11,7 +11,7 @@ const PILLAR_IMAGES = [
 ];
 
 export const FocusStrip: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <section 

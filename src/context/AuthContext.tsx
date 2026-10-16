@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      setLoading(true);
       const email = (userEmailParam || '').toLowerCase();
       const isOwnerAccount = email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
 
@@ -105,11 +106,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         fetchProfileAndRoles(session.user.id, session.user.email);
       } else {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setRoles([]);
-        setLoading(false);
+        const isAuthCallback = typeof window !== 'undefined' && (
+          window.location.pathname.includes('/auth/callback') ||
+          window.location.search.includes('code=') ||
+          window.location.hash.includes('access_token=')
+        );
+
+        if (!isAuthCallback) {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setRoles([]);
+          setLoading(false);
+        }
       }
     });
 
@@ -134,12 +143,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         fetchProfileAndRoles(session.user.id, session.user.email);
       } else if (event === 'INITIAL_SESSION') {
-        // Initial session resolved with no user
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setRoles([]);
-        setLoading(false);
+        const isAuthCallback = typeof window !== 'undefined' && (
+          window.location.pathname.includes('/auth/callback') ||
+          window.location.search.includes('code=') ||
+          window.location.hash.includes('access_token=')
+        );
+
+        if (!isAuthCallback) {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setRoles([]);
+          setLoading(false);
+        }
       }
     });
 
@@ -149,11 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [fetchProfileAndRoles]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) {
       await fetchProfileAndRoles(user.id, user.email);
     }
-  };
+  }, [user, fetchProfileAndRoles]);
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!isSupabaseConfigured) {

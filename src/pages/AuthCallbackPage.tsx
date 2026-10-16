@@ -8,6 +8,7 @@ export const AuthCallbackPage: React.FC = () => {
   const { user, isStaff, isAdmin, isSuperAdmin, refreshProfile } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const redirected = useRef(false);
+  const started = useRef(false);
 
   const routeUser = (email?: string, staff?: boolean) => {
     if (redirected.current) return;
@@ -24,73 +25,122 @@ export const AuthCallbackPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
     let active = true;
 
-    // Check for OAuth error parameter in URL
-    const searchParams = new URLSearchParams(window.location.search);
-    const errorParam = searchParams.get('error_description') || searchParams.get('error');
-    if (errorParam) {
-      if (active) setErrorMsg(errorParam);
-      return;
-    }
-
-    // 1. If user is already active in AuthContext, navigate immediately
-    if (user) {
-      if (window.location.hash) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-      routeUser(user.email, isStaff || isAdmin || isSuperAdmin);
-      return;
-    }
-
-    // 2. Check existing session first (Supabase detectSessionInUrl handles implicit hash tokens automatically)
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (!active || redirected.current) return;
-      if (error) {
-        setErrorMsg(error.message);
-        return;
-      }
-      if (session?.user) {
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
+    const processAuth = async () => {
+      try {
+        // 1. Check for OAuth error parameter in URL
+        const searchParams = new URLSearchParams(window.location.search);
+        const errorParam = searchParams.get('error_description') || searchParams.get('error');
+        if (errorParam) {
+          if (active) setErrorMsg(errorParam);
+          return;
         }
-        await refreshProfile();
-        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
-        return;
-      }
 
-      // If no session detected yet but hash tokens exist, fallback to explicit setSession only if getSession had no session
-      if (window.location.hash && window.location.hash.includes('access_token')) {
-        const hash = window.location.hash.startsWith('#')
-          ? window.location.hash.substring(1)
-          : window.location.hash;
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
+        // 2. If user is already active in AuthContext, navigate immediately
+        if (user) {
+          if (window.location.hash || window.location.search) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          routeUser(user.email, isStaff || isAdmin || isSuperAdmin);
+          return;
+        }
 
-        if (accessToken && refreshToken) {
-          window.history.replaceState(null, '', window.location.pathname);
-          supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          }).then(async ({ data, error: setErr }) => {
-            if (!active || redirected.current) return;
-            if (setErr) {
-              setErrorMsg(setErr.message);
-            } else if (data?.user) {
+        // 3. Handle PKCE code flow (?code=...)
+        const code = searchParams.get('code');
+        if (code) {
+          const { data, error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeErr) {
+            console.warn('[MindSparQ Auth] PKCE exchange warning:', exchangeErr.message);
+            // Verify if session was concurrently acquired
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            if (existingSession?.user && active) {
+              window.history.replaceState(null, '', window.location.pathname);
               await refreshProfile();
-              routeUser(data.user?.email, true);
+              routeUser(existingSession.user.email, isStaff || isAdmin || isSuperAdmin);
+              return;
             }
-          });
+            if (active) setErrorMsg(exchangeErr.message);
+            return;
+          }
+
+          if (data?.session?.user && active) {
+            window.history.replaceState(null, '', window.location.pathname);
+            await refreshProfile();
+            routeUser(data.session.user.email, isStaff || isAdmin || isSuperAdmin);
+            return;
+          }
+        }
+
+        // 4. Handle implicit tokens in hash (#access_token=...)
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          const hash = window.location.hash.startsWith('#')
+            ? window.location.hash.substring(1)
+            : window.location.hash;
+          const hashParams = new URLSearchParams(hash);
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            const { data, error: setErr } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+
+            if (setErr) {
+              console.warn('[MindSparQ Auth] SetSession warning:', setErr.message);
+              const { data: { session: existingSession } } = await supabase.auth.getSession();
+              if (existingSession?.user && active) {
+                window.history.replaceState(null, '', window.location.pathname);
+                await refreshProfile();
+                routeUser(existingSession.user.email, isStaff || isAdmin || isSuperAdmin);
+                return;
+              }
+              if (active) setErrorMsg(setErr.message);
+              return;
+            }
+
+            if (data?.session?.user && active) {
+              window.history.replaceState(null, '', window.location.pathname);
+              await refreshProfile();
+              routeUser(data.session.user.email, isStaff || isAdmin || isSuperAdmin);
+              return;
+            }
+          }
+        }
+
+        // 5. Check if session was already detected by client
+        const { data: { session: currentSession }, error: getSessionErr } = await supabase.auth.getSession();
+        if (getSessionErr && active) {
+          setErrorMsg(getSessionErr.message);
+          return;
+        }
+
+        if (currentSession?.user && active) {
+          if (window.location.hash || window.location.search) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          await refreshProfile();
+          routeUser(currentSession.user.email, isStaff || isAdmin || isSuperAdmin);
+          return;
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setErrorMsg((err as Error).message || 'An unexpected error occurred during authentication.');
         }
       }
-    });
+    };
 
-    // 3. Listen for Supabase session establishment
+    processAuth();
+
+    // 6. Listen for Supabase session establishment
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!active || redirected.current) return;
       if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
-        if (window.location.hash) {
+        if (window.location.hash || window.location.search) {
           window.history.replaceState(null, '', window.location.pathname);
         }
         await refreshProfile();
@@ -98,11 +148,30 @@ export const AuthCallbackPage: React.FC = () => {
       }
     });
 
+    // 7. Safety timeout: if neither error nor session resolves in 6 seconds, show return to login
+    const timeoutTimer = setTimeout(async () => {
+      if (!active || redirected.current) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        routeUser(session.user.email, isStaff || isAdmin || isSuperAdmin);
+      } else {
+        setErrorMsg('Authentication timed out or could not be verified. Please return to login and try again.');
+      }
+    }, 6000);
+
     return () => {
       active = false;
+      clearTimeout(timeoutTimer);
       subscription.unsubscribe();
     };
-  }, [user, isStaff, isAdmin, isSuperAdmin, refreshProfile, navigate]);
+  }, []); // Run once on mount to prevent infinite re-render loops
+
+  // Watch for AuthContext user updates
+  useEffect(() => {
+    if (user && !redirected.current) {
+      routeUser(user.email, isStaff || isAdmin || isSuperAdmin);
+    }
+  }, [user, isStaff, isAdmin, isSuperAdmin]);
 
   return (
     <div

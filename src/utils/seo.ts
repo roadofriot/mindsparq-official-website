@@ -104,20 +104,24 @@ export function generateOrganizationSchema(): Record<string, unknown> {
       'Pioneering computational thinking, mental arithmetic (abacus), and STEM robotics education in Butwal, Nepal.',
     address: {
       '@type': 'PostalAddress',
+      streetAddress: 'Butwal 11, Gyanbhoomi Path',
       addressLocality: 'Butwal',
       addressRegion: 'Lumbini Province',
+      postalCode: '32907',
       addressCountry: 'NP'
     },
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+977-9800000000',
-      contactType: 'Admissions and Customer Service',
+      telephone: '+977-9857058666',
+      email: 'info@mindsparqeducation.com.np',
+      contactType: 'Admissions and Student Support',
       availableLanguage: ['Nepali', 'English']
     },
     sameAs: [
-      'https://www.facebook.com/mindsparqeducation',
-      'https://www.linkedin.com/company/mindsparq-education',
-      'https://www.youtube.com/@mindsparqeducation'
+      'https://facebook.com/mindsparqeducation',
+      'https://instagram.com/mindsparqeducation',
+      'https://tiktok.com/@mindsparqeducation',
+      'https://youtube.com/@mindsparqeducation'
     ]
   };
 }

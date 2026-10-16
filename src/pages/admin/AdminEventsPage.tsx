@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllEvents, saveEvent, deleteEvent } from '../../services/eventService';
 import { Event } from '../../types/database';
 import { Plus, Edit2, Trash2, Calendar, AlertCircle } from 'lucide-react';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminEventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -28,6 +29,7 @@ export const AdminEventsPage: React.FC = () => {
       title: '',
       summary: '',
       description: '',
+      cover_image_url: '',
       location_text: 'Butwal 11, Gyanbhoomi Path, Rupandehi, Nepal',
       starts_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 16),
       ends_at: new Date(Date.now() + 7 * 24 * 3600 * 1000 + 3 * 3600 * 1000).toISOString().slice(0, 16),
@@ -351,6 +353,15 @@ export const AdminEventsPage: React.FC = () => {
                   </select>
                 </div>
               </div>
+
+              <ImageUploadField
+                label="Event Promotional Poster / Cover Image (Optional)"
+                value={editingEvent.cover_image_url || ''}
+                onChange={(url) => setEditingEvent({ ...editingEvent, cover_image_url: url })}
+                altTextDefault={editingEvent.title || 'Event Cover'}
+                placeholder="Or paste external event poster URL (https://...)..."
+                helperText="Upload event promotional graphics/banner from your desktop or paste a direct image URL"
+              />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>

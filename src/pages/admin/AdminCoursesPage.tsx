@@ -12,6 +12,7 @@ import {
 } from '../../services/courseService';
 import { Course, CourseModule, Lesson } from '../../types/database';
 import { Plus, Edit2, Trash2, BookOpen, Video, FileText, ChevronRight, AlertCircle, ArrowLeft } from 'lucide-react';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminCoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -59,6 +60,7 @@ export const AdminCoursesPage: React.FC = () => {
         title: '',
         summary: '',
         description: '',
+        cover_image_url: '',
         level: 'Beginner',
         estimated_duration: '4 Weeks',
         visibility: 'public',
@@ -567,6 +569,15 @@ export const AdminCoursesPage: React.FC = () => {
                   />
                 </div>
               </div>
+
+              <ImageUploadField
+                label="Course Cover Image (Catalog Thumbnail)"
+                value={editingCourse.cover_image_url || ''}
+                onChange={(url) => setEditingCourse({ ...editingCourse, cover_image_url: url })}
+                altTextDefault={editingCourse.title || 'Course Thumbnail'}
+                placeholder="Or paste external course thumbnail URL (https://...)..."
+                helperText="Upload a course thumbnail banner from your desktop or enter an image URL"
+              />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>

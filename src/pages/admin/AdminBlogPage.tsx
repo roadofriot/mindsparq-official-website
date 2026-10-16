@@ -12,7 +12,6 @@ import {
   X,
   ExternalLink,
   User as UserIcon,
-  Upload,
   Image as ImageIcon,
   Video,
   Heading,
@@ -22,6 +21,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { uploadMedia } from '../../services/mediaService';
 import { extractYouTubeVideoId } from '../../services/courseService';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminBlogPage: React.FC = () => {
   const { user, isOwner, isAdmin, isSuperAdmin, hasPermission } = useAuth();
@@ -37,26 +37,10 @@ export const AdminBlogPage: React.FC = () => {
   const [editingPost, setEditingPost] = useState<Partial<BlogPost> | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingInline, setUploadingInline] = useState(false);
   const [mediaNotice, setMediaNotice] = useState<string | null>(null);
 
   const canPublish = isSuperAdmin || isOwner || isAdmin || hasPermission('content.publish');
-
-  const handleUploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !editingPost) return;
-    const file = e.target.files[0];
-    setUploadingCover(true);
-    setMediaNotice(null);
-    const { data, error } = await uploadMedia(file, editingPost.title || 'Article Cover', undefined, 'public');
-    if (error) {
-      setMediaNotice(`Cover upload failed: ${error.message}`);
-    } else if (data?.storage_path) {
-      setEditingPost({ ...editingPost, cover_image_url: data.storage_path });
-      setMediaNotice('Cover image uploaded successfully!');
-    }
-    setUploadingCover(false);
-  };
 
   const handleUploadInlineImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !editingPost) return;
@@ -1089,104 +1073,14 @@ export const AdminBlogPage: React.FC = () => {
               </div>
 
               {/* Cover Image Section */}
-              <div style={{ marginBottom: '18px', padding: '14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                  <label style={{ fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
-                    Article Cover Image
-                  </label>
-
-                  {/* Upload Cover Button */}
-                  <label
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '5px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'var(--color-primary-600, #2563eb)',
-                      color: '#ffffff',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: uploadingCover ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {uploadingCover ? <Loader2 size={14} className="spin" /> : <Upload size={14} />}
-                    <span>{uploadingCover ? 'Uploading...' : 'Upload from Device'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleUploadCover}
-                      disabled={uploadingCover}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
-
-                {/* Preview Thumbnail if present */}
-                {editingPost.cover_image_url && (
-                  <div
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      height: '140px',
-                      borderRadius: 'var(--radius-md)',
-                      overflow: 'hidden',
-                      marginBottom: '10px',
-                      border: '1px solid var(--color-border)'
-                    }}
-                  >
-                    <img
-                      src={editingPost.cover_image_url}
-                      alt="Cover Preview"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setEditingPost({ ...editingPost, cover_image_url: '' })}
-                      style={{
-                        position: 'absolute',
-                        top: '8px',
-                        right: '8px',
-                        padding: '4px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        color: '#ffffff',
-                        border: 'none',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <Trash2 size={12} /> Remove
-                    </button>
-                  </div>
-                )}
-
-                {/* Manual URL Input Fallback */}
-                <input
-                  type="url"
-                  placeholder="Or paste external image URL (e.g. Unsplash, Google direct link)..."
-                  value={editingPost.cover_image_url || ''}
-                  onChange={(e) => setEditingPost({ ...editingPost, cover_image_url: e.target.value })}
-                  style={{
-                    width: '100%',
-                    height: '38px',
-                    padding: '0 12px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
-                    fontSize: '0.8125rem'
-                  }}
-                />
-              </div>
+              <ImageUploadField
+                label="Article Cover Image (Optional)"
+                value={editingPost.cover_image_url || ''}
+                onChange={(url) => setEditingPost({ ...editingPost, cover_image_url: url })}
+                altTextDefault={editingPost.title || 'Article Cover'}
+                placeholder="Or paste external image URL (e.g. Unsplash, Google direct link)..."
+                helperText="Upload cover image directly from your desktop or enter a direct image URL"
+              />
 
               {/* SEO Title & Description */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>

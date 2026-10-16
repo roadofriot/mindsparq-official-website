@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllCarouselItems, saveCarouselItem, deleteCarouselItem } from '../../services/contentService';
 import { CarouselItem } from '../../types/database';
 import { Plus, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminCarouselPage: React.FC = () => {
   const [items, setItems] = useState<CarouselItem[]>([]);
@@ -281,20 +282,24 @@ export const AdminCarouselPage: React.FC = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
-                  Desktop Image URL *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={editingItem.image_url || ''}
-                  onChange={(e) => setEditingItem({ ...editingItem, image_url: e.target.value })}
-                  placeholder="https://..."
-                  className="input-field"
-                  style={{ width: '100%' }}
-                />
-              </div>
+              <ImageUploadField
+                label="Desktop Image (Hero Carousel)"
+                value={editingItem.image_url || ''}
+                onChange={(url) => setEditingItem({ ...editingItem, image_url: url })}
+                required
+                altTextDefault={editingItem.alt_text || editingItem.title || 'Hero Banner'}
+                placeholder="Or paste external desktop banner URL (https://...)..."
+                helperText="Recommended aspect ratio: 16:9 or 21:9 (e.g. 1920x1080 or 2560x1080)"
+              />
+
+              <ImageUploadField
+                label="Mobile Image (Optional)"
+                value={editingItem.mobile_image_url || ''}
+                onChange={(url) => setEditingItem({ ...editingItem, mobile_image_url: url })}
+                altTextDefault={`${editingItem.title || 'Hero Banner'} Mobile`}
+                placeholder="Or paste external mobile banner URL (https://...)..."
+                helperText="Optional vertical or square banner optimized for smartphone screens"
+              />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>

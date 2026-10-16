@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllPrograms, saveProgram, deleteProgram } from '../../services/contentService';
 import { Program } from '../../types/database';
 import { Plus, Edit2, Trash2, GraduationCap, AlertCircle } from 'lucide-react';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminProgramsPage: React.FC = () => {
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -29,6 +30,7 @@ export const AdminProgramsPage: React.FC = () => {
       summary: '',
       description: '',
       audience: '',
+      cover_image_url: '',
       icon_name: 'GraduationCap',
       sort_order: programs.length + 1,
       status: 'draft'
@@ -288,6 +290,15 @@ export const AdminProgramsPage: React.FC = () => {
                   style={{ width: '100%' }}
                 />
               </div>
+
+              <ImageUploadField
+                label="Program Cover Image (Optional)"
+                value={editingProgram.cover_image_url || ''}
+                onChange={(url) => setEditingProgram({ ...editingProgram, cover_image_url: url })}
+                altTextDefault={editingProgram.title || 'Program Cover'}
+                placeholder="Or paste external program image URL (https://...)..."
+                helperText="Upload an image representing the program from your desktop/device or paste a URL"
+              />
 
               <div style={{ marginBottom: 'var(--space-4)' }}>
                 <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>

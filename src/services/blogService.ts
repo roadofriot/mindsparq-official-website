@@ -40,6 +40,31 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   return data as BlogPost;
 }
 
+export async function getPostById(id: string): Promise<BlogPost | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) return null;
+  return data as BlogPost;
+}
+
+export async function getDraftOrPublishedPost(idOrSlug: string): Promise<BlogPost | null> {
+  if (!isSupabaseConfigured) return null;
+
+  // Try by ID first
+  const byId = await getPostById(idOrSlug);
+  if (byId) return byId;
+
+  // Try by Slug
+  return await getPostBySlug(idOrSlug);
+}
+
+
 export async function getAllPosts(): Promise<BlogPost[]> {
   if (!isSupabaseConfigured) return [];
 

@@ -237,3 +237,18 @@ export interface AuditLog {
   metadata: Record<string, unknown>;
   created_at: string;
 }
+
+export interface ContentVersion {
+  id: string;
+  content_type: 'blog_post' | 'course' | 'program' | 'site_section';
+  content_id: string;
+  version_number: number;
+  title: string;
+  snapshot: Record<string, unknown>;
+  change_summary?: string | null;
+  created_by?: string | null;
+  created_by_name?: string | null;
+  created_at: string;
+  restored_at?: string | null;
+}
+

@@ -68,6 +68,29 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
   return data as Course;
 }
 
+export async function getCourseById(id: string): Promise<Course | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('courses')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) return null;
+  return data as Course;
+}
+
+export async function getDraftOrPublishedCourse(idOrSlug: string): Promise<Course | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const byId = await getCourseById(idOrSlug);
+  if (byId) return byId;
+
+  return await getCourseBySlug(idOrSlug);
+}
+
+
 export async function getAllCourses(): Promise<Course[]> {
   if (!isSupabaseConfigured) return [];
 

@@ -1,6 +1,35 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { recordAuditLog } from './auditService';
 
+export type CustomBlockType =
+  | 'default'
+  | 'rich_text'
+  | 'feature_grid'
+  | 'split_media'
+  | 'stats_strip'
+  | 'video_showcase'
+  | 'faq_accordion'
+  | 'cta_banner';
+
+export interface SectionLayoutStyle {
+  containerWidth?: 'narrow' | 'standard' | 'wide' | 'full'; // 960px | 1200px | 1440px | 100%
+  minHeight?: 'auto' | 'compact' | 'medium' | 'screen' | 'custom'; // auto | 360px | 520px | 100vh | custom px
+  customHeightPx?: number;
+  paddingTop?: 'none' | 'sm' | 'md' | 'lg' | 'xl'; // 0 | 24px | 48px | 80px | 120px
+  paddingBottom?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  alignment?: 'left' | 'center' | 'right' | 'split';
+  headingScale?: 'sm' | 'md' | 'lg' | 'display';
+  backgroundColor?: string;
+  backgroundGradient?: string;
+  backgroundImageUrl?: string;
+  backgroundOverlayOpacity?: number; // 0 to 1
+  ctaButtonText?: string;
+  ctaButtonUrl?: string;
+  ctaButtonTarget?: '_self' | '_blank';
+  secondaryButtonText?: string;
+  secondaryButtonUrl?: string;
+}
+
 export interface SiteSection {
   id: string;
   key: string;
@@ -10,8 +39,20 @@ export interface SiteSection {
   badge?: string;
   is_visible: boolean;
   sort_order: number;
+  block_type?: CustomBlockType;
+  layout_style?: SectionLayoutStyle;
   content_json: Record<string, any>;
 }
+
+export const DEFAULT_SECTION_LAYOUT: SectionLayoutStyle = {
+  containerWidth: 'standard',
+  minHeight: 'auto',
+  paddingTop: 'md',
+  paddingBottom: 'md',
+  alignment: 'center',
+  headingScale: 'md',
+  backgroundOverlayOpacity: 0.4
+};
 
 export interface GlobalDesignSettings {
   brandPalette: 'ocean-blue' | 'cyber-cyan' | 'emerald-stem' | 'royal-indigo' | 'electric-amber';
@@ -302,6 +343,205 @@ export async function reorderSiteSections(orderedIds: string[]): Promise<boolean
 export async function resetDefaultSections(): Promise<SiteSection[]> {
   localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(DEFAULT_SECTIONS));
   return DEFAULT_SECTIONS;
+}
+
+/**
+ * Delete a custom section
+ */
+export async function deleteSiteSection(id: string): Promise<boolean> {
+  try {
+    const current = await getSiteSections();
+    const updated = current.filter((s) => s.id !== id);
+    localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(updated));
+
+    if (isSupabaseConfigured) {
+      await supabase.from('site_sections').delete().eq('id', id);
+      await recordAuditLog('section.delete', 'site_sections', id, {});
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Generate a new custom block template
+ */
+export function createCustomBlockTemplate(blockType: CustomBlockType): SiteSection {
+  const timestamp = Date.now();
+  const id = `custom-block-${timestamp}`;
+
+  switch (blockType) {
+    case 'rich_text':
+      return {
+        id,
+        key: `rich_text_${timestamp}`,
+        name: 'Custom Editorial & Rich Text Block',
+        title: 'Modern Learning Philosophy at MindSparQ',
+        subtitle: 'Hands-on pedagogy combining cognitive arithmetic and modern engineering foundations in Rupandehi.',
+        badge: 'Innovation Highlight',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'rich_text',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, alignment: 'left' },
+        content_json: {
+          markdownBody: `### Experiential STEAM Education
+At MindSparQ, we believe that education must ignite curiosity. Students participate in hands-on workshops where theoretical concepts are directly transformed into functional robotic models and rapid mental calculations.
+
+* **Child-Centric Mentorship**: Personalized pacing according to cognitive learning styles.
+* **Modern Equipment**: High-grade robotics kits, microcontrollers, and visual programming.
+* **Verified Outcomes**: Enhanced concentration, spatial memory, and analytical reasoning.`
+        }
+      };
+
+    case 'feature_grid':
+      return {
+        id,
+        key: `feature_grid_${timestamp}`,
+        name: 'Feature Grid (3-Column Showcase)',
+        title: 'Why Parents & Schools Choose MindSparQ',
+        subtitle: 'Our evidence-backed multi-sensory teaching strategies empower children to excel academically and technologically.',
+        badge: 'Core Advantages',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'feature_grid',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, containerWidth: 'wide' },
+        content_json: {
+          features: [
+            {
+              title: 'VAK Multi-Sensory Pedagogy',
+              description: 'Visual, Auditory, and Kinesthetic learning integration proven to boost retention and conceptual confidence.',
+              icon: 'Eye'
+            },
+            {
+              title: 'Hands-on STEM Prototyping',
+              description: 'Real microcontrollers, ultrasonic sensors, and autonomous drone flight controllers built from scratch.',
+              icon: 'Cpu'
+            },
+            {
+              title: 'International Abacus Standards',
+              description: 'Structured 8-level mental arithmetic curriculum preparing students for national and international Olympiads.',
+              icon: 'Award'
+            }
+          ]
+        }
+      };
+
+    case 'split_media':
+      return {
+        id,
+        key: `split_media_${timestamp}`,
+        name: 'Split Media & Narrative Banner',
+        title: 'Experience The MindSparQ Robotics Lab',
+        subtitle: 'Located right in Kalikanagar, our learning center provides state-of-the-art workstations, 3D printers, and test tracks.',
+        badge: 'Interactive Lab Tour',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'split_media',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, alignment: 'split' },
+        content_json: {
+          mediaPosition: 'right', // 'left' | 'right'
+          imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+          bulletPoints: [
+            'Dedicated hardware testing benches for every student',
+            'Safe, low-voltage robotics and electronic components',
+            'Experienced trainers certified in cognitive child development'
+          ]
+        }
+      };
+
+    case 'stats_strip':
+      return {
+        id,
+        key: `stats_strip_${timestamp}`,
+        name: 'Key Metrics & Statistics Strip',
+        title: 'MindSparQ By The Numbers',
+        subtitle: 'Measurable educational impact delivered to students and schools across Lumbini Province.',
+        badge: 'Our Track Record',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'stats_strip',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, containerWidth: 'standard', paddingTop: 'sm', paddingBottom: 'sm' },
+        content_json: {
+          stats: [
+            { number: '1,200+', label: 'Active Learners' },
+            { number: '15+', label: 'Partner Schools' },
+            { number: '98%', label: 'Parent Satisfaction' },
+            { number: '8 Levels', label: 'Abacus Mastery' }
+          ]
+        }
+      };
+
+    case 'video_showcase':
+      return {
+        id,
+        key: `video_showcase_${timestamp}`,
+        name: 'Featured Video Showcase',
+        title: 'Watch MindSparQ Students in Action',
+        subtitle: 'See how young learners solve complex mental arithmetic calculations and program autonomous robotic rovers.',
+        badge: 'Video Documentary',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'video_showcase',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, containerWidth: 'standard' },
+        content_json: {
+          youtubeVideoId: 'dQw4w9WgXcQ'
+        }
+      };
+
+    case 'faq_accordion':
+      return {
+        id,
+        key: `faq_accordion_${timestamp}`,
+        name: 'Frequently Asked Questions (FAQ)',
+        title: 'Common Questions From Parents & Guardians',
+        subtitle: 'Everything you need to know about age groups, class schedules, batch sizes, and admissions.',
+        badge: 'FAQ & Guidance',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'faq_accordion',
+        layout_style: { ...DEFAULT_SECTION_LAYOUT, containerWidth: 'narrow' },
+        content_json: {
+          faqs: [
+            {
+              question: 'What is the ideal age to start Abacus Mental Math?',
+              answer: 'Children between ages 5 and 13 benefit the most from abacus training as brain neuroplasticity and visual calculation pathways develop most rapidly during these foundational years.'
+            },
+            {
+              question: 'Do students need prior coding or computer experience for Robotics?',
+              answer: 'No prior experience is required. Our beginner tracks start with intuitive visual block programming (Scratch) before progressing to C++ and Python syntax.'
+            },
+            {
+              question: 'Where is the MindSparQ center located in Butwal?',
+              answer: 'Our main center is conveniently located in Butwal-11, Kalikanagar (Opposite Kalika Manavgyan Secondary School), Rupandehi.'
+            }
+          ]
+        }
+      };
+
+    case 'cta_banner':
+    default:
+      return {
+        id,
+        key: `cta_banner_${timestamp}`,
+        name: 'Call-to-Action Announcement Banner',
+        title: 'Admissions Open for Winter STEAM Bootcamp',
+        subtitle: 'Limited seats per batch to guarantee individual attention. Book your child’s diagnostic assessment today.',
+        badge: 'Limited Enrollment',
+        is_visible: true,
+        sort_order: 99,
+        block_type: 'cta_banner',
+        layout_style: {
+          ...DEFAULT_SECTION_LAYOUT,
+          containerWidth: 'standard',
+          ctaButtonText: 'Register for Demo Class',
+          ctaButtonUrl: '/contact',
+          secondaryButtonText: 'Call +977 9857058666',
+          secondaryButtonUrl: 'tel:+9779857058666'
+        },
+        content_json: {}
+      };
+  }
 }
 
 /**

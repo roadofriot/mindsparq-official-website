@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   getSiteSections,
   saveSiteSection,
+  deleteSiteSection,
   reorderSiteSections,
   resetDefaultSections,
-  SiteSection
+  createCustomBlockTemplate,
+  SiteSection,
+  CustomBlockType,
+  SectionLayoutStyle,
+  DEFAULT_SECTION_LAYOUT
 } from '../../services/siteCustomizerService';
 import {
   Eye,
   EyeOff,
   ArrowUp,
   ArrowDown,
-  Edit2,
   Save,
   RotateCcw,
   CheckCircle2,
@@ -19,17 +24,40 @@ import {
   ExternalLink,
   Sparkles,
   Wand2,
-  Star
+  Plus,
+  Trash2,
+  Layout,
+  Sliders,
+  Smartphone,
+  Tablet,
+  Monitor,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  FileText,
+  Video,
+  HelpCircle,
+  BarChart3,
+  Columns
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { reviewWebsiteSectionContent, sendGeminiPrompt } from '../../services/geminiService';
+import { DynamicSectionWrapper } from '../../components/home/DynamicSectionWrapper';
+import { CustomBlockRenderer } from '../../components/home/CustomBlockRenderer';
 
 export const AdminSectionsPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sections, setSections] = useState<SiteSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusNotice, setStatusNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Modal Sub-navigation
+  const [activeTab, setActiveTab] = useState<'content' | 'layout' | 'styling' | 'ai' | 'preview'>('content');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [showBlockPicker, setShowBlockPicker] = useState(false);
+
+  // AI Content Advisor state
   const [aiReviewLoading, setAiReviewLoading] = useState(false);
   const [aiCustomQuestion, setAiCustomQuestion] = useState('');
   const [aiCustomAnswer, setAiCustomAnswer] = useState<string | null>(null);
@@ -51,6 +79,20 @@ export const AdminSectionsPage: React.FC = () => {
   useEffect(() => {
     loadSections();
   }, []);
+
+  // Deep edit handler from search params (e.g. ?edit=about_snippet)
+  useEffect(() => {
+    const editKey = searchParams.get('edit');
+    if (editKey && sections.length > 0) {
+      const match = sections.find(
+        (s) => s.key === editKey || s.id === editKey || s.id === `sec-${editKey}`
+      );
+      if (match) {
+        setEditingSection({ ...match });
+        setActiveTab('content');
+      }
+    }
+  }, [searchParams, sections]);
 
   const handleToggleVisibility = async (sec: SiteSection) => {
     const updated = { ...sec, is_visible: !sec.is_visible };
@@ -78,21 +120,49 @@ export const AdminSectionsPage: React.FC = () => {
     await reorderSiteSections(newSections.map((s) => s.id));
   };
 
-  const handleSaveModal = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveModal = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!editingSection) return;
 
     setSaving(true);
     const { success, error } = await saveSiteSection(editingSection);
     if (success) {
-      setSections((prev) => prev.map((s) => (s.id === editingSection.id ? editingSection : s)));
-      setEditingSection(null);
+      setSections((prev) => {
+        const idx = prev.findIndex((s) => s.id === editingSection.id);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = editingSection;
+          return updated;
+        }
+        return [...prev, editingSection];
+      });
       setStatusNotice({ type: 'success', text: `Section "${editingSection.name}" updated successfully!` });
       setTimeout(() => setStatusNotice(null), 3000);
+      setEditingSection(null);
+      setSearchParams({});
     } else {
       alert(`Save error: ${error?.message || 'Failed to update section'}`);
     }
     setSaving(false);
+  };
+
+  const handleDeleteSection = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete custom block "${name}"? This cannot be undone.`)) return;
+
+    const ok = await deleteSiteSection(id);
+    if (ok) {
+      setSections((prev) => prev.filter((s) => s.id !== id));
+      if (editingSection?.id === id) setEditingSection(null);
+      setStatusNotice({ type: 'success', text: `Block "${name}" deleted.` });
+      setTimeout(() => setStatusNotice(null), 3000);
+    }
+  };
+
+  const handleCreateCustomBlock = (type: CustomBlockType) => {
+    const newBlock = createCustomBlockTemplate(type);
+    setEditingSection(newBlock);
+    setActiveTab('content');
+    setShowBlockPicker(false);
   };
 
   const handleResetDefaults = async () => {
@@ -103,6 +173,7 @@ export const AdminSectionsPage: React.FC = () => {
     setTimeout(() => setStatusNotice(null), 3500);
   };
 
+  // AI Content Evaluation
   const handleGetAiReview = async () => {
     if (!editingSection) return;
     setAiReviewLoading(true);
@@ -128,7 +199,7 @@ export const AdminSectionsPage: React.FC = () => {
       title: aiReviewResult.improvedTitle,
       subtitle: aiReviewResult.improvedSubtitle
     });
-    setStatusNotice({ type: 'success', text: 'AI optimized headline and subtitle applied! Click "Save Section" to publish.' });
+    setStatusNotice({ type: 'success', text: 'AI optimized headline and subtitle applied! Click "Save & Publish" to update.' });
     setTimeout(() => setStatusNotice(null), 3500);
   };
 
@@ -163,6 +234,17 @@ Provide:
     }
   };
 
+  const updateLayoutStyle = (updates: Partial<SectionLayoutStyle>) => {
+    if (!editingSection) return;
+    setEditingSection({
+      ...editingSection,
+      layout_style: {
+        ...(editingSection.layout_style || DEFAULT_SECTION_LAYOUT),
+        ...updates
+      }
+    });
+  };
+
   return (
     <div>
       {/* Page Title & Action Bar */}
@@ -179,7 +261,7 @@ Provide:
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)', margin: 0 }}>
-              Visual Section Customizer
+              Visual Section & Layout Studio
             </h1>
             <span
               style={{
@@ -187,20 +269,30 @@ Provide:
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: '9999px',
-                backgroundColor: 'rgba(36, 87, 214, 0.12)',
-                color: 'var(--color-primary-600)',
-                border: '1px solid rgba(36, 87, 214, 0.3)'
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                color: '#38bdf8',
+                border: '1px solid rgba(56, 189, 248, 0.3)'
               }}
             >
-              Phase 3 Visual CMS
+              WordPress-Grade CMS
             </span>
           </div>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-sm)', margin: '4px 0 0' }}>
-            Control section order, visibility, headlines, and narrative copy on the public homepage without modifying code.
+            Control section order, layout dimensions, padding, height, typography scale, backgrounds, and add custom blocks without touching code.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setShowBlockPicker(true)}
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Plus size={16} />
+            <span>Add Custom Block</span>
+          </button>
+
           <Link
             to="/"
             target="_blank"
@@ -246,484 +338,1011 @@ Provide:
         </div>
       )}
 
-      {/* Sections Table / Cards */}
-      <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', overflowX: 'auto' }}>
+      {/* Sections Table & Layout Studio Cards */}
+      <div className="admin-table-container">
         {loading ? (
-          <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-            Loading configurable sections...
+          <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+            Loading site sections and layout registry...
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--font-sm)' }}>
+          <table>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
-                <th style={{ padding: 'var(--space-3)', width: '60px' }}>Order</th>
-                <th style={{ padding: 'var(--space-3)' }}>Section Name & Key</th>
-                <th style={{ padding: 'var(--space-3)' }}>Badge & Headline Title</th>
-                <th style={{ padding: 'var(--space-3)', width: '120px' }}>Visibility</th>
-                <th style={{ padding: 'var(--space-3)', width: '100px' }}>Reorder</th>
-                <th style={{ padding: 'var(--space-3)', textAlign: 'right', width: '90px' }}>Edit</th>
+              <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface-elevated)' }}>
+                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Order
+                </th>
+                <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Section / Block Name
+                </th>
+                <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Headline & Subtitle
+                </th>
+                <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Width & Height
+                </th>
+                <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Visibility
+                </th>
+                <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Reorder
+                </th>
+                <th style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {sections.map((sec, idx) => (
-                <tr
-                  key={sec.id}
-                  style={{
-                    borderBottom: '1px solid var(--color-border)',
-                    opacity: sec.is_visible ? 1 : 0.6,
-                    backgroundColor: sec.is_visible ? 'transparent' : 'rgba(0, 0, 0, 0.02)'
-                  }}
-                >
-                  <td style={{ padding: 'var(--space-3)', fontWeight: 700, color: 'var(--color-primary-600)' }}>
-                    #{idx + 1}
-                  </td>
+              {sections.map((sec, idx) => {
+                const layout = sec.layout_style || {};
+                const isCustom = Boolean(sec.block_type && sec.block_type !== 'default');
 
-                  <td style={{ padding: 'var(--space-3)' }}>
-                    <div style={{ fontWeight: 700, color: 'var(--color-text)' }}>{sec.name}</div>
-                    <code style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)' }}>
-                      key: {sec.key}
-                    </code>
-                  </td>
+                return (
+                  <tr
+                    key={sec.id}
+                    style={{
+                      borderBottom: '1px solid var(--color-border)',
+                      backgroundColor: sec.is_visible ? 'transparent' : 'rgba(255, 255, 255, 0.02)',
+                      opacity: sec.is_visible ? 1 : 0.65
+                    }}
+                  >
+                    <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 700, fontSize: 'var(--font-sm)', color: '#38bdf8' }}>
+                      #{idx + 1}
+                    </td>
 
-                  <td style={{ padding: 'var(--space-3)' }}>
-                    {sec.badge && (
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
-                          padding: '1px 7px',
-                          borderRadius: '9999px',
-                          backgroundColor: 'rgba(36, 87, 214, 0.1)',
-                          color: 'var(--color-primary-600)',
-                          marginBottom: '3px'
-                        }}
-                      >
-                        {sec.badge}
+                    <td style={{ padding: 'var(--space-3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontWeight: 700, fontSize: 'var(--font-sm)', color: 'var(--color-text)' }}>
+                          {sec.name}
+                        </span>
+                        {isCustom && (
+                          <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', backgroundColor: 'rgba(236, 72, 153, 0.15)', color: '#ec4899', fontWeight: 700 }}>
+                            CUSTOM
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
+                        key: {sec.key}
+                      </div>
+                    </td>
+
+                    <td style={{ padding: 'var(--space-3)', maxWidth: '320px' }}>
+                      <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {sec.title}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {sec.subtitle || '—'}
+                      </div>
+                    </td>
+
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', fontWeight: 600 }}>
+                        {layout.containerWidth || 'standard'} · {layout.minHeight || 'auto'}
                       </span>
-                    )}
-                    <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{sec.title}</div>
-                    <div
-                      style={{
-                        fontSize: 'var(--font-xs)',
-                        color: 'var(--color-text-secondary)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '360px'
-                      }}
-                    >
-                      {sec.subtitle}
-                    </div>
-                  </td>
+                    </td>
 
-                  <td style={{ padding: 'var(--space-3)' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleVisibility(sec)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: '9999px',
-                        fontSize: 'var(--font-xs)',
-                        fontWeight: 700,
-                        border: 'none',
-                        cursor: 'pointer',
-                        backgroundColor: sec.is_visible ? 'rgba(16, 185, 129, 0.12)' : 'rgba(107, 114, 128, 0.12)',
-                        color: sec.is_visible ? '#10b981' : '#6b7280'
-                      }}
-                      title="Click to toggle live visibility"
-                    >
-                      {sec.is_visible ? <Eye size={13} /> : <EyeOff size={13} />}
-                      <span>{sec.is_visible ? 'Visible' : 'Hidden'}</span>
-                    </button>
-                  </td>
-
-                  <td style={{ padding: 'var(--space-3)' }}>
-                    <div style={{ display: 'inline-flex', gap: '4px' }}>
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
                       <button
                         type="button"
-                        disabled={idx === 0}
-                        onClick={() => handleMove(idx, 'up')}
+                        onClick={() => handleToggleVisibility(sec)}
                         style={{
                           background: 'none',
                           border: 'none',
-                          cursor: idx === 0 ? 'not-allowed' : 'pointer',
-                          opacity: idx === 0 ? 0.3 : 1,
-                          padding: '3px',
-                          color: 'var(--color-text)'
+                          cursor: 'pointer',
+                          color: sec.is_visible ? '#10b981' : '#ef4444',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600
                         }}
-                        title="Move Section Up"
+                        title={sec.is_visible ? 'Click to Hide on Homepage' : 'Click to Show on Homepage'}
                       >
-                        <ArrowUp size={15} />
+                        {sec.is_visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                        <span>{sec.is_visible ? 'Live' : 'Hidden'}</span>
                       </button>
-                      <button
-                        type="button"
-                        disabled={idx === sections.length - 1}
-                        onClick={() => handleMove(idx, 'down')}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: idx === sections.length - 1 ? 'not-allowed' : 'pointer',
-                          opacity: idx === sections.length - 1 ? 0.3 : 1,
-                          padding: '3px',
-                          color: 'var(--color-text)'
-                        }}
-                        title="Move Section Down"
-                      >
-                        <ArrowDown size={15} />
-                      </button>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      onClick={() => setEditingSection({ ...sec })}
-                      className="btn btn-secondary"
-                      style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      <Edit2 size={13} />
-                      <span>Edit</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMove(idx, 'up')}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                            opacity: idx === 0 ? 0.3 : 1,
+                            padding: '4px',
+                            color: 'var(--color-text)'
+                          }}
+                          title="Move Section Up"
+                        >
+                          <ArrowUp size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === sections.length - 1}
+                          onClick={() => handleMove(idx, 'down')}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: idx === sections.length - 1 ? 'not-allowed' : 'pointer',
+                            opacity: idx === sections.length - 1 ? 0.3 : 1,
+                            padding: '4px',
+                            color: 'var(--color-text)'
+                          }}
+                          title="Move Section Down"
+                        >
+                          <ArrowDown size={15} />
+                        </button>
+                      </div>
+                    </td>
+
+                    <td style={{ padding: 'var(--space-3) var(--space-4)', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSection({ ...sec });
+                            setActiveTab('content');
+                          }}
+                          className="btn btn-secondary"
+                          style={{ padding: '5px 10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Sliders size={13} />
+                          <span>Customize</span>
+                        </button>
+
+                        {isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSection(sec.id, sec.name)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.12)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#ef4444',
+                              borderRadius: '6px',
+                              padding: '5px 8px',
+                              cursor: 'pointer'
+                            }}
+                            title="Delete custom block"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
       </div>
 
-      {/* Edit Section Modal */}
+      {/* Block Template Picker Modal */}
+      {showBlockPicker && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(5, 10, 20, 0.8)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1300,
+            padding: '16px'
+          }}
+          onClick={() => setShowBlockPicker(false)}
+        >
+          <div
+            className="card"
+            style={{
+              width: '100%',
+              maxWidth: '680px',
+              padding: '24px',
+              borderRadius: '20px',
+              backgroundColor: 'var(--color-surface, #0b1329)',
+              border: '1px solid var(--color-border)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-text, #ffffff)' }}>
+                  Add New Custom Section Block
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-text-secondary, #94a3b8)' }}>
+                  Choose a WordPress-grade block template to insert into your homepage.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBlockPicker(false)}
+                className="btn btn-secondary"
+                style={{ padding: '4px 10px', fontSize: '12px' }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              {[
+                { type: 'rich_text' as CustomBlockType, label: 'Editorial / Rich Text', desc: 'Markdown article prose, bullet points & CTA', icon: FileText, color: '#38bdf8' },
+                { type: 'feature_grid' as CustomBlockType, label: 'Feature Grid (3 Cards)', desc: 'Highlight cards with icons and descriptions', icon: Columns, color: '#10b981' },
+                { type: 'split_media' as CustomBlockType, label: 'Split Media & Hero', desc: '50/50 image & narrative checklist split', icon: Layout, color: '#8b5cf6' },
+                { type: 'stats_strip' as CustomBlockType, label: 'Statistics Strip', desc: 'Big bold metrics & achievement numbers', icon: BarChart3, color: '#f59e0b' },
+                { type: 'video_showcase' as CustomBlockType, label: 'Video Showcase', desc: '16:9 responsive YouTube video embed', icon: Video, color: '#ec4899' },
+                { type: 'faq_accordion' as CustomBlockType, label: 'FAQ Accordion', desc: 'Collapsible Q&A for parents and students', icon: HelpCircle, color: '#06b6d4' },
+                { type: 'cta_banner' as CustomBlockType, label: 'Call-to-Action Banner', desc: 'High-converting announcement card with buttons', icon: Sparkles, color: '#e11d48' }
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.type}
+                    onClick={() => handleCreateCustomBlock(item.type)}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = item.color;
+                      e.currentTarget.style.backgroundColor = `${item.color}15`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                    }}
+                  >
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: `${item.color}25`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={20} />
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text, #ffffff)' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary, #94a3b8)', lineHeight: 1.4 }}>
+                      {item.desc}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Featured Section Layout & Customizer Studio Modal */}
       {editingSection && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backgroundColor: 'rgba(5, 10, 20, 0.85)',
+            backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1200,
-            padding: 'var(--space-4)'
+            padding: '16px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setEditingSection(null);
+              setSearchParams({});
+            }
           }}
         >
           <div
             className="card"
             style={{
               width: '100%',
-              maxWidth: '600px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: 'var(--space-6)',
-              borderRadius: 'var(--radius-xl)'
+              maxWidth: '960px',
+              height: '92vh',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: 'var(--color-surface, #0b1329)',
+              borderRadius: '20px',
+              border: '1px solid var(--color-border)',
+              overflow: 'hidden'
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid var(--color-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: 'rgba(255, 255, 255, 0.02)'
+              }}
+            >
               <div>
-                <h2 style={{ fontSize: 'var(--font-xl)', fontWeight: 800, margin: 0 }}>
-                  Edit Section: {editingSection.name}
-                </h2>
-                <code style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--color-text, #ffffff)' }}>
+                    Customize: {editingSection.name}
+                  </h2>
+                  <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', fontWeight: 700 }}>
+                    {editingSection.block_type || 'Core Section'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary, #94a3b8)', fontFamily: 'monospace' }}>
                   key: {editingSection.key}
-                </code>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingSection(null)}
-                className="btn btn-secondary"
-                style={{ padding: '4px 10px', fontSize: '0.75rem' }}
-              >
-                Close
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModal}>
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
-                  Badge Tag (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={editingSection.badge || ''}
-                  onChange={(e) => setEditingSection({ ...editingSection, badge: e.target.value })}
-                  placeholder="e.g. Featured Announcement, Academic Programs, Why MindSparQ"
-                  className="input-field"
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
-                  Section Headline / Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editingSection.title}
-                  onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
-                  className="input-field"
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label style={{ display: 'block', fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: '4px' }}>
-                  Subtitle / Descriptive Copy
-                </label>
-                <textarea
-                  rows={3}
-                  value={editingSection.subtitle}
-                  onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
-                  className="input-field"
-                  style={{ width: '100%', resize: 'vertical' }}
-                />
-              </div>
-
-              {/* Action Button & Navigation Controls */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Button / CTA Text
-                  </label>
-                  <input
-                    type="text"
-                    value={editingSection.content_json?.cta_label || ''}
-                    onChange={(e) => setEditingSection({
-                      ...editingSection,
-                      content_json: { ...editingSection.content_json, cta_label: e.target.value }
-                    })}
-                    placeholder="e.g. Explore Programs, Contact Us"
-                    className="input-field"
-                    style={{ width: '100%', fontSize: '0.8125rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                    Button Link Destination
-                  </label>
-                  <input
-                    type="text"
-                    value={editingSection.content_json?.cta_url || ''}
-                    onChange={(e) => setEditingSection({
-                      ...editingSection,
-                      content_json: { ...editingSection.content_json, cta_url: e.target.value }
-                    })}
-                    placeholder="e.g. /programs, /contact"
-                    className="input-field"
-                    style={{ width: '100%', fontSize: '0.8125rem' }}
-                  />
                 </div>
               </div>
 
-              {/* Background Theme */}
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
-                  Section Surface & Visual Theme
-                </label>
-                <select
-                  value={editingSection.content_json?.bg_theme || 'default'}
-                  onChange={(e) => setEditingSection({
-                    ...editingSection,
-                    content_json: { ...editingSection.content_json, bg_theme: e.target.value }
-                  })}
-                  className="input-field"
-                  style={{ width: '100%', fontSize: '0.8125rem' }}
-                >
-                  <option value="default">Default Page Background</option>
-                  <option value="surface">Light Elevated Card Surface</option>
-                  <option value="brand_tint">Soft Ocean Blue Brand Tint</option>
-                  <option value="emerald_tint">Soft Emerald STEAM Tint</option>
-                </select>
-              </div>
-
-              {/* AI Content Advisor & Quality Scoring Panel */}
-              <div
-                style={{
-                  marginBottom: 'var(--space-6)',
-                  padding: 'var(--space-4)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                  backgroundColor: 'rgba(99, 102, 241, 0.04)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Sparkles size={16} style={{ color: 'var(--color-primary-600)' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>
-                      AI Content Review & Quality Scoring
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={aiReviewLoading || !editingSection.title}
-                    onClick={handleGetAiReview}
-                    className="btn btn-secondary"
-                    style={{ fontSize: '0.75rem', padding: '4px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Wand2 size={13} />
-                    <span>{aiReviewLoading ? 'Analyzing...' : 'Audit Quality Score'}</span>
-                  </button>
-                </div>
-
-                {aiReviewResult && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div
-                        style={{
-                          padding: '3px 10px',
-                          borderRadius: '999px',
-                          fontSize: '0.75rem',
-                          fontWeight: 800,
-                          backgroundColor: aiReviewResult.score >= 90 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                          color: aiReviewResult.score >= 90 ? '#10b981' : '#d97706',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <Star size={12} fill="currentColor" />
-                        <span>Quality Score: {aiReviewResult.score}%</span>
-                      </div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                        {aiReviewResult.score >= 90 ? 'Enterprise ready copy' : 'Needs polish for maximum engagement'}
-                      </span>
-                    </div>
-
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                      {aiReviewResult.critique}
-                    </p>
-
-                    <div style={{ padding: '8px 12px', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '4px', color: 'var(--color-text)' }}>
-                        Key Recommendations:
-                      </div>
-                      <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                        {aiReviewResult.suggestions.map((sug, i) => (
-                          <li key={i}>{sug}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-                      <button
-                        type="button"
-                        onClick={handleApplyAiSuggestions}
-                        className="btn btn-primary"
-                        style={{ fontSize: '0.75rem', padding: '5px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <Sparkles size={13} />
-                        <span>Apply AI Improved Copy</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Interactive AI Assistant Consultation for Section */}
-                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(99, 102, 241, 0.15)' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '6px' }}>
-                    Ask AI Assistant for Advice & Modifications:
-                  </label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      type="text"
-                      value={aiCustomQuestion}
-                      onChange={(e) => setAiCustomQuestion(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAskCustomQuestion();
-                        }
-                      }}
-                      placeholder="e.g. How can I make this headline more attractive for parents in Butwal?"
-                      className="input-field"
-                      style={{ flex: 1, fontSize: '0.8125rem' }}
-                    />
-                    <button
-                      type="button"
-                      disabled={aiReviewLoading || !aiCustomQuestion.trim()}
-                      onClick={() => handleAskCustomQuestion()}
-                      className="btn btn-primary"
-                      style={{ fontSize: '0.75rem', padding: '6px 14px' }}
-                    >
-                      Ask
-                    </button>
-                  </div>
-
-                  {/* Quick Suggestion Chips */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-                    {[
-                      'Suggest punchier title',
-                      'Make it appeal to schools',
-                      'Rate my current copy (%)'
-                    ].map((chip) => (
-                      <button
-                        key={chip}
-                        type="button"
-                        onClick={() => {
-                          setAiCustomQuestion(chip);
-                          handleAskCustomQuestion(chip);
-                        }}
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: '999px',
-                          border: '1px solid var(--color-border)',
-                          backgroundColor: 'var(--color-surface)',
-                          fontSize: '0.6875rem',
-                          color: 'var(--color-text-secondary)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        💡 {chip}
-                      </button>
-                    ))}
-                  </div>
-
-                  {aiCustomAnswer && (
-                    <div style={{ marginTop: '10px', padding: '10px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', fontSize: '0.8125rem', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
-                      <strong style={{ color: 'var(--color-primary-600)', display: 'block', marginBottom: '4px' }}>
-                        MindSparQ AI Assistant Recommendation:
-                      </strong>
-                      {aiCustomAnswer}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', padding: '10px 14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface-hover)' }}>
-                <input
-                  type="checkbox"
-                  id="sectionVisibility"
-                  checked={editingSection.is_visible}
-                  onChange={(e) => setEditingSection({ ...editingSection, is_visible: e.target.checked })}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                <label htmlFor="sectionVisibility" style={{ fontSize: 'var(--font-sm)', cursor: 'pointer', margin: 0, fontWeight: 600 }}>
-                  Section is Visible on Public Homepage
-                </label>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => setEditingSection(null)}
+                  onClick={() => {
+                    setEditingSection(null);
+                    setSearchParams({});
+                  }}
                   className="btn btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => handleSaveModal()}
+                  className="btn btn-primary"
+                  style={{ padding: '6px 16px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Save size={14} />
+                  <span>{saving ? 'Saving...' : 'Save & Publish'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Studio Navigation Tabs */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 24px',
+                borderBottom: '1px solid var(--color-border)',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                overflowX: 'auto'
+              }}
+            >
+              {[
+                { key: 'content', label: '✍️ Content & Copy' },
+                { key: 'layout', label: '📐 Layout & Sizing Studio' },
+                { key: 'styling', label: '🎨 Background & Surfaces' },
+                { key: 'ai', label: '✨ AI Creative Director' },
+                { key: 'preview', label: '📱 Live Frame Preview' }
+              ].map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveTab(tab.key as any)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      border: isActive ? '1px solid #38bdf8' : '1px solid transparent',
+                      backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                      color: isActive ? '#38bdf8' : 'var(--color-text-secondary, #94a3b8)',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Modal Body Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+              {/* TAB 1: Content & Copy */}
+              {activeTab === 'content' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '780px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Badge Tag / Overline Pill (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingSection.badge || ''}
+                      onChange={(e) => setEditingSection({ ...editingSection, badge: e.target.value })}
+                      placeholder="e.g. Featured Announcement, Academic Programs, Why MindSparQ"
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Section Headline / Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingSection.title}
+                      onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
+                      className="input-field"
+                      style={{ width: '100%', fontSize: '16px', fontWeight: 600 }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Subtitle / Narrative Lead Copy
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editingSection.subtitle}
+                      onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
+                      className="input-field"
+                      style={{ width: '100%', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {/* Primary & Secondary Buttons */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px', color: 'var(--color-text)' }}>
+                        Primary CTA Button Text
+                      </label>
+                      <input
+                        type="text"
+                        value={editingSection.layout_style?.ctaButtonText || editingSection.content_json?.cta_label || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setEditingSection({
+                            ...editingSection,
+                            layout_style: { ...editingSection.layout_style, ctaButtonText: val },
+                            content_json: { ...editingSection.content_json, cta_label: val }
+                          });
+                        }}
+                        placeholder="e.g. Enroll Now, Explore Programs"
+                        className="input-field"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px', color: 'var(--color-text)' }}>
+                        Primary CTA Destination URL
+                      </label>
+                      <input
+                        type="text"
+                        value={editingSection.layout_style?.ctaButtonUrl || editingSection.content_json?.cta_url || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setEditingSection({
+                            ...editingSection,
+                            layout_style: { ...editingSection.layout_style, ctaButtonUrl: val },
+                            content_json: { ...editingSection.content_json, cta_url: val }
+                          });
+                        }}
+                        placeholder="e.g. /programs, /contact"
+                        className="input-field"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Block Specific Custom Fields */}
+                  {editingSection.block_type === 'rich_text' && (
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px', color: 'var(--color-text)' }}>
+                        Markdown Editorial Body Text
+                      </label>
+                      <textarea
+                        rows={8}
+                        value={editingSection.content_json?.markdownBody || ''}
+                        onChange={(e) => setEditingSection({
+                          ...editingSection,
+                          content_json: { ...editingSection.content_json, markdownBody: e.target.value }
+                        })}
+                        className="input-field"
+                        style={{ width: '100%', fontFamily: 'monospace', resize: 'vertical' }}
+                      />
+                    </div>
+                  )}
+
+                  {editingSection.block_type === 'video_showcase' && (
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px', color: 'var(--color-text)' }}>
+                        YouTube Video ID or Full Link
+                      </label>
+                      <input
+                        type="text"
+                        value={editingSection.content_json?.youtubeVideoId || ''}
+                        onChange={(e) => setEditingSection({
+                          ...editingSection,
+                          content_json: { ...editingSection.content_json, youtubeVideoId: e.target.value }
+                        })}
+                        placeholder="e.g. dQw4w9WgXcQ or https://www.youtube.com/watch?v=..."
+                        className="input-field"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.04)', marginTop: '8px' }}>
+                    <input
+                      type="checkbox"
+                      id="modalVisibilityCheck"
+                      checked={editingSection.is_visible}
+                      onChange={(e) => setEditingSection({ ...editingSection, is_visible: e.target.checked })}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="modalVisibilityCheck" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text)', cursor: 'pointer', margin: 0 }}>
+                      Section is Published & Visible on Public Homepage
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: Layout & Geometry Studio */}
+              {activeTab === 'layout' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '780px' }}>
+                  <div style={{ padding: '12px 16px', borderRadius: '10px', backgroundColor: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#38bdf8' }}>
+                      WordPress-Grade Dimensions & Box Model
+                    </span>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-text-secondary, #94a3b8)' }}>
+                      Adjust container width, section min-height, top/bottom padding, and typography scaling directly.
+                    </p>
+                  </div>
+
+                  {/* Container Max Width */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text)' }}>
+                      Container Maximum Width
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                      {[
+                        { key: 'narrow', label: 'Narrow', sub: '960px max' },
+                        { key: 'standard', label: 'Boxed Standard', sub: '1200px max' },
+                        { key: 'wide', label: 'Wide Screen', sub: '1440px max' },
+                        { key: 'full', label: 'Full Edge-to-Edge', sub: '100% width' }
+                      ].map((item) => {
+                        const isSel = (editingSection.layout_style?.containerWidth || 'standard') === item.key;
+                        return (
+                          <div
+                            key={item.key}
+                            onClick={() => updateLayoutStyle({ containerWidth: item.key as any })}
+                            style={{
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: isSel ? '2px solid #38bdf8' : '1px solid var(--color-border)',
+                              backgroundColor: isSel ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: isSel ? '#38bdf8' : 'var(--color-text)' }}>
+                              {item.label}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--color-text-secondary, #94a3b8)' }}>
+                              {item.sub}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section Height / Min-Height */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text)' }}>
+                      Section Height / Min-Height
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                      {[
+                        { key: 'auto', label: 'Auto (Content Fit)' },
+                        { key: 'compact', label: 'Compact (360px)' },
+                        { key: 'medium', label: 'Medium (520px)' },
+                        { key: 'screen', label: 'Full Screen (100vh)' }
+                      ].map((item) => {
+                        const isSel = (editingSection.layout_style?.minHeight || 'auto') === item.key;
+                        return (
+                          <div
+                            key={item.key}
+                            onClick={() => updateLayoutStyle({ minHeight: item.key as any })}
+                            style={{
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: isSel ? '2px solid #38bdf8' : '1px solid var(--color-border)',
+                              backgroundColor: isSel ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                              cursor: 'pointer',
+                              textAlign: 'center'
+                            }}
+                          >
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: isSel ? '#38bdf8' : 'var(--color-text)' }}>
+                              {item.label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Top & Bottom Padding */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                        Top Padding (Spacing)
+                      </label>
+                      <select
+                        value={editingSection.layout_style?.paddingTop || 'md'}
+                        onChange={(e) => updateLayoutStyle({ paddingTop: e.target.value as any })}
+                        className="input-field"
+                        style={{ width: '100%' }}
+                      >
+                        <option value="none">None (0px)</option>
+                        <option value="sm">Compact (24px)</option>
+                        <option value="md">Standard (48px)</option>
+                        <option value="lg">Generous (80px)</option>
+                        <option value="xl">Hero Scale (120px)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                        Bottom Padding (Spacing)
+                      </label>
+                      <select
+                        value={editingSection.layout_style?.paddingBottom || 'md'}
+                        onChange={(e) => updateLayoutStyle({ paddingBottom: e.target.value as any })}
+                        className="input-field"
+                        style={{ width: '100%' }}
+                      >
+                        <option value="none">None (0px)</option>
+                        <option value="sm">Compact (24px)</option>
+                        <option value="md">Standard (48px)</option>
+                        <option value="lg">Generous (80px)</option>
+                        <option value="xl">Hero Scale (120px)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Content Alignment */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text)' }}>
+                      Content Alignment
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {[
+                        { key: 'left', label: 'Left Aligned', icon: AlignLeft },
+                        { key: 'center', label: 'Centered', icon: AlignCenter },
+                        { key: 'right', label: 'Right Aligned', icon: AlignRight }
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        const isSel = (editingSection.layout_style?.alignment || 'left') === item.key;
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => updateLayoutStyle({ alignment: item.key as any })}
+                            style={{
+                              flex: 1,
+                              padding: '10px',
+                              borderRadius: '8px',
+                              border: isSel ? '2px solid #38bdf8' : '1px solid var(--color-border)',
+                              backgroundColor: isSel ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                              color: isSel ? '#38bdf8' : 'var(--color-text)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              cursor: 'pointer',
+                              fontWeight: isSel ? 700 : 500
+                            }}
+                          >
+                            <Icon size={16} />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Heading Typography Scale */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Heading Typography Scale
+                    </label>
+                    <select
+                      value={editingSection.layout_style?.headingScale || 'md'}
+                      onChange={(e) => updateLayoutStyle({ headingScale: e.target.value as any })}
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    >
+                      <option value="sm">Compact (1.5rem / 24px)</option>
+                      <option value="md">Regular Headline (2rem / 32px)</option>
+                      <option value="lg">Large Display (2.5rem / 40px)</option>
+                      <option value="display">Hero Impact Display (3.25rem / 52px)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: Background & Styling */}
+              {activeTab === 'styling' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '780px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Background Image URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editingSection.layout_style?.backgroundImageUrl || ''}
+                      onChange={(e) => updateLayoutStyle({ backgroundImageUrl: e.target.value })}
+                      placeholder="e.g. https://images.unsplash.com/... or /images/hero-bg.jpg"
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  {editingSection.layout_style?.backgroundImageUrl && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text)' }}>
+                          Dark Glass Overlay Opacity
+                        </label>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8' }}>
+                          {Math.round((editingSection.layout_style.backgroundOverlayOpacity ?? 0.4) * 100)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={editingSection.layout_style.backgroundOverlayOpacity ?? 0.4}
+                        onChange={(e) => updateLayoutStyle({ backgroundOverlayOpacity: parseFloat(e.target.value) })}
+                        style={{ width: '100%', cursor: 'pointer' }}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Background Gradient Overlay (CSS linear-gradient)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingSection.layout_style?.backgroundGradient || ''}
+                      onChange={(e) => updateLayoutStyle({ backgroundGradient: e.target.value })}
+                      placeholder="e.g. linear-gradient(135deg, rgba(36, 87, 214, 0.15) 0%, rgba(2, 132, 199, 0.08) 100%)"
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
+                      Custom Background Hex / Color
+                    </label>
+                    <input
+                      type="text"
+                      value={editingSection.layout_style?.backgroundColor || ''}
+                      onChange={(e) => updateLayoutStyle({ backgroundColor: e.target.value })}
+                      placeholder="e.g. #070e1a or rgba(11, 19, 41, 0.8)"
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: AI Creative Director */}
+              {activeTab === 'ai' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '780px' }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      backgroundColor: 'rgba(99, 102, 241, 0.04)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sparkles size={18} style={{ color: '#6366f1' }} />
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text, #ffffff)' }}>
+                          Gemini AI Copy Audit & Quality Score
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={aiReviewLoading || !editingSection.title}
+                        onClick={handleGetAiReview}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '6px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Wand2 size={14} />
+                        <span>{aiReviewLoading ? 'Analyzing...' : 'Audit Quality Score'}</span>
+                      </button>
+                    </div>
+
+                    {aiReviewResult && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 800, backgroundColor: aiReviewResult.score >= 90 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: aiReviewResult.score >= 90 ? '#10b981' : '#d97706' }}>
+                            Quality Score: {aiReviewResult.score}%
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                          {aiReviewResult.critique}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={handleApplyAiSuggestions}
+                            className="btn btn-primary"
+                            style={{ fontSize: '12px', padding: '6px 14px' }}
+                          >
+                            Apply AI Optimized Copy
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--color-text)' }}>
+                        Ask AI Assistant for Advice & Modifications:
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={aiCustomQuestion}
+                          onChange={(e) => setAiCustomQuestion(e.target.value)}
+                          placeholder="e.g. How can I make this headline more attractive for parents in Butwal?"
+                          className="input-field"
+                          style={{ flex: 1, fontSize: '13px' }}
+                        />
+                        <button
+                          type="button"
+                          disabled={aiReviewLoading || !aiCustomQuestion.trim()}
+                          onClick={() => handleAskCustomQuestion()}
+                          className="btn btn-primary"
+                          style={{ fontSize: '12px', padding: '6px 14px' }}
+                        >
+                          Ask
+                        </button>
+                      </div>
+
+                      {aiCustomAnswer && (
+                        <div style={{ marginTop: '12px', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', fontSize: '13px', lineHeight: 1.55 }}>
+                          {aiCustomAnswer}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: Live Responsive Device Frame Preview */}
+              {activeTab === 'preview' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Device frame switcher */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '6px', backgroundColor: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', width: 'fit-content', margin: '0 auto' }}>
+                    {[
+                      { key: 'desktop', label: 'Desktop (100%)', icon: Monitor },
+                      { key: 'tablet', label: 'Tablet (768px)', icon: Tablet },
+                      { key: 'mobile', label: 'Mobile (375px)', icon: Smartphone }
+                    ].map((dev) => {
+                      const Icon = dev.icon;
+                      const isSel = previewDevice === dev.key;
+                      return (
+                        <button
+                          key={dev.key}
+                          type="button"
+                          onClick={() => setPreviewDevice(dev.key as any)}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: isSel ? '#38bdf8' : 'transparent',
+                            color: isSel ? '#000000' : 'var(--color-text-secondary)',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Icon size={14} />
+                          <span>{dev.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Simulator Box */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      overflowX: 'auto',
+                      padding: '16px',
+                      backgroundColor: 'rgba(0,0,0,0.4)',
+                      borderRadius: '16px',
+                      border: '1px solid var(--color-border)'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: previewDevice === 'mobile' ? '375px' : previewDevice === 'tablet' ? '768px' : '100%',
+                        transition: 'width 0.25s ease',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: previewDevice === 'mobile' ? '24px' : '12px',
+                        overflow: 'hidden',
+                        backgroundColor: 'var(--color-bg, #070e1a)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+                      }}
+                    >
+                      <DynamicSectionWrapper section={editingSection}>
+                        <CustomBlockRenderer section={editingSection} />
+                      </DynamicSectionWrapper>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Sticky Footer */}
+            <div
+              style={{
+                padding: '14px 24px',
+                borderTop: '1px solid var(--color-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                Status: <strong style={{ color: editingSection.is_visible ? '#10b981' : '#ef4444' }}>{editingSection.is_visible ? 'Visible on Homepage' : 'Hidden'}</strong>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSection(null);
+                    setSearchParams({});
+                  }}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 14px', fontSize: '13px' }}
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   disabled={saving}
+                  onClick={() => handleSaveModal()}
                   className="btn btn-primary"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  style={{ padding: '6px 20px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
                   <Save size={15} />
-                  <span>{saving ? 'Saving...' : 'Save Section'}</span>
+                  <span>{saving ? 'Publishing...' : 'Save & Publish Changes'}</span>
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

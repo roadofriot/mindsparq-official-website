@@ -623,8 +623,8 @@ export const Header: React.FC = () => {
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open navigation menu'}
             className="mobile-menu-toggle"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

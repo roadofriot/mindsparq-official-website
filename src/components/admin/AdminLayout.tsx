@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeContext } from '../../context/ThemeContext';
@@ -22,14 +22,29 @@ import {
   Sparkles,
   Layers,
   Palette,
-  UserCheck
+  UserCheck,
+  Search
 } from 'lucide-react';
 import { AdminAiCopilotDrawer } from './AdminAiCopilotDrawer';
+import { AdminUniversalSearch } from './AdminUniversalSearch';
 
 export const AdminLayout: React.FC = () => {
   const { user, profile, roles, isOwner, isAdmin, isSuperAdmin } = useAuth();
   const { theme, toggleTheme } = useThemeContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K keyboard shortcut to open universal search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const navLinks = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
@@ -68,7 +83,8 @@ export const AdminLayout: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(3px)',
             zIndex: 1050
           }}
         />
@@ -76,18 +92,6 @@ export const AdminLayout: React.FC = () => {
 
       {/* Sidebar */}
       <aside
-        style={{
-          width: '260px',
-          borderRight: '1px solid var(--color-border)',
-          backgroundColor: 'var(--color-surface)',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          zIndex: 1100,
-          transition: 'transform var(--transition-fast)'
-        }}
         className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}
       >
         {/* Brand / Logo header */}
@@ -112,7 +116,14 @@ export const AdminLayout: React.FC = () => {
             type="button"
             onClick={() => setSidebarOpen(false)}
             className="mobile-close-btn"
-            style={{ display: 'none', background: 'none', border: 'none', color: 'var(--color-text)' }}
+            aria-label="Close navigation sidebar"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+              padding: '6px'
+            }}
           >
             <X size={20} />
           </button>
@@ -209,8 +220,8 @@ export const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Top bar on mobile */}
+      <main className="admin-main-viewport">
+        {/* Top Header Bar */}
         <header
           style={{
             height: '60px',
@@ -219,7 +230,8 @@ export const AdminLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 var(--space-6)'
+            padding: '0 var(--space-6)',
+            gap: 'var(--space-4)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -227,8 +239,8 @@ export const AdminLayout: React.FC = () => {
               type="button"
               onClick={() => setSidebarOpen(true)}
               className="admin-hamburger-btn"
+              aria-label="Open navigation sidebar"
               style={{
-                display: 'inline-flex',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -237,26 +249,75 @@ export const AdminLayout: React.FC = () => {
             >
               <Menu size={20} />
             </button>
-            <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-              MindSparQ CMS Console
+            <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+              MindSparQ CMS
             </span>
           </div>
 
+          {/* Universal Admin Content Search Trigger Bar */}
+          <div style={{ flex: 1, maxWidth: '480px', margin: '0 var(--space-2)' }}>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="admin-top-search-trigger"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-bg)',
+                color: 'var(--color-text-secondary)',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <Search size={15} style={{ color: 'var(--color-primary-500, #38bdf8)', flexShrink: 0 }} />
+                <span className="search-placeholder-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  Search all content, courses, blogs, sections...
+                </span>
+              </div>
+              <kbd
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: 'var(--color-text-muted)',
+                  marginLeft: '8px',
+                  flexShrink: 0
+                }}
+              >
+                Ctrl K
+              </kbd>
+            </button>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <Link to="/learner" style={{ fontSize: 'var(--font-xs)', color: 'var(--color-primary-600)', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/learner" style={{ fontSize: 'var(--font-xs)', color: 'var(--color-primary-600)', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
               Learner View
             </Link>
           </div>
         </header>
 
         {/* Page Content */}
-        <div style={{ flex: 1, padding: 'var(--space-8)' }}>
+        <div className="admin-page-content">
           <Outlet />
         </div>
       </main>
 
       {/* Persistent AI Copilot Side Drawer across all Admin Pages */}
       <AdminAiCopilotDrawer />
+
+      {/* Universal Content Search Modal & Command Palette */}
+      <AdminUniversalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   getAllCourses,
   saveCourse,
@@ -18,6 +18,7 @@ import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 
 export const AdminCoursesPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +48,18 @@ export const AdminCoursesPage: React.FC = () => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // Deep edit handler from search params (e.g. ?edit=id)
+  useEffect(() => {
+    const editParam = searchParams.get('edit');
+    if (editParam && courses.length > 0) {
+      const match = courses.find((c) => c.id === editParam || c.slug === editParam);
+      if (match) {
+        setEditingCourse(match);
+        setIsCourseModalOpen(true);
+      }
+    }
+  }, [searchParams, courses]);
 
   const handleSelectCourse = async (course: Course) => {
     setSelectedCourse(course);
@@ -394,7 +407,7 @@ export const AdminCoursesPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', overflowX: 'auto' }}>
+          <div className="admin-table-container" style={{ padding: 'var(--space-2)' }}>
             {loading ? (
               <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                 Loading courses...
@@ -410,7 +423,7 @@ export const AdminCoursesPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--font-sm)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--font-sm)', minWidth: '640px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
                     <th style={{ padding: 'var(--space-3)' }}>Course Title & Slug</th>

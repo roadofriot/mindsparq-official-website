@@ -30,7 +30,7 @@ import {
   Send,
   Check
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { uploadMedia } from '../../services/mediaService';
 import { extractYouTubeVideoId } from '../../services/courseService';
@@ -38,6 +38,7 @@ import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 
 export const AdminBlogPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const { user, isOwner, isAdmin, isSuperAdmin, hasPermission } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [teamProfiles, setTeamProfiles] = useState<TeamProfile[]>([]);
@@ -124,6 +125,17 @@ export const AdminBlogPage: React.FC = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  // Deep edit handler from search params (e.g. ?edit=id)
+  useEffect(() => {
+    const editParam = searchParams.get('edit');
+    if (editParam && posts.length > 0) {
+      const match = posts.find((p) => p.id === editParam || p.slug === editParam);
+      if (match) {
+        handleOpenEdit(match);
+      }
+    }
+  }, [searchParams, posts]);
 
   const showNotification = (text: string, type: 'success' | 'error' = 'success') => {
     setActionMsg({ type, text });
@@ -587,8 +599,8 @@ export const AdminBlogPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="admin-table-container">
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem', minWidth: '780px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface-elevated)' }}>
                   <th style={{ padding: '12px 18px', fontWeight: 600, color: 'var(--color-text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Article</th>

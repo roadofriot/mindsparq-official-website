@@ -11,6 +11,9 @@ import { MeetOurTeamSection } from '../components/home/MeetOurTeamSection';
 import { InquiryCta } from '../components/home/InquiryCta';
 import { updatePageSeo, generateOrganizationSchema, injectJsonLd, removeJsonLd } from '../utils/seo';
 
+import { DynamicSectionWrapper } from '../components/home/DynamicSectionWrapper';
+import { CustomBlockRenderer } from '../components/home/CustomBlockRenderer';
+
 export const HomePage: React.FC = () => {
   const [sections, setSections] = useState<SiteSection[]>([]);
 
@@ -35,29 +38,60 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  const renderSection = (key: string) => {
-    switch (key) {
-      case 'hero':
-        return <Hero key="hero" />;
-      case 'focus_strip':
-        return <FocusStrip key="focus_strip" />;
-      case 'programs_overview':
-        return <ProgramsOverview key="programs_overview" />;
-      case 'learning_approach':
-        return <LearningApproach key="learning_approach" />;
-      case 'who_we_support':
-        return <WhoWeSupport key="who_we_support" />;
-      case 'ai_robotics_feature':
-        return <AiRoboticsFeature key="ai_robotics_feature" />;
-      case 'about_snippet':
-        return <AboutSnippet key="about_snippet" />;
-      case 'meet_our_team':
-        return <MeetOurTeamSection key="meet_our_team" />;
-      case 'inquiry_cta':
-        return <InquiryCta key="inquiry_cta" />;
-      default:
-        return null;
+  const renderSection = (section: SiteSection) => {
+    // If it's a dedicated custom block type
+    if (section.block_type && section.block_type !== 'default') {
+      return (
+        <DynamicSectionWrapper key={section.id} section={section}>
+          <CustomBlockRenderer section={section} />
+        </DynamicSectionWrapper>
+      );
     }
+
+    // Default core sections
+    let innerComponent: React.ReactNode = null;
+    switch (section.key) {
+      case 'hero':
+        innerComponent = <Hero key="hero" />;
+        break;
+      case 'focus_strip':
+        innerComponent = <FocusStrip key="focus_strip" />;
+        break;
+      case 'programs_overview':
+        innerComponent = <ProgramsOverview key="programs_overview" />;
+        break;
+      case 'learning_approach':
+        innerComponent = <LearningApproach key="learning_approach" />;
+        break;
+      case 'who_we_support':
+        innerComponent = <WhoWeSupport key="who_we_support" />;
+        break;
+      case 'ai_robotics_feature':
+        innerComponent = <AiRoboticsFeature key="ai_robotics_feature" />;
+        break;
+      case 'about_snippet':
+        innerComponent = <AboutSnippet key="about_snippet" />;
+        break;
+      case 'meet_our_team':
+        innerComponent = <MeetOurTeamSection key="meet_our_team" />;
+        break;
+      case 'inquiry_cta':
+        innerComponent = <InquiryCta key="inquiry_cta" />;
+        break;
+      default:
+        innerComponent = <CustomBlockRenderer section={section} />;
+        break;
+    }
+
+    if (section.layout_style) {
+      return (
+        <DynamicSectionWrapper key={section.id} section={section}>
+          {innerComponent}
+        </DynamicSectionWrapper>
+      );
+    }
+
+    return <React.Fragment key={section.id}>{innerComponent}</React.Fragment>;
   };
 
   if (sections.length === 0) {
@@ -76,5 +110,5 @@ export const HomePage: React.FC = () => {
     );
   }
 
-  return <div>{sections.map((section) => renderSection(section.key))}</div>;
+  return <div>{sections.map((section) => renderSection(section))}</div>;
 };

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getAllEvents, saveEvent, deleteEvent } from '../../services/eventService';
 import { Event } from '../../types/database';
 import { Plus, Edit2, Trash2, Calendar, AlertCircle } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField';
 
 export const AdminEventsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +24,17 @@ export const AdminEventsPage: React.FC = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  // Deep edit handler from search params (e.g. ?edit=id)
+  useEffect(() => {
+    const editParam = searchParams.get('edit');
+    if (editParam && events.length > 0) {
+      const match = events.find((e) => e.id === editParam || e.slug === editParam);
+      if (match) {
+        handleOpenEdit(match);
+      }
+    }
+  }, [searchParams, events]);
 
   const handleOpenCreate = () => {
     setEditingEvent({
@@ -115,7 +128,7 @@ export const AdminEventsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="card" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', overflowX: 'auto' }}>
+      <div className="admin-table-container" style={{ padding: 'var(--space-2)' }}>
         {loading ? (
           <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
             Loading events...
@@ -131,7 +144,7 @@ export const AdminEventsPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--font-sm)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--font-sm)', minWidth: '600px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
                 <th style={{ padding: 'var(--space-3)' }}>Event Title & Slug</th>

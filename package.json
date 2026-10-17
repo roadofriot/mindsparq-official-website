@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "sitemap": "node scripts/generateSitemap.mjs",
-    "build": "node scripts/generateSitemap.mjs && tsc && vite build",
+    "build": "node scripts/generateSitemap.mjs && tsc && vite build && node scripts/cleanRedirects.mjs",
     "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

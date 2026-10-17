@@ -8,8 +8,11 @@
   },
   "scripts": {
     "dev": "vite",
+    "clean": "node scripts/cleanRedirects.mjs",
+    "prebuild": "node scripts/cleanRedirects.mjs",
     "sitemap": "node scripts/generateSitemap.mjs",
-    "build": "node scripts/generateSitemap.mjs && tsc && vite build && node scripts/cleanRedirects.mjs",
+    "build": "node scripts/cleanRedirects.mjs && node scripts/generateSitemap.mjs && tsc && vite build && node scripts/cleanRedirects.mjs",
+    "predeploy": "node scripts/cleanRedirects.mjs",
     "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

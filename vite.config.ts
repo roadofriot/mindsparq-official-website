@@ -11,6 +11,7 @@ export default defineConfig({
     host: true
   },
   build: {
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: {

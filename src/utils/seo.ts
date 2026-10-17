@@ -16,7 +16,7 @@ export interface SeoOptions {
 const DEFAULT_TITLE = 'MindSparQ Education & Technology | Butwal, Nepal';
 const DEFAULT_DESCRIPTION =
   'Empowering young minds through mental arithmetic, robotics, computational thinking, and STEM education in Nepal.';
-const DEFAULT_OG_IMAGE = 'https://mindsparqeducation.com.np/images/og-mindsparq-default.jpg';
+const DEFAULT_OG_IMAGE = 'https://mindsparqeducation.com.np/images/og-mindsparq.png';
 const SITE_URL = 'https://mindsparqeducation.com.np';
 
 /**
@@ -59,6 +59,9 @@ export function updatePageSeo(options: SeoOptions): void {
   setMetaTag('property', 'og:url', canonicalUrl);
   setMetaTag('property', 'og:type', options.ogType || 'website');
   setMetaTag('property', 'og:image', options.ogImage || DEFAULT_OG_IMAGE);
+  setMetaTag('property', 'og:image:width', '1200');
+  setMetaTag('property', 'og:image:height', '630');
+  setMetaTag('property', 'og:image:alt', 'MindSparQ Education & Technology');
   setMetaTag('property', 'og:site_name', 'MindSparQ Education & Technology');
   setMetaTag('property', 'og:locale', 'en_NP');
 
@@ -67,6 +70,7 @@ export function updatePageSeo(options: SeoOptions): void {
   setMetaTag('name', 'twitter:title', fullTitle);
   setMetaTag('name', 'twitter:description', description);
   setMetaTag('name', 'twitter:image', options.ogImage || DEFAULT_OG_IMAGE);
+  setMetaTag('name', 'twitter:image:alt', 'MindSparQ Education & Technology');
 }
 
 function setMetaTag(attributeKey: 'name' | 'property', attributeValue: string, content: string): void {
@@ -99,7 +103,8 @@ export function generateOrganizationSchema(): Record<string, unknown> {
     name: 'MindSparQ Education & Technology',
     alternateName: 'MindSparQ Nepal',
     url: 'https://mindsparqeducation.com.np',
-    logo: 'https://mindsparqeducation.com.np/favicon.svg',
+    logo: 'https://mindsparqeducation.com.np/icon-512.png',
+    image: 'https://mindsparqeducation.com.np/images/og-mindsparq.png',
     description:
       'Pioneering computational thinking, mental arithmetic (abacus), and STEM robotics education in Butwal, Nepal.',
     address: {
@@ -185,7 +190,7 @@ export function generateArticleSchema(post: {
       name: 'MindSparQ Education & Technology',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://mindsparqeducation.com.np/favicon.svg'
+        url: 'https://mindsparqeducation.com.np/icon-512.png'
       }
     },
     datePublished: post.published_at || new Date().toISOString(),

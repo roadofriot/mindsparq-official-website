@@ -44,7 +44,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       const email = (userEmailParam || '').toLowerCase();
-      const isOwnerAccount = email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
 
       // 1. Fetch Profile
       const { data: profileData, error: profileErr } = await supabase
@@ -75,16 +74,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (rolesData && !rolesErr && rolesData.length > 0) {
         const loadedRoles = (rolesData as UserRole[]).map((r) => r.role_key);
-        setRoles(isOwnerAccount ? Array.from(new Set([...loadedRoles, 'super_admin', 'owner', 'admin'])) : loadedRoles);
+        setRoles(loadedRoles);
       } else {
-        // Default role for signed-in user is learner, or owner for recognized owner emails
-        setRoles(isOwnerAccount ? ['super_admin', 'owner', 'admin'] : ['learner']);
+        // Default role for signed-in user without specific elevated roles is learner
+        setRoles(['learner']);
       }
     } catch (err) {
       console.error('[MindSparQ Auth] Error loading user profile & roles:', err);
-      const email = (userEmailParam || '').toLowerCase();
-      const isOwnerAccount = email === 'merokhoj@gmail.com' || email === 'roadofriot@gmail.com';
-      setRoles(isOwnerAccount ? ['super_admin', 'owner', 'admin'] : ['learner']);
+      setRoles(['learner']);
     } finally {
       setLoading(false);
     }

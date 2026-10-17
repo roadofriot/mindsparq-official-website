@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 interface LogoProps {
   showTagline?: boolean;
   className?: string;
+  iconSize?: number;
 }
 
-export const Logo: React.FC<LogoProps> = ({ showTagline = false, className = '' }) => {
+export const Logo: React.FC<LogoProps> = ({ showTagline = false, className = '', iconSize = 42 }) => {
   return (
     <Link 
       to="/" 
@@ -22,9 +23,9 @@ export const Logo: React.FC<LogoProps> = ({ showTagline = false, className = '' 
     >
       <div 
         style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '10px',
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
+          borderRadius: iconSize >= 48 ? '12px' : '10px',
           overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
@@ -37,8 +38,8 @@ export const Logo: React.FC<LogoProps> = ({ showTagline = false, className = '' 
         <img 
           src="/icon-192.png" 
           alt="MindSparQ 3D App Icon" 
-          width="42" 
-          height="42"
+          width={iconSize} 
+          height={iconSize}
           style={{
             width: '100%',
             height: '100%',

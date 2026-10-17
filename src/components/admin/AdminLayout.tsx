@@ -50,7 +50,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     { label: 'AI Studio & Chatbot', href: '/admin/ai-assistant', icon: Sparkles },
     { label: 'Visual Section Customizer', href: '/admin/sections', icon: Layers },
-    { label: 'Global Design Settings', href: '/admin/design', icon: Palette },
+    { label: 'Theme & Layout Studio', href: '/admin/design', icon: Palette },
     { label: 'Homepage Carousel', href: '/admin/carousel', icon: Sliders },
     { label: 'Ad Rails & Promotions', href: '/admin/ads', icon: Sparkles },
     { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },

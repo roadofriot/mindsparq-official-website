@@ -20,14 +20,18 @@ import { navItems, exploreNavItems } from '../../content/navigation';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSiteTheme } from '../../hooks/useSiteTheme';
 import { Logo } from './Logo';
 
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useThemeContext();
   const { user, isStaff, profile, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const themeSettings = useSiteTheme();
+  const headerConfig = themeSettings.header;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +111,7 @@ export const Header: React.FC = () => {
   return (
     <header
       style={{
-        position: 'sticky',
+        position: headerConfig.isSticky ? 'sticky' : 'relative',
         top: 0,
         zIndex: 1000,
         backgroundColor: 'var(--navbar-bg)',
@@ -118,22 +122,85 @@ export const Header: React.FC = () => {
         transition: 'all var(--transition-fast)'
       }}
     >
+      {/* Dynamic Top Announcement Banner */}
+      {headerConfig.showAnnouncement && !announcementDismissed && (
+        <div
+          role="region"
+          aria-label="Site Announcement"
+          style={{
+            backgroundColor: headerConfig.announcementBg || 'var(--color-brand-primary)',
+            color: '#ffffff',
+            padding: '7px 16px',
+            fontSize: 'var(--font-xs)',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            zIndex: 1001,
+            boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.1)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span>{headerConfig.announcementText}</span>
+            {headerConfig.announcementLink && (
+              <Link
+                to={headerConfig.announcementLink}
+                style={{
+                  color: '#ffffff',
+                  textDecoration: 'underline',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                Learn More <ArrowRight size={12} />
+              </Link>
+            )}
+          </div>
+          {headerConfig.announcementDismissible && (
+            <button
+              type="button"
+              onClick={() => setAnnouncementDismissed(true)}
+              aria-label="Dismiss announcement"
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'transparent',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                opacity: 0.85,
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px'
+              }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      )}
+
       <div 
         className="container" 
         style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between', 
-          height: '68px',
+          height: `${headerConfig.height || 68}px`,
           gap: 'var(--space-4)'
         }}
       >
-        {/* Brand Logo */}
+        {/* Brand Logo with dynamic scale */}
         <div style={{ flexShrink: 0 }}>
-          <Logo showTagline={false} />
+          <Logo showTagline={false} iconSize={headerConfig.logoHeight || 42} />
         </div>
 
-        {/* Minimal Desktop Navigation (Strictly 5 Core Links) */}
+        {/* Dynamic Desktop Navigation */}
         <nav 
           aria-label="Main Navigation"
           style={{
@@ -143,7 +210,7 @@ export const Header: React.FC = () => {
           }}
           className="desktop-nav"
         >
-          {navItems.map((item) => {
+          {((headerConfig.customNavItems && headerConfig.customNavItems.length > 0) ? headerConfig.customNavItems : navItems).map((item) => {
             const translatedLabel = getTranslatedLabel(item);
 
             return (
@@ -614,6 +681,29 @@ export const Header: React.FC = () => {
             )}
           </div>
 
+          {/* Desktop Direct CTA Button */}
+          {headerConfig.showCtaButton && (
+            <Link
+              to={headerConfig.ctaButtonLink || '/contact'}
+              className="btn btn-primary desktop-cta"
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                borderRadius: 'var(--radius-full)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span>{headerConfig.ctaButtonText || 'Enroll Now'}</span>
+              <ArrowRight size={13} />
+            </Link>
+          )}
+
           {/* Mobile Menu Toggle Button */}
           <button
             type="button"
@@ -706,7 +796,7 @@ export const Header: React.FC = () => {
 
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {/* Primary Core Links */}
-            {navItems.map((item) => {
+            {((headerConfig.customNavItems && headerConfig.customNavItems.length > 0) ? headerConfig.customNavItems : navItems).map((item) => {
               const translatedLabel = getTranslatedLabel(item);
 
               return (
@@ -829,15 +919,17 @@ export const Header: React.FC = () => {
                 </Link>
               )}
 
-              <NavLink
-                to="/contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn btn-primary"
-                style={{ width: '100%', justifyContent: 'center', marginTop: '6px' }}
-              >
-                <span>{t('nav.contact', 'Enquire Now')}</span>
-                <ArrowRight size={15} aria-hidden="true" />
-              </NavLink>
+              {headerConfig.showCtaButton && (
+                <NavLink
+                  to={headerConfig.ctaButtonLink || '/contact'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '6px' }}
+                >
+                  <span>{headerConfig.ctaButtonText || t('nav.contact', 'Enroll Now')}</span>
+                  <ArrowRight size={15} aria-hidden="true" />
+                </NavLink>
+              )}
             </div>
           </nav>
         </div>

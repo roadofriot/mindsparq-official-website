@@ -54,14 +54,36 @@ const STATIC_ADMIN_NAV_ITEMS = [
   },
   {
     id: 'nav-design',
-    title: 'Global Design Settings & Tokens',
-    subtitle: 'Brand palettes, typography scales, corner radii, and theme styles',
-    content: 'design tokens fonts colors typography ocean blue cyber cyan border radius branding styling',
-    locationPath: 'Appearance > Design Tokens',
+    title: 'WordPress-Grade Theme & Layout Studio',
+    subtitle: 'Header height, logo scale, announcement ribbon, footer branding, and typography',
+    content: 'theme customizer design header height logo size announcement banner ribbon sticky header cta button footer copyright registered center columns typography fonts palettes',
+    locationPath: 'Appearance > Theme Studio',
     targetRoute: '/admin/design',
     category: 'navigation' as const,
     categoryLabel: 'Appearance',
     badgeColor: '#8b5cf6'
+  },
+  {
+    id: 'nav-header-customizer',
+    title: 'Header & Top Announcement Ribbon',
+    subtitle: 'Configure sticky header, container height, brand logo scale, and broadcast banner',
+    content: 'header announcement banner ribbon height logo size sticky header cta enroll now menu',
+    locationPath: 'Appearance > Theme Studio > Header',
+    targetRoute: '/admin/design',
+    category: 'navigation' as const,
+    categoryLabel: 'Appearance',
+    badgeColor: '#0ea5e9'
+  },
+  {
+    id: 'nav-footer-customizer',
+    title: 'Footer Branding & Column Links',
+    subtitle: 'Configure mission blurb, registered center address, dynamic columns, and copyright',
+    content: 'footer mission blurb registered center address copyright notice visitor counter social channels columns links',
+    locationPath: 'Appearance > Theme Studio > Footer',
+    targetRoute: '/admin/design',
+    category: 'navigation' as const,
+    categoryLabel: 'Appearance',
+    badgeColor: '#10b981'
   },
   {
     id: 'nav-carousel',

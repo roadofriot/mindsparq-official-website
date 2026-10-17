@@ -736,7 +736,7 @@ export const ProgramsPage: React.FC = () => {
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
               gap: 'var(--space-8)',
-              marginBottom: 'var(--space-10)'
+              marginBottom: 'var(--space-12)'
             }}
           >
             {/* School's Contribution */}
@@ -750,7 +750,7 @@ export const ProgramsPage: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 'var(--space-5)',
-                boxShadow: 'var(--shadow-sm)'
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -804,7 +804,7 @@ export const ProgramsPage: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 'var(--space-5)',
-                boxShadow: 'var(--shadow-sm)'
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -851,25 +851,33 @@ export const ProgramsPage: React.FC = () => {
           {/* 4-Stage Partnership Roadmap */}
           <div 
             style={{ 
-              marginBottom: 'var(--space-10)',
+              marginBottom: 'var(--space-12)',
               backgroundColor: 'var(--color-bg)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-xl)',
-              padding: 'clamp(20px, 3vw, 28px)'
+              padding: 'clamp(24px, 4vw, 36px)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <Layers size={18} style={{ color: 'var(--color-primary-600)' }} />
-              <h4 style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0, color: 'var(--color-text)' }}>
-                4-Stage Partnership Implementation Lifecycle
-              </h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(37, 99, 235, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Layers size={18} style={{ color: 'var(--color-primary-600)' }} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0, color: 'var(--color-text)' }}>
+                  4-Stage Partnership Implementation Lifecycle
+                </h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+                  Structured turnkey rollout designed to integrate effortlessly into partner academic calendars.
+                </p>
+              </div>
             </div>
 
             <div 
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
-                gap: '14px'
+                gap: '16px'
               }}
             >
               {[
@@ -881,13 +889,14 @@ export const ProgramsPage: React.FC = () => {
                 <div 
                   key={phase.step}
                   style={{
-                    padding: '16px',
+                    padding: '20px 18px',
                     backgroundColor: 'var(--color-surface)',
                     borderRadius: 'var(--radius-lg)',
                     border: '1px solid var(--color-border)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '6px'
+                    gap: '8px',
+                    transition: 'transform var(--transition-fast)'
                   }}
                 >
                   <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary-600)' }}>
@@ -896,7 +905,7 @@ export const ProgramsPage: React.FC = () => {
                   <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>
                     {phase.title}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.55 }}>
                     {phase.desc}
                   </div>
                 </div>
@@ -916,10 +925,11 @@ export const ProgramsPage: React.FC = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: 'var(--space-6)',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              marginBottom: 'var(--space-4)'
             }}
           >
-            <div style={{ maxWidth: '680px' }}>
+            <div style={{ maxWidth: '680px', flex: '1 1 360px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <ShieldCheck size={22} style={{ color: '#10b981', flexShrink: 0 }} />
                 <h4 style={{ fontSize: '1.0625rem', fontWeight: 800, margin: 0, color: 'var(--color-text)' }}>
@@ -933,25 +943,27 @@ export const ProgramsPage: React.FC = () => {
               </p>
             </div>
 
-            <Link 
-              to="/contact?inquiryType=school-partnership" 
-              className="btn btn-primary"
-              style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '8px', 
-                padding: '12px 24px',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                textDecoration: 'none',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-              }}
-            >
-              <span>{isNe ? 'साझेदारी प्रस्ताव अनुरोध गर्नुहोस्' : 'Request Partnership Proposal'}</span>
-              <ArrowRight size={16} />
-            </Link>
+            <div style={{ flexShrink: 0 }}>
+              <Link 
+                to="/contact?inquiryType=school-partnership" 
+                className="btn btn-primary"
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  padding: '14px 28px',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 16px rgba(37, 99, 235, 0.35)'
+                }}
+              >
+                <span>{isNe ? 'साझेदारी प्रस्ताव अनुरोध गर्नुहोस्' : 'Request Partnership Proposal'}</span>
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

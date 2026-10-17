@@ -3,8 +3,6 @@ import { useLanguage } from '../../context/LanguageContext';
 import { ExternalLink, MessageCircle, Heart, Eye, Play, Sparkles, CheckCircle2, PhoneCall, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import { getActiveSocialLinks } from '../ui/SocialLinksBar';
 
-type PlatformFilter = 'all' | 'facebook' | 'instagram' | 'tiktok' | 'whatsapp' | 'youtube';
-
 interface SocialCardItem {
   id: string;
   platform: 'facebook' | 'instagram' | 'tiktok' | 'whatsapp' | 'youtube';
@@ -34,7 +32,7 @@ export const SocialCommunityHub: React.FC = () => {
   const { language } = useLanguage();
   const isNe = language === 'ne';
   const socialLinks = getActiveSocialLinks();
-  const [activeFilter, setActiveFilter] = useState<PlatformFilter>('all');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const cards: SocialCardItem[] = [
     {
@@ -159,17 +157,50 @@ export const SocialCommunityHub: React.FC = () => {
     }
   ];
 
-  const filteredCards = activeFilter === 'all'
-    ? cards
-    : cards.filter(c => c.platform === activeFilter);
+  // Dynamically include any custom platforms added by admin
+  const customCards = (socialLinks.customLinks || []).map((custom) => ({
+    id: `custom-${custom.id}`,
+    platform: custom.id as any,
+    platformLabel: custom.name,
+    platformColor: custom.color || '#2563EB',
+    badgeBg: `${custom.color || '#2563EB'}22`,
+    badgeTextColor: custom.color || '#2563EB',
+    titleEn: `Official Updates & Highlights on ${custom.name}`,
+    titleNe: `${custom.name} मा MindSparQ का आधिकारिक अपडेटहरू`,
+    descEn: `Connect with MindSparQ Education & Technology on our official ${custom.name} portal for interactive announcements and classroom highlights.`,
+    descNe: `MindSparQ को आधिकारिक ${custom.name} च्यानलसँग जोडिएर ताजा सूचना, कार्यशाला र कक्षाहरूका अपडेट प्राप्त गर्नुहोस्।`,
+    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
+    mediaType: 'image' as const,
+    stats: {
+      labelEn: custom.name,
+      labelNe: custom.name,
+      value: 'Official Channel'
+    },
+    actionUrl: custom.url,
+    actionTextEn: `Visit ${custom.name}`,
+    actionTextNe: `${custom.name} मा जानुहोस्`,
+    timestampEn: 'Active Desk',
+    timestampNe: 'सक्रिय'
+  }));
 
-  const filterTabs: Array<{ id: PlatformFilter; labelEn: string; labelNe: string }> = [
+  const allCards = [...cards, ...customCards];
+
+  const filteredCards = activeFilter === 'all'
+    ? allCards
+    : allCards.filter(c => c.platform === activeFilter);
+
+  const filterTabs: Array<{ id: string; labelEn: string; labelNe: string }> = [
     { id: 'all', labelEn: 'All Channels', labelNe: 'सबै माध्यमहरू' },
     { id: 'facebook', labelEn: 'Facebook', labelNe: 'Facebook' },
     { id: 'instagram', labelEn: 'Instagram', labelNe: 'Instagram' },
     { id: 'tiktok', labelEn: 'TikTok', labelNe: 'TikTok' },
     { id: 'whatsapp', labelEn: 'WhatsApp', labelNe: 'WhatsApp' },
-    { id: 'youtube', labelEn: 'YouTube', labelNe: 'YouTube' }
+    { id: 'youtube', labelEn: 'YouTube', labelNe: 'YouTube' },
+    ...(socialLinks.customLinks || []).map(c => ({
+      id: c.id,
+      labelEn: c.name,
+      labelNe: c.name
+    }))
   ];
 
   return (
@@ -321,7 +352,10 @@ export const SocialCommunityHub: React.FC = () => {
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            gap: 'var(--space-6)'
+            alignItems: 'stretch',
+            gap: 'var(--space-8)',
+            maxWidth: '1240px',
+            margin: 'var(--space-8) auto 0'
           }}
         >
           {filteredCards.map((card) => {
@@ -336,7 +370,8 @@ export const SocialCommunityHub: React.FC = () => {
                   overflow: 'hidden',
                   borderRadius: 'var(--radius-xl)',
                   backgroundColor: 'var(--color-surface)',
-                  flex: '1 1 320px',
+                  flex: '0 1 380px',
+                  width: '100%',
                   maxWidth: '380px',
                   minWidth: 'min(100%, 280px)',
                   border: isWhatsApp

@@ -280,9 +280,13 @@ export const CoursesPage: React.FC = () => {
         ) : (
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
-              gap: 'var(--space-6)'
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'stretch',
+              gap: 'var(--space-8)',
+              maxWidth: '1240px',
+              margin: '0 auto'
             }}
           >
             {filteredCourses.map((course) => (
@@ -294,6 +298,10 @@ export const CoursesPage: React.FC = () => {
                   flexDirection: 'column',
                   overflow: 'hidden',
                   borderRadius: 'var(--radius-xl)',
+                  flex: '0 1 360px',
+                  width: '100%',
+                  maxWidth: '380px',
+                  minWidth: 'min(100%, 300px)',
                   transition: 'transform var(--transition-fast), box-shadow var(--transition-fast)'
                 }}
               >

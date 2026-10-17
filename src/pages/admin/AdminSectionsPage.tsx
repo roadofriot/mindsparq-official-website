@@ -16,9 +16,13 @@ import {
   RotateCcw,
   CheckCircle2,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Wand2,
+  Star
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { reviewWebsiteSectionContent, sendGeminiPrompt } from '../../services/geminiService';
 
 export const AdminSectionsPage: React.FC = () => {
   const [sections, setSections] = useState<SiteSection[]>([]);
@@ -26,6 +30,16 @@ export const AdminSectionsPage: React.FC = () => {
   const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusNotice, setStatusNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [aiReviewLoading, setAiReviewLoading] = useState(false);
+  const [aiCustomQuestion, setAiCustomQuestion] = useState('');
+  const [aiCustomAnswer, setAiCustomAnswer] = useState<string | null>(null);
+  const [aiReviewResult, setAiReviewResult] = useState<{
+    score: number;
+    critique: string;
+    suggestions: string[];
+    improvedTitle: string;
+    improvedSubtitle: string;
+  } | null>(null);
 
   const loadSections = async () => {
     setLoading(true);
@@ -87,6 +101,66 @@ export const AdminSectionsPage: React.FC = () => {
     setSections(defaults);
     setStatusNotice({ type: 'success', text: 'All homepage sections restored to factory defaults.' });
     setTimeout(() => setStatusNotice(null), 3500);
+  };
+
+  const handleGetAiReview = async () => {
+    if (!editingSection) return;
+    setAiReviewLoading(true);
+    try {
+      const res = await reviewWebsiteSectionContent({
+        sectionName: editingSection.name,
+        badge: editingSection.badge,
+        title: editingSection.title,
+        subtitle: editingSection.subtitle
+      });
+      setAiReviewResult(res);
+    } catch {
+      // ignore
+    } finally {
+      setAiReviewLoading(false);
+    }
+  };
+
+  const handleApplyAiSuggestions = () => {
+    if (!aiReviewResult || !editingSection) return;
+    setEditingSection({
+      ...editingSection,
+      title: aiReviewResult.improvedTitle,
+      subtitle: aiReviewResult.improvedSubtitle
+    });
+    setStatusNotice({ type: 'success', text: 'AI optimized headline and subtitle applied! Click "Save Section" to publish.' });
+    setTimeout(() => setStatusNotice(null), 3500);
+  };
+
+  const handleAskCustomQuestion = async (customQ?: string) => {
+    const q = (customQ || aiCustomQuestion).trim();
+    if (!q || !editingSection) return;
+    setAiReviewLoading(true);
+    setAiCustomAnswer(null);
+    try {
+      const prompt = `Section context: "${editingSection.name}"
+Current Title: "${editingSection.title}"
+Current Subtitle: "${editingSection.subtitle}"
+Current Badge: "${editingSection.badge || 'None'}"
+
+Administrator Request / Question: "${q}"
+
+Provide:
+1. Direct, professional advice on how to optimize this section for students and parents in Butwal.
+2. An estimated Quality Score percentage (e.g. 94%).
+3. Specific improved copy suggestions for Title and Subtitle.`;
+
+      const res = await sendGeminiPrompt(
+        prompt,
+        undefined,
+        'You are the MindSparQ AI Senior Creative Director. Answer directly, concisely, providing high-converting copy improvements and quality scores.'
+      );
+      setAiCustomAnswer(res);
+    } catch (err: any) {
+      setAiCustomAnswer(`Error querying AI: ${err.message}`);
+    } finally {
+      setAiReviewLoading(false);
+    }
   };
 
   return (
@@ -406,6 +480,216 @@ export const AdminSectionsPage: React.FC = () => {
                   className="input-field"
                   style={{ width: '100%', resize: 'vertical' }}
                 />
+              </div>
+
+              {/* Action Button & Navigation Controls */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Button / CTA Text
+                  </label>
+                  <input
+                    type="text"
+                    value={editingSection.content_json?.cta_label || ''}
+                    onChange={(e) => setEditingSection({
+                      ...editingSection,
+                      content_json: { ...editingSection.content_json, cta_label: e.target.value }
+                    })}
+                    placeholder="e.g. Explore Programs, Contact Us"
+                    className="input-field"
+                    style={{ width: '100%', fontSize: '0.8125rem' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Button Link Destination
+                  </label>
+                  <input
+                    type="text"
+                    value={editingSection.content_json?.cta_url || ''}
+                    onChange={(e) => setEditingSection({
+                      ...editingSection,
+                      content_json: { ...editingSection.content_json, cta_url: e.target.value }
+                    })}
+                    placeholder="e.g. /programs, /contact"
+                    className="input-field"
+                    style={{ width: '100%', fontSize: '0.8125rem' }}
+                  />
+                </div>
+              </div>
+
+              {/* Background Theme */}
+              <div style={{ marginBottom: 'var(--space-4)' }}>
+                <label style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Section Surface & Visual Theme
+                </label>
+                <select
+                  value={editingSection.content_json?.bg_theme || 'default'}
+                  onChange={(e) => setEditingSection({
+                    ...editingSection,
+                    content_json: { ...editingSection.content_json, bg_theme: e.target.value }
+                  })}
+                  className="input-field"
+                  style={{ width: '100%', fontSize: '0.8125rem' }}
+                >
+                  <option value="default">Default Page Background</option>
+                  <option value="surface">Light Elevated Card Surface</option>
+                  <option value="brand_tint">Soft Ocean Blue Brand Tint</option>
+                  <option value="emerald_tint">Soft Emerald STEAM Tint</option>
+                </select>
+              </div>
+
+              {/* AI Content Advisor & Quality Scoring Panel */}
+              <div
+                style={{
+                  marginBottom: 'var(--space-6)',
+                  padding: 'var(--space-4)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  backgroundColor: 'rgba(99, 102, 241, 0.04)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sparkles size={16} style={{ color: 'var(--color-primary-600)' }} />
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>
+                      AI Content Review & Quality Scoring
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={aiReviewLoading || !editingSection.title}
+                    onClick={handleGetAiReview}
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.75rem', padding: '4px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Wand2 size={13} />
+                    <span>{aiReviewLoading ? 'Analyzing...' : 'Audit Quality Score'}</span>
+                  </button>
+                </div>
+
+                {aiReviewResult && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div
+                        style={{
+                          padding: '3px 10px',
+                          borderRadius: '999px',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          backgroundColor: aiReviewResult.score >= 90 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                          color: aiReviewResult.score >= 90 ? '#10b981' : '#d97706',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Star size={12} fill="currentColor" />
+                        <span>Quality Score: {aiReviewResult.score}%</span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                        {aiReviewResult.score >= 90 ? 'Enterprise ready copy' : 'Needs polish for maximum engagement'}
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                      {aiReviewResult.critique}
+                    </p>
+
+                    <div style={{ padding: '8px 12px', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '4px', color: 'var(--color-text)' }}>
+                        Key Recommendations:
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                        {aiReviewResult.suggestions.map((sug, i) => (
+                          <li key={i}>{sug}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={handleApplyAiSuggestions}
+                        className="btn btn-primary"
+                        style={{ fontSize: '0.75rem', padding: '5px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Sparkles size={13} />
+                        <span>Apply AI Improved Copy</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Interactive AI Assistant Consultation for Section */}
+                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '6px' }}>
+                    Ask AI Assistant for Advice & Modifications:
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={aiCustomQuestion}
+                      onChange={(e) => setAiCustomQuestion(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAskCustomQuestion();
+                        }
+                      }}
+                      placeholder="e.g. How can I make this headline more attractive for parents in Butwal?"
+                      className="input-field"
+                      style={{ flex: 1, fontSize: '0.8125rem' }}
+                    />
+                    <button
+                      type="button"
+                      disabled={aiReviewLoading || !aiCustomQuestion.trim()}
+                      onClick={() => handleAskCustomQuestion()}
+                      className="btn btn-primary"
+                      style={{ fontSize: '0.75rem', padding: '6px 14px' }}
+                    >
+                      Ask
+                    </button>
+                  </div>
+
+                  {/* Quick Suggestion Chips */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                    {[
+                      'Suggest punchier title',
+                      'Make it appeal to schools',
+                      'Rate my current copy (%)'
+                    ].map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => {
+                          setAiCustomQuestion(chip);
+                          handleAskCustomQuestion(chip);
+                        }}
+                        style={{
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          border: '1px solid var(--color-border)',
+                          backgroundColor: 'var(--color-surface)',
+                          fontSize: '0.6875rem',
+                          color: 'var(--color-text-secondary)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        💡 {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  {aiCustomAnswer && (
+                    <div style={{ marginTop: '10px', padding: '10px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', fontSize: '0.8125rem', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                      <strong style={{ color: 'var(--color-primary-600)', display: 'block', marginBottom: '4px' }}>
+                        MindSparQ AI Assistant Recommendation:
+                      </strong>
+                      {aiCustomAnswer}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', padding: '10px 14px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-surface-hover)' }}>

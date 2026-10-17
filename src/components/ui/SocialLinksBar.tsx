@@ -1,5 +1,13 @@
 import React from 'react';
 
+export interface CustomSocialLink {
+  id: string;
+  name: string;
+  url: string;
+  color?: string;
+  badgeLabel?: string;
+}
+
 export interface SocialLinksConfig {
   facebook?: string;
   instagram?: string;
@@ -7,6 +15,7 @@ export interface SocialLinksConfig {
   tiktok?: string;
   youtube?: string;
   linkedin?: string;
+  customLinks?: CustomSocialLink[];
 }
 
 export const DEFAULT_SOCIAL_LINKS: SocialLinksConfig = {
@@ -15,7 +24,8 @@ export const DEFAULT_SOCIAL_LINKS: SocialLinksConfig = {
   whatsapp: 'https://wa.me/9779857058666',
   tiktok: 'https://www.tiktok.com/@mindsparqeducation',
   youtube: 'https://youtube.com/@mindsparqeducation',
-  linkedin: 'https://linkedin.com/company/mindsparqeducation'
+  linkedin: 'https://linkedin.com/company/mindsparqeducation',
+  customLinks: []
 };
 
 const STORAGE_KEY_SOCIAL = 'mindsparq_social_config';
@@ -24,7 +34,12 @@ export function getActiveSocialLinks(): SocialLinksConfig {
   try {
     const saved = localStorage.getItem(STORAGE_KEY_SOCIAL);
     if (saved) {
-      return { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      return {
+        ...DEFAULT_SOCIAL_LINKS,
+        ...parsed,
+        customLinks: Array.isArray(parsed.customLinks) ? parsed.customLinks : []
+      };
     }
   } catch {
     // ignore
@@ -131,7 +146,20 @@ export const SocialLinksBar: React.FC<SocialLinksBarProps> = ({
           <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.79v8.37H6.46v-8.37M7.86 6.3a1.64 1.64 0 1 0 0 3.28 1.64 1.64 0 0 0 0-3.28" />
         </svg>
       )
-    }
+    },
+    ...(links.customLinks || []).map((custom) => ({
+      name: custom.name,
+      url: custom.url,
+      color: custom.color || 'var(--color-primary-600)',
+      bgHover: custom.color ? `${custom.color}22` : 'rgba(36, 87, 214, 0.15)',
+      icon: (
+        <svg width={iconSizes[size]} height={iconSizes[size]} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      )
+    }))
   ];
 
   return (

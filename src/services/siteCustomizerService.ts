@@ -114,6 +114,39 @@ export const DEFAULT_SECTIONS: SiteSection[] = [
     content_json: {}
   },
   {
+    id: 'sec-social-hub',
+    key: 'social_community_hub',
+    name: 'Social Media & Live Community Hub',
+    title: 'Connect With MindSparQ Across Social Media',
+    subtitle: 'Follow our daily classroom journeys, robotics experiments, mental math milestones, student spotlights, and instant admissions support across our official channels.',
+    badge: 'Live Community & Social Highlights',
+    is_visible: true,
+    sort_order: 8,
+    content_json: {}
+  },
+  {
+    id: 'sec-courses-catalog',
+    key: 'courses_catalog',
+    name: 'Interactive Course Catalog & Age Hub',
+    title: 'Comprehensive STEAM Course Catalog',
+    subtitle: 'Search and filter specialized coding, abacus, and robotics courses designed for foundational, middle, and high school learners.',
+    badge: 'Course Offerings',
+    is_visible: true,
+    sort_order: 9,
+    content_json: {}
+  },
+  {
+    id: 'sec-school-partnerships',
+    key: 'school_partnerships',
+    name: 'School Partnerships & Turnkey Labs',
+    title: 'Turnkey STEAM Labs & School Partnerships',
+    subtitle: 'Deploy comprehensive robotics hardware sets, certified trainers, and structured curricula directly into your school timetable.',
+    badge: 'Institutional Synergy & Turnkey Labs',
+    is_visible: true,
+    sort_order: 10,
+    content_json: {}
+  },
+  {
     id: 'sec-inquiry-cta',
     key: 'inquiry_cta',
     name: 'Direct Inquiry Call-to-Action',
@@ -121,7 +154,7 @@ export const DEFAULT_SECTIONS: SiteSection[] = [
     subtitle: 'Visit our center in Butwal-11, Kalikanagar or call us directly to schedule a free demonstration class.',
     badge: 'Enroll Now',
     is_visible: true,
-    sort_order: 8,
+    sort_order: 11,
     content_json: {
       phone: '+977 9857058666',
       altPhone: '9703606381',

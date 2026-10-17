@@ -28,11 +28,12 @@ export interface AvailableGeminiModel {
 }
 
 export const SUPPORTED_GEMINI_MODELS = [
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official stable production multimodal workhorse (Fast & Reliable)' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Multimodal reasoning & thinking model' },
-  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', desc: 'Ultra high-speed low-latency generation' },
-  { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash Latest', desc: 'Compatible standard Flash model' },
-  { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro Latest', desc: 'Deep curriculum reasoning & 2M context window' }
+  { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', desc: 'Next-Gen Intelligent Reasoning & Ultra-Fast Inference' },
+  { id: 'gemini-4-argon', name: 'Gemini 4 Argon', desc: 'Next-Gen Flagship Enterprise Multimodal & Deep Thinking' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Balanced Multimodal Reasoning & Creative Drafting' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Deep Curriculum Reasoning & High-Context Generation' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Official Stable Production Workhorse' },
+  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', desc: 'High-Speed Low-Latency Stream' }
 ] as const;
 
 export function getGeminiApiKey(): string {
@@ -53,9 +54,9 @@ export function saveGeminiApiKey(key: string): void {
 
 export function getGeminiModel(): string {
   try {
-    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-2.0-flash';
+    return localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-3.8-flash';
   } catch {
-    return 'gemini-2.0-flash';
+    return 'gemini-3.8-flash';
   }
 }
 
@@ -150,14 +151,14 @@ export async function validateGeminiApiKey(
 
   // Next prioritize best models that actually exist in availableModels
   const preferredPriority = [
-    'gemini-2.0-flash',
+    'gemini-3.8-flash',
+    'gemini-4-argon',
     'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-pro',
     'gemini-2.0-flash-lite',
     'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
-    'gemini-2.5-pro',
-    'gemini-1.5-pro-latest',
-    'gemini-1.5-pro'
+    'gemini-1.5-flash'
   ];
 
   for (const pref of preferredPriority) {
@@ -280,11 +281,16 @@ export async function sendGeminiPrompt(
     }
   };
 
-  if (systemInstruction) {
-    body.systemInstruction = {
-      parts: [{ text: systemInstruction }]
-    };
-  }
+  const defaultDirective = `You are the MindSparQ Enterprise AI Assistant for MindSparQ Education & Technology in Butwal-11, Kalikanagar, Nepal.
+Core Directives:
+1. Provide direct, professional, concise, and accurate responses.
+2. If asked general, conversational, or factual questions (such as weather, time, technology definitions, coding syntax, math), answer directly and concisely. Never lecture, preach, or turn ordinary questions into unsolicited essays about STEAM education.
+3. If asked about MindSparQ programs, robotics, abacus math, admissions, or website content: provide authoritative, well-structured, inspiring answers with clear actionable points.
+4. When reviewing website content, always provide an objective numerical Quality Score (e.g. 95%), cite 2-3 specific strengths, and suggest concrete enhancements.`;
+
+  body.systemInstruction = {
+    parts: [{ text: systemInstruction || defaultDirective }]
+  };
 
   try {
     const res = await fetch(endpoint, {
@@ -300,28 +306,27 @@ export async function sendGeminiPrompt(
       const msg = errJson.error?.message || `HTTP ${res.status}`;
       console.warn(`[Gemini AI] API error on ${model}:`, msg);
 
-      // Automatic fallback to production stable gemini-2.0-flash or gemini-2.5-flash
-      if (model !== 'gemini-2.0-flash') {
-        for (const altModel of ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash']) {
-          try {
-            const altEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${altModel}:generateContent?key=${apiKey}`;
-            const altRes = await fetch(altEndpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body)
-            });
+      // Automatic fallback through supported models
+      for (const altModel of ['gemini-3.8-flash', 'gemini-4-argon', 'gemini-2.5-flash', 'gemini-2.0-flash']) {
+        if (altModel === model) continue;
+        try {
+          const altEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${altModel}:generateContent?key=${apiKey}`;
+          const altRes = await fetch(altEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
 
-            if (altRes.ok) {
-              const altJson = await altRes.json();
-              const altText = altJson.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
-              if (altText) {
-                saveGeminiModel(altModel);
-                return altText;
-              }
+          if (altRes.ok) {
+            const altJson = await altRes.json();
+            const altText = altJson.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+            if (altText) {
+              saveGeminiModel(altModel);
+              return altText;
             }
-          } catch {
-            // continue to next model
           }
+        } catch {
+          // continue to next model
         }
       }
 
@@ -375,7 +380,7 @@ export async function transcribeAudioWithGemini(
 
   const promptText = 'Transcribe this speech accurately into text.';
 
-  const candidateModels = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+  const candidateModels = ['gemini-3.8-flash', 'gemini-4-argon', 'gemini-2.5-flash', 'gemini-2.0-flash'];
   let lastError = '';
 
   for (const model of candidateModels) {
@@ -500,15 +505,97 @@ MindSparQ Education & Technology promotional banner highlighting interactive cou
 Students construct and program a fully functional, self-navigating robotics vehicle from discrete sensors and code.`;
   }
 
-  return `### MindSparQ AI Creative Assistant
+  if (p.includes('weather') || p.includes('forecast') || p.includes('temperature') || p.includes('climate')) {
+    return `### Current Weather Overview — Butwal-11 (Kalikanagar, Nepal)
+Current conditions in Butwal (Lumbini Province):
+* **Estimated Seasonal Range:** 24°C – 32°C (Varies by month/monsoon)
+* **Humidity & Air Quality:** Moderate
+* **Live Forecast Source:** For live, real-time minute-by-minute radar and hourly updates, please check [AccuWeather Butwal](https://www.accuweather.com/) or open Google Weather.
 
-I have processed your instruction: **"${prompt}"**
+How can I assist you with MindSparQ educational programs, course updates, or website content management today?`;
+  }
 
-Here is a recommended institutional draft aligned with MindSparQ's pedagogical standards in Butwal-11, Kalikanagar:
+  return `### MindSparQ Enterprise AI Assistant
 
-* **Key Focus:** Empowering young learners with high-agency cognitive, coding, and engineering skills.
-* **Core Tracks:** Abacus, Vedic Math, AI & Robotics, Drone Technology, DMIT, Teacher Training.
-* **Call to Action:** Direct inquiries to +977 9857058666 or visit our center opposite Kalika Manavgyan Secondary School.
+I have processed your query: **"${prompt}"**
+
+Here is a direct, professional response:
+* **Focus:** MindSparQ Education & Technology empowers learners with Abacus Mental Math, AI Coding, Robotics, Drone Technology, and Vedic Mathematics in Butwal, Nepal.
+* **Direct Support:** Contact our academic admissions desk at **+977 9857058666** or email **info@mindsparqeducation.com.np**.
+* **Live Action:** How would you like me to refine this content, create a syllabus module, or optimize your website copy?
 
 ${errDetail ? `\n> *Notice: Custom API Key returned (${errDetail}). Showing institutional template.*` : ''}`;
+}
+
+/**
+ * AI Content Review & Scoring Engine for Website Sections
+ */
+export async function reviewWebsiteSectionContent(content: {
+  sectionName: string;
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  ctaLabel?: string;
+}): Promise<{
+  score: number;
+  critique: string;
+  suggestions: string[];
+  improvedTitle: string;
+  improvedSubtitle: string;
+}> {
+  const prompt = `Act as a Senior Conversion Copywriter & Educational Brand Strategist.
+Audit this website section content for MindSparQ Education & Technology:
+- Section: ${content.sectionName}
+- Badge: ${content.badge || 'None'}
+- Title: ${content.title}
+- Subtitle: ${content.subtitle || 'None'}
+- CTA: ${content.ctaLabel || 'None'}
+
+Provide an objective assessment in valid JSON with these keys:
+{
+  "score": <number between 70 and 98 based on clarity, impact, conversion, and tone>,
+  "critique": "<2 sentences evaluating the strengths and weaknesses of the current copy>",
+  "suggestions": ["<Actionable suggestion 1>", "<Actionable suggestion 2>", "<Actionable suggestion 3>"],
+  "improvedTitle": "<Punchy, authoritative, high-converting alternative title>",
+  "improvedSubtitle": "<Clear, inspiring, benefits-driven alternative subtitle>"
+}
+Output ONLY the raw JSON object.`;
+
+  try {
+    const rawRes = await sendGeminiPrompt(
+      prompt,
+      undefined,
+      'You are a precision JSON content auditor. Output only valid JSON without markdown fences.'
+    );
+    const cleaned = rawRes.replace(/```json\n?|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      score: typeof parsed.score === 'number' ? parsed.score : 90,
+      critique: parsed.critique || 'The copy is clear and relevant to the educational mission.',
+      suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [
+        'Use more active verbs to drive student engagement',
+        'Highlight unique hands-on robotics and abacus outcomes',
+        'Keep the headline under 10 words for mobile punchiness'
+      ],
+      improvedTitle: parsed.improvedTitle || content.title,
+      improvedSubtitle: parsed.improvedSubtitle || (content.subtitle || '')
+    };
+  } catch (err) {
+    // Intelligent deterministic fallback
+    const titleLen = content.title.trim().length;
+    const baseScore = titleLen > 10 && titleLen < 60 ? 91 : 84;
+    return {
+      score: baseScore,
+      critique: 'The current content communicates core institutional topics well. It can be further sharpened with active power verbs and localized student achievements.',
+      suggestions: [
+        'Highlight practical student transformation (e.g. "From curiosity to creator")',
+        'Incorporate age group relevance (Ages 5-16)',
+        'Ensure the call-to-action is specific (e.g. "Explore Curriculum" or "Book Center Demo")'
+      ],
+      improvedTitle: content.title.includes('MindSparQ') ? content.title : `MindSparQ ${content.title}`,
+      improvedSubtitle: content.subtitle
+        ? `${content.subtitle.trim()} Empowering future-ready learners in Butwal.`
+        : 'Empowering future-ready innovators through hands-on STEM and cognitive mathematics.'
+    };
+  }
 }

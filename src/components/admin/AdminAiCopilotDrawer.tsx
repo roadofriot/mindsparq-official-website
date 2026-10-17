@@ -79,8 +79,9 @@ export const AdminAiCopilotDrawer: React.FC = () => {
 
     try {
       const systemPrompt = `You are the MindSparQ AI Admin Copilot in Butwal-11, Kalikanagar.
-Provide concise, copy-paste-ready drafts for school administrators (titles, descriptions, excerpt teasers, SEO tags, workshop agendas, and announcements).
-Avoid unnecessary conversational filler. Deliver high-impact, inspiring content.`;
+1. Provide direct, concise, copy-paste-ready drafts for school administrators (titles, descriptions, excerpt teasers, SEO tags, workshop agendas, and announcements).
+2. If asked general, conversational, or factual questions (such as weather, time, factual queries, tech definitions), answer directly, accurately, and concisely without lecturing or preaching.
+3. Avoid unnecessary conversational filler. Deliver high-impact, inspiring content.`;
 
       const responseText = await sendGeminiPrompt(query, undefined, systemPrompt);
 

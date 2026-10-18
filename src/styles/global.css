@@ -333,6 +333,31 @@ select {
   box-sizing: border-box;
 }
 
+/* Light Theme Input Contrast */
+:root[data-theme="light"] .input-field,
+:root[data-theme="light"] .form-input,
+:root[data-theme="light"] .form-textarea,
+:root[data-theme="light"] .form-select,
+:root[data-theme="light"] input[type="text"],
+:root[data-theme="light"] input[type="email"],
+:root[data-theme="light"] input[type="password"],
+:root[data-theme="light"] input[type="search"],
+:root[data-theme="light"] input[type="tel"],
+:root[data-theme="light"] input[type="url"],
+:root[data-theme="light"] input[type="number"],
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] select {
+  background-color: var(--color-surface) !important;
+  color: #14213D !important;
+  border-color: var(--color-border) !important;
+}
+
+:root[data-theme="light"] .input-field::placeholder,
+:root[data-theme="light"] input::placeholder,
+:root[data-theme="light"] textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
 /* Dark Theme Input Contrast */
 :root[data-theme="dark"] .input-field,
 :root[data-theme="dark"] .form-input,
@@ -368,8 +393,8 @@ input[type="password"]:focus,
 input[type="search"]:focus,
 textarea:focus,
 select:focus {
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+  border-color: var(--color-brand-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-focus-ring) !important;
 }
 
 .form-textarea {

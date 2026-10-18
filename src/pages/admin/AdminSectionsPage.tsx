@@ -630,14 +630,14 @@ Provide:
               maxWidth: '680px',
               padding: '24px',
               borderRadius: '20px',
-              backgroundColor: 'var(--color-surface, #0b1329)',
+              backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-text, #ffffff)' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary, #14213D)' }}>
                   Add New Custom Section Block
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-text-secondary, #94a3b8)' }}>
@@ -692,7 +692,7 @@ Provide:
                     <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: `${item.color}25`, color: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={20} />
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text, #ffffff)' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-primary, #14213D)' }}>
                       {item.label}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--color-text-secondary, #94a3b8)', lineHeight: 1.4 }}>
@@ -735,7 +735,7 @@ Provide:
               height: '92vh',
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: 'var(--color-surface, #0b1329)',
+              backgroundColor: 'var(--color-surface)',
               borderRadius: '20px',
               border: '1px solid var(--color-border)',
               overflow: 'hidden'
@@ -755,7 +755,7 @@ Provide:
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--color-text, #ffffff)' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--color-text-primary, #14213D)' }}>
                     Customize: {editingSection.name}
                   </h2>
                   <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', fontWeight: 700 }}>
@@ -1212,7 +1212,7 @@ Provide:
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Sparkles size={18} style={{ color: '#6366f1' }} />
-                        <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text, #ffffff)' }}>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-primary, #14213D)' }}>
                           Gemini AI Copy Audit & Quality Score
                         </span>
                       </div>

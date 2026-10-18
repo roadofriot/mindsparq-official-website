@@ -63,7 +63,7 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
         style={{
           fontSize: headingSize(),
           fontWeight: 800,
-          color: 'var(--color-text-primary, #ffffff)',
+          color: 'var(--color-text-primary, #14213D)',
           lineHeight: 1.25,
           margin: '0 0 var(--space-3, 12px)'
         }}
@@ -192,8 +192,8 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px',
-                  backgroundColor: 'var(--color-surface, #0b1329)',
-                  border: '1px solid var(--color-border, rgba(255, 255, 255, 0.08))'
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)'
                 }}
               >
                 <div
@@ -210,7 +210,7 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
                 >
                   {getIcon(feat.icon)}
                 </div>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0, color: 'var(--color-text, #ffffff)' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0, color: 'var(--color-text-primary, #14213D)' }}>
                   {feat.title}
                 </h3>
                 <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-secondary, #94a3b8)', lineHeight: 1.6, margin: 0 }}>
@@ -296,8 +296,8 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
                   padding: 'var(--space-6, 24px)',
                   textAlign: 'center',
                   borderRadius: 'var(--radius-xl, 16px)',
-                  backgroundColor: 'var(--color-surface, #0b1329)',
-                  border: '1px solid var(--color-border, rgba(56, 189, 248, 0.2))'
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)'
                 }}
               >
                 <div
@@ -379,8 +379,8 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
                   style={{
                     borderRadius: 'var(--radius-xl, 14px)',
                     overflow: 'hidden',
-                    border: '1px solid var(--color-border, rgba(255, 255, 255, 0.08))',
-                    backgroundColor: 'var(--color-surface, #0b1329)'
+                    border: '1px solid var(--color-border)',
+                    backgroundColor: 'var(--color-surface)'
                   }}
                 >
                   <button
@@ -396,7 +396,7 @@ export const CustomBlockRenderer: React.FC<CustomBlockRendererProps> = ({ sectio
                       border: 'none',
                       cursor: 'pointer',
                       textAlign: 'left',
-                      color: 'var(--color-text, #ffffff)',
+                      color: 'var(--color-text-primary, #14213D)',
                       fontSize: '1rem',
                       fontWeight: 600,
                       gap: '12px'

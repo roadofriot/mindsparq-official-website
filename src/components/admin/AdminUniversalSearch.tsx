@@ -170,9 +170,9 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
         style={{
           width: '100%',
           maxWidth: '720px',
-          backgroundColor: 'var(--color-surface, #0b1329)',
+          backgroundColor: 'var(--color-surface)',
           borderRadius: '16px',
-          border: '1px solid var(--color-border, rgba(56, 189, 248, 0.25))',
+          border: '1px solid var(--color-border)',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
           overflow: 'hidden',
           display: 'flex',
@@ -189,13 +189,13 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            backgroundColor: 'rgba(255, 255, 255, 0.02)'
+            backgroundColor: 'transparent'
           }}
         >
           {loading ? (
-            <Loader2 size={20} className="spin" style={{ color: 'var(--color-primary-500, #38bdf8)' }} />
+            <Loader2 size={20} className="spin" style={{ color: 'var(--color-brand-primary, #2457d6)' }} />
           ) : (
-            <Search size={20} style={{ color: 'var(--color-primary-500, #38bdf8)' }} />
+            <Search size={20} style={{ color: 'var(--color-brand-primary, #2457d6)' }} />
           )}
 
           <input
@@ -210,7 +210,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
               border: 'none',
               outline: 'none',
               fontSize: '16px',
-              color: 'var(--color-text, #ffffff)',
+              color: 'var(--color-text-primary, #14213D)',
               fontWeight: 500
             }}
           />
@@ -225,7 +225,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'var(--color-text-secondary, #94a3b8)',
+                color: 'var(--color-text-secondary, #64748B)',
                 cursor: 'pointer',
                 padding: '4px',
                 display: 'flex',
@@ -242,12 +242,13 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              padding: '2px 8px',
+              padding: '3px 8px',
               borderRadius: '6px',
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              backgroundColor: 'var(--color-surface-elevated, #F1F5F9)',
+              border: '1px solid var(--color-border, #E2E8F0)',
               fontSize: '11px',
               fontWeight: 700,
-              color: 'var(--color-text-secondary, #94a3b8)'
+              color: 'var(--color-text-secondary, #64748B)'
             }}
           >
             ESC
@@ -263,7 +264,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
             padding: '10px 16px',
             overflowX: 'auto',
             borderBottom: '1px solid var(--color-border, rgba(255, 255, 255, 0.06))',
-            backgroundColor: 'rgba(0, 0, 0, 0.15)'
+            backgroundColor: 'var(--color-surface-elevated, #F8FAFC)'
           }}
         >
           {CATEGORY_TABS.map((tab) => {
@@ -280,9 +281,9 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                   fontWeight: isActive ? 600 : 500,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
-                  border: isActive ? '1px solid #38bdf8' : '1px solid transparent',
-                  backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                  color: isActive ? '#38bdf8' : 'var(--color-text-secondary, #94a3b8)',
+                  border: isActive ? '1px solid var(--color-brand-primary, #2457D6)' : '1px solid transparent',
+                  backgroundColor: isActive ? 'var(--color-brand-primary-soft, rgba(36, 87, 214, 0.12))' : 'transparent',
+                  color: isActive ? 'var(--color-brand-primary, #2457D6)' : 'var(--color-text-secondary, #64748B)',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -311,7 +312,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                 justifyContent: 'center',
                 padding: '48px 24px',
                 textAlign: 'center',
-                color: 'var(--color-text-secondary, #94a3b8)'
+                color: 'var(--color-text-secondary, #64748B)'
               }}
             >
               <div
@@ -319,33 +320,33 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                   width: '48px',
                   height: '48px',
                   borderRadius: '50%',
-                  backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                  backgroundColor: 'var(--color-brand-primary-soft, rgba(36, 87, 214, 0.1))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: '16px',
-                  color: '#38bdf8'
+                  color: 'var(--color-brand-primary, #2457D6)'
                 }}
               >
                 <Command size={24} />
               </div>
-              <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--color-text, #ffffff)' }}>
+              <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--color-text-primary, #14213D)', fontWeight: 700 }}>
                 Universal MindSparQ Deep Search
               </h4>
-              <p style={{ margin: 0, fontSize: '13px', maxWidth: '420px', lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: '13px', maxWidth: '420px', lineHeight: 1.5, color: 'var(--color-text-secondary, #64748B)' }}>
                 Search across all educational curriculum, blog markdown text, homepage sections, faculty profiles, and media assets in one place.
               </p>
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
                   Try: "Abacus"
                 </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
                   Try: "Robotics"
                 </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
                   Try: "Kalikanagar"
                 </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
                   Try: "VAK"
                 </span>
               </div>
@@ -359,13 +360,13 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                 justifyContent: 'center',
                 padding: '48px 24px',
                 textAlign: 'center',
-                color: 'var(--color-text-secondary, #94a3b8)'
+                color: 'var(--color-text-secondary, #64748B)'
               }}
             >
-              <p style={{ fontSize: '14px', margin: '0 0 4px 0', color: 'var(--color-text, #ffffff)' }}>
+              <p style={{ fontSize: '14px', margin: '0 0 4px 0', color: 'var(--color-text-primary, #14213D)', fontWeight: 600 }}>
                 No matching content found for "{query}"
               </p>
-              <p style={{ fontSize: '12px', margin: 0 }}>
+              <p style={{ fontSize: '12px', margin: 0, color: 'var(--color-text-muted, #94A3B8)' }}>
                 Try searching with fewer words or change the category filter above.
               </p>
             </div>
@@ -386,8 +387,8 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '12px',
-                      backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
-                      border: isSelected ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                      backgroundColor: isSelected ? 'var(--color-brand-primary-soft, rgba(36, 87, 214, 0.08))' : 'transparent',
+                      border: isSelected ? '1px solid var(--color-brand-primary, #2457D6)' : '1px solid transparent',
                       transition: 'background-color 0.1s ease'
                     }}
                   >
@@ -412,7 +413,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                     {/* Content details */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '2px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text, #ffffff)' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary, #14213D)' }}>
                           {item.title}
                         </div>
                         <span
@@ -434,7 +435,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                       <div
                         style={{
                           fontSize: '11px',
-                          color: '#38bdf8',
+                          color: 'var(--color-brand-primary, #2457D6)',
                           fontWeight: 500,
                           marginBottom: '4px',
                           display: 'flex',
@@ -443,14 +444,14 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                         }}
                       >
                         <span>Location:</span>
-                        <span style={{ color: 'var(--color-text-secondary, #cbd5e1)' }}>{item.locationPath}</span>
+                        <span style={{ color: 'var(--color-text-secondary, #64748B)' }}>{item.locationPath}</span>
                       </div>
 
                       {/* Snippet */}
                       <div
                         style={{
                           fontSize: '12px',
-                          color: 'var(--color-text-secondary, #94a3b8)',
+                          color: 'var(--color-text-secondary, #64748B)',
                           lineHeight: 1.4,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -467,7 +468,7 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                     <div
                       style={{
                         alignSelf: 'center',
-                        color: isSelected ? '#38bdf8' : 'rgba(255,255,255,0.2)',
+                        color: isSelected ? 'var(--color-brand-primary, #2457D6)' : 'var(--color-text-muted, #94A3B8)',
                         paddingLeft: '4px'
                       }}
                     >
@@ -484,23 +485,23 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
         <div
           style={{
             padding: '10px 16px',
-            backgroundColor: 'rgba(0, 0, 0, 0.25)',
-            borderTop: '1px solid var(--color-border, rgba(255, 255, 255, 0.06))',
+            backgroundColor: 'var(--color-surface-elevated, #F1F5F9)',
+            borderTop: '1px solid var(--color-border, #E2E8F0)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: '11px',
-            color: 'var(--color-text-secondary, #64748b)'
+            color: 'var(--color-text-secondary, #64748B)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span><strong style={{ color: '#94a3b8' }}>↑↓</strong> Navigate</span>
-            <span><strong style={{ color: '#94a3b8' }}>Enter</strong> Open & Edit</span>
-            <span><strong style={{ color: '#94a3b8' }}>Esc</strong> Close</span>
+            <span><strong style={{ color: 'var(--color-text-primary, #14213D)' }}>↑↓</strong> Navigate</span>
+            <span><strong style={{ color: 'var(--color-text-primary, #14213D)' }}>Enter</strong> Open & Edit</span>
+            <span><strong style={{ color: 'var(--color-text-primary, #14213D)' }}>Esc</strong> Close</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Sparkles size={12} style={{ color: '#38bdf8' }} />
+            <Sparkles size={12} style={{ color: 'var(--color-brand-primary, #2457D6)' }} />
             <span>MindSparQ Deep Content Index</span>
           </div>
         </div>

@@ -15,11 +15,14 @@ import { useVoiceInput } from '../../hooks/useVoiceInput';
 import {
   sendGeminiPrompt,
   GeminiMessage,
-  getGeminiModel
+  getGeminiModel,
+  getIntentLoadingStatus,
+  classifyPromptIntent
 } from '../../services/geminiService';
 
 export const AdminAiCopilotDrawer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [lastQuery, setLastQuery] = useState('');
   const [messages, setMessages] = useState<GeminiMessage[]>([
     {
       id: 'welcome-copilot',
@@ -75,13 +78,14 @@ export const AdminAiCopilotDrawer: React.FC = () => {
 
     setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
+    setLastQuery(query);
     setIsGenerating(true);
 
     try {
-      const systemPrompt = `You are the MindSparQ AI Admin Copilot in Butwal-11, Kalikanagar.
-1. Provide direct, concise, copy-paste-ready drafts for school administrators (titles, descriptions, excerpt teasers, SEO tags, workshop agendas, and announcements).
-2. If asked general, conversational, or factual questions (such as weather, time, factual queries, tech definitions), answer directly, accurately, and concisely without lecturing or preaching.
-3. Avoid unnecessary conversational filler. Deliver high-impact, inspiring content.`;
+      const intent = classifyPromptIntent(query);
+      const systemPrompt = intent === 'deep_drafting'
+        ? `You are the MindSparQ AI Admin Copilot in Butwal-11, Kalikanagar. Provide structured, copy-paste-ready drafts for school administrators (lesson plans, agendas, blog outlines).`
+        : undefined;
 
       const responseText = await sendGeminiPrompt(query, undefined, systemPrompt);
 
@@ -322,7 +326,7 @@ export const AdminAiCopilotDrawer: React.FC = () => {
 
             {isGenerating && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)', fontSize: '0.8125rem' }}>
-                <Loader2 size={16} className="animate-spin" /> Thinking & drafting...
+                <Loader2 size={16} className="animate-spin" /> {getIntentLoadingStatus(lastQuery, 'Copilot')}
               </div>
             )}
             <div ref={messagesEndRef} />

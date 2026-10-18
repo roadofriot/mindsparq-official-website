@@ -27,7 +27,9 @@ import {
   getGeminiModel,
   saveGeminiModel,
   validateGeminiApiKey,
-  SUPPORTED_GEMINI_MODELS
+  SUPPORTED_GEMINI_MODELS,
+  getIntentLoadingStatus,
+  classifyPromptIntent
 } from '../../services/geminiService';
 
 export const AdminAiAssistantPage: React.FC = () => {
@@ -43,6 +45,7 @@ export const AdminAiAssistantPage: React.FC = () => {
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [lastPromptForStatus, setLastPromptForStatus] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Multimodal image attachment state
@@ -144,17 +147,21 @@ export const AdminAiAssistantPage: React.FC = () => {
 
     setMessages((prev) => [...prev, newUserMsg]);
     setInputPrompt('');
+    setLastPromptForStatus(query);
     const imagePayload = attachedImage ? { data: attachedImage.data, mimeType: attachedImage.mimeType } : undefined;
     setAttachedImage(null);
     setIsGenerating(true);
 
     try {
-      const systemInstruction = `You are the MindSparQ Enterprise Operations & Creative AI Assistant for MindSparQ Education & Technology in Butwal-11, Kalikanagar, Nepal.
-Core Directives:
-1. Provide direct, razor-sharp, concise, and professional responses.
-2. If asked general, conversational, or factual questions (such as weather, factual queries, technology advice, time, etc.), answer directly, accurately, and concisely. Never lecture, preach, or turn general questions into an unsolicited STEAM classroom essay.
-3. If asked about MindSparQ curriculum, website copy, or educational content: generate high-converting, polished, inspiring Markdown with clear headers, key outcomes, and structured bullets.
-4. When reviewing website content, always provide an objective numerical Quality Score (e.g. 95%), cite 2-3 specific strengths, and suggest concrete enhancements.`;
+      const intent = classifyPromptIntent(query);
+      let systemInstruction: string | undefined = undefined;
+
+      if (intent === 'deep_drafting') {
+        systemInstruction = `You are the MindSparQ Enterprise Creative & Curriculum Director for MindSparQ Education & Technology in Butwal-11, Kalikanagar, Nepal.
+Structure the requested educational curriculum, lesson plan, or blog draft with professional clarity, clear learning outcomes, necessary materials, and structured bullet points.`;
+      } else if (intent === 'content_audit') {
+        systemInstruction = `You are a Senior Conversion Copywriter & Educational Content Auditor for MindSparQ. Provide an objective numerical Quality Score (e.g. 95%), cite 2-3 specific strengths, and suggest concrete enhancements.`;
+      }
 
       const responseText = await sendGeminiPrompt(query, imagePayload, systemInstruction, selectedModel);
 
@@ -448,11 +455,12 @@ Core Directives:
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-text-secondary)', fontSize: '0.8125rem' }}>
             <Loader2 size={16} className="spin" style={{ color: 'var(--color-primary-600)' }} />
             <span>
-              {(
+              {getIntentLoadingStatus(
+                lastPromptForStatus,
                 (dynamicModels.length > 0 ? dynamicModels : SUPPORTED_GEMINI_MODELS).find(
                   (m: any) => m.id === selectedModel
                 )?.name || selectedModel || 'Google Gemini'
-              )} is thinking & drafting educational content...
+              )}
             </span>
           </div>
         )}

@@ -13,12 +13,16 @@ import {
   ArrowRight,
   Sparkles,
   Command,
-  Loader2
+  Loader2,
+  Layout,
+  SlidersVertical,
+  Lightbulb
 } from 'lucide-react';
 import {
   searchAdminContent,
   SearchResultItem,
-  SearchCategory
+  SearchCategory,
+  getMatchingHints
 } from '../../services/searchService';
 
 interface AdminUniversalSearchProps {
@@ -28,13 +32,15 @@ interface AdminUniversalSearchProps {
 
 const CATEGORY_TABS: { key: SearchCategory; label: string }[] = [
   { key: 'all', label: 'All Content' },
+  { key: 'page', label: 'Pages & Elements' },
+  { key: 'settings', label: 'Contact & Settings' },
   { key: 'section', label: 'Homepage Sections' },
   { key: 'course', label: 'Courses' },
   { key: 'blog', label: 'Articles' },
   { key: 'team', label: 'Faculty' },
   { key: 'media', label: 'Media' },
   { key: 'event', label: 'Events' },
-  { key: 'navigation', label: 'Pages' }
+  { key: 'navigation', label: 'Admin Tools' }
 ];
 
 export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOpen, onClose }) => {
@@ -129,6 +135,10 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
+      case 'page':
+        return <Layout size={16} />;
+      case 'settings':
+        return <SlidersVertical size={16} />;
       case 'section':
         return <Layers size={16} />;
       case 'course':
@@ -255,6 +265,51 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
           </div>
         </div>
 
+        {/* Quick Context Hints Pill Bar */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            overflowX: 'auto',
+            padding: '7px 16px',
+            backgroundColor: 'var(--color-surface)',
+            borderBottom: '1px solid var(--color-border)'
+          }}
+        >
+          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, fontWeight: 600 }}>
+            <Lightbulb size={12} style={{ color: 'var(--color-brand-primary)' }} /> Context Hints:
+          </span>
+          {getMatchingHints(query).slice(0, 5).map((h) => (
+            <button
+              key={h.text}
+              type="button"
+              onClick={() => {
+                setQuery(h.text);
+                inputRef.current?.focus();
+              }}
+              style={{
+                background: 'none',
+                border: '1px solid var(--color-border)',
+                borderRadius: '999px',
+                padding: '2px 10px',
+                fontSize: '11px',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                backgroundColor: 'var(--color-surface-elevated)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title={h.description}
+            >
+              <span>{h.label}:</span>
+              <strong style={{ color: 'var(--color-brand-primary)' }}>{h.text}</strong>
+            </button>
+          ))}
+        </div>
+
         {/* Category Filter Tabs */}
         <div
           style={{
@@ -337,18 +392,38 @@ export const AdminUniversalSearch: React.FC<AdminUniversalSearchProps> = ({ isOp
                 Search across all educational curriculum, blog markdown text, homepage sections, faculty profiles, and media assets in one place.
               </p>
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
-                  Try: "Abacus"
-                </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
-                  Try: "Robotics"
-                </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
-                  Try: "Kalikanagar"
-                </span>
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'var(--color-surface-elevated, #F1F5F9)', border: '1px solid var(--color-border, #E2E8F0)', color: 'var(--color-text-secondary, #64748B)' }}>
-                  Try: "VAK"
-                </span>
+                {[
+                  'contact@mindsparqeducation.com.np',
+                  '+977 9857058666',
+                  'Butwal 11, Kalikanagar',
+                  'Abacus',
+                  'Robotics',
+                  'Privacy Policy'
+                ].map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setQuery(term);
+                      inputRef.current?.focus();
+                    }}
+                    style={{
+                      fontSize: '11px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--color-surface-elevated, #F1F5F9)',
+                      border: '1px solid var(--color-border, #E2E8F0)',
+                      color: 'var(--color-text-primary, #14213D)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span>Try:</span>
+                    <strong style={{ color: 'var(--color-brand-primary, #2457D6)' }}>"{term}"</strong>
+                  </button>
+                ))}
               </div>
             </div>
           ) : results.length === 0 && !loading ? (

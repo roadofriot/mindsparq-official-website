@@ -225,6 +225,59 @@ export async function validateGeminiApiKey(
   };
 }
 
+export type PromptIntent = 'greeting' | 'quick_qa' | 'deep_drafting' | 'content_audit' | 'general';
+
+/**
+ * Classifies the user query into operational modes for optimal speed and depth
+ */
+export function classifyPromptIntent(prompt: string): PromptIntent {
+  const p = (prompt || '').trim().toLowerCase();
+  if (!p) return 'general';
+
+  // 1. Greetings & Pleasantries (Fast Path)
+  const greetingRegex = /^(hi|hello|hey|namaste|good\s*(morning|afternoon|evening)|howdy|hola|how\s*are\s*you|k\s*chha|sanchai|thanks|thank\s*you|dhanyabad|bye|goodbye)[\s!.,?]*$/i;
+  const greetingPrefixRegex = /^(hi|hello|hey|namaste)[\s,]/i;
+  if (greetingRegex.test(p) || (p.split(/\s+/).length <= 4 && greetingPrefixRegex.test(p))) {
+    return 'greeting';
+  }
+
+  // 2. Content Audit & Quality Scoring
+  if (/(audit|review|score|evaluate|grade\s*copy|check\s*quality)/i.test(p)) {
+    return 'content_audit';
+  }
+
+  // 3. Deep Educational / Marketing Drafting
+  if (/(lesson\s*plan|curriculum|syllabus|worksheet|rubric|article|blog|quiz|exam|module|table\s*of|framework|study\s*guide)/i.test(p)) {
+    return 'deep_drafting';
+  }
+
+  // 4. Quick Educational / Technical QA
+  if (/^(what\s*is|what\s*are|define|explain\s*briefly|who\s*is|k\s*ho|kasari)\b/i.test(p) || (p.split(/\s+/).length <= 8 && p.endsWith('?'))) {
+    return 'quick_qa';
+  }
+
+  return 'general';
+}
+
+/**
+ * Returns dynamic contextual status label for UI generation indicators
+ */
+export function getIntentLoadingStatus(prompt: string, modelName: string): string {
+  const intent = classifyPromptIntent(prompt);
+  switch (intent) {
+    case 'greeting':
+      return 'Replying...';
+    case 'quick_qa':
+      return `${modelName} is answering your question...`;
+    case 'deep_drafting':
+      return `${modelName} is drafting structured educational content...`;
+    case 'content_audit':
+      return `${modelName} is reviewing & scoring content...`;
+    default:
+      return `${modelName} is thinking...`;
+  }
+}
+
 /**
  * Call Gemini API with configurable model, text and optional image
  */
@@ -236,6 +289,14 @@ export async function sendGeminiPrompt(
 ): Promise<string> {
   const apiKey = getGeminiApiKey();
   const model = selectedModel || getGeminiModel();
+  const intent = classifyPromptIntent(prompt);
+
+  // Fast-Path for simple conversational greetings
+  if (intent === 'greeting' && !base64Image) {
+    if (!apiKey) {
+      return `Namaste! 🙏 Hello! How can I assist you with MindSparQ educational programs, website content, or course updates today?`;
+    }
+  }
 
   if (!apiKey) {
     // Smart institutional fallback generator when key is not yet pasted
@@ -266,6 +327,10 @@ export async function sendGeminiPrompt(
     text: prompt
   });
 
+  // Intent-tailored generation config
+  const maxTokens = intent === 'greeting' ? 120 : intent === 'quick_qa' ? 512 : 2048;
+  const temp = intent === 'greeting' ? 0.7 : intent === 'quick_qa' ? 0.4 : 0.7;
+
   const body: any = {
     contents: [
       {
@@ -274,22 +339,33 @@ export async function sendGeminiPrompt(
       }
     ],
     generationConfig: {
-      temperature: 0.7,
+      temperature: temp,
       topK: 40,
       topP: 0.95,
-      maxOutputTokens: 2048
+      maxOutputTokens: maxTokens
     }
   };
 
-  const defaultDirective = `You are the MindSparQ Enterprise AI Assistant for MindSparQ Education & Technology in Butwal-11, Kalikanagar, Nepal.
+  let activeDirective = systemInstruction;
+  if (!activeDirective) {
+    if (intent === 'greeting') {
+      activeDirective = `You are the friendly, professional MindSparQ AI Assistant for MindSparQ Education & Technology in Butwal, Nepal.
+Respond immediately with a warm, natural 1-2 sentence greeting in the language of the user (Nepali or English).
+Ask how you can assist them today. Do NOT produce essays, lesson plans, or educational outlines for simple greetings.`;
+    } else if (intent === 'quick_qa') {
+      activeDirective = `You are the MindSparQ Educational AI Assistant. Provide a direct, crisp definition and clear, concise explanation with an example. Keep it informative, focused, and under 2-3 brief paragraphs. Do not create an unsolicited long syllabus.`;
+    } else {
+      activeDirective = `You are the MindSparQ Enterprise AI Assistant for MindSparQ Education & Technology in Butwal-11, Kalikanagar, Nepal.
 Core Directives:
 1. Provide direct, professional, concise, and accurate responses.
 2. If asked general, conversational, or factual questions (such as weather, time, technology definitions, coding syntax, math), answer directly and concisely. Never lecture, preach, or turn ordinary questions into unsolicited essays about STEAM education.
 3. If asked about MindSparQ programs, robotics, abacus math, admissions, or website content: provide authoritative, well-structured, inspiring answers with clear actionable points.
 4. When reviewing website content, always provide an objective numerical Quality Score (e.g. 95%), cite 2-3 specific strengths, and suggest concrete enhancements.`;
+    }
+  }
 
   body.systemInstruction = {
-    parts: [{ text: systemInstruction || defaultDirective }]
+    parts: [{ text: activeDirective }]
   };
 
   try {
@@ -438,9 +514,42 @@ export async function transcribeAudioWithGemini(
  */
 function generateInstitutionalAiFallback(prompt: string, _reason: string, errDetail?: string, model?: string): string {
   const p = prompt.toLowerCase();
+  const intent = classifyPromptIntent(prompt);
   const modelName = model
     ? (SUPPORTED_GEMINI_MODELS.find(m => m.id === model)?.name || model)
     : 'Google Gemini';
+
+  // Fast Greeting Response (No essays or unsolicited content drafts)
+  if (intent === 'greeting') {
+    return `Namaste! 🙏 Hello! How can I assist you with MindSparQ today?
+
+Feel free to ask a quick question, explore our STEAM courses (Abacus, Robotics, Python AI), or let me know if you would like me to draft an educational lesson plan or website announcement.`;
+  }
+
+  // Quick QA Definitions
+  if (intent === 'quick_qa') {
+    if (p.includes('ai') || p.includes('artificial intelligence')) {
+      return `### Artificial Intelligence (AI) — Definition & Overview
+
+**Definition:** Artificial Intelligence (AI) refers to computer algorithms capable of performing tasks typically requiring human cognitive faculties—such as visual perception, pattern synthesis, decision logic, and natural language understanding.
+
+At **MindSparQ Education & Technology** (Butwal-11, Kalikanagar), we introduce young minds to AI through hands-on block models, computer vision games, and ethical prompt literacy.`;
+    }
+    if (p.includes('abacus') || p.includes('mental math')) {
+      return `### Abacus Mental Mathematics
+
+**Definition:** The Soroban abacus is a tactile arithmetic instrument utilizing physical bead manipulation to develop visual arithmetic mastery without calculators or paper.
+
+**Key Benefits:** Activates bilateral brain coordination, photographic memory retention, and lightning-fast mental calculation.`;
+    }
+    if (p.includes('robotics')) {
+      return `### Hands-on Robotics & Autonomous Systems
+
+**Definition:** Robotics combines electrical circuitry, physical mechanical assemblies, and code logic to create autonomous or remotely operated machines.
+
+At MindSparQ, students assemble wheeled rovers, wire ultrasonic distance sensors, and program real microcontrollers to solve physical challenges.`;
+    }
+  }
 
   if (p.includes('blog') || p.includes('article')) {
     return `### Article Draft: The Transformative Power of Hands-On STEAM Education in Nepal

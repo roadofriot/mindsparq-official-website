@@ -4,10 +4,14 @@ import { getAllPosts } from './blogService';
 import { getPublicTeamProfiles, DEFAULT_TEAM_PROFILES } from './teamService';
 import { getMediaAssets } from './mediaService';
 import { getAllEvents } from './eventService';
+import { DEFAULT_PAGES_REGISTRY } from './pageService';
+import { siteConfig } from '../content/site';
+import { getActiveSocialLinks } from '../components/ui/SocialLinksBar';
 
 export type SearchCategory =
   | 'all'
   | 'section'
+  | 'page'
   | 'course'
   | 'blog'
   | 'team'
@@ -21,7 +25,7 @@ export interface SearchResultItem {
   title: string;
   subtitle?: string;
   snippet: string;
-  category: 'section' | 'course' | 'blog' | 'team' | 'media' | 'event' | 'navigation' | 'settings';
+  category: 'section' | 'page' | 'course' | 'blog' | 'team' | 'media' | 'event' | 'navigation' | 'settings';
   categoryLabel: string;
   locationPath: string;
   targetRoute: string;
@@ -332,12 +336,153 @@ export async function searchAdminContent(
       }
     }
 
-    // 2. Site Sections & Blocks
+    // 1b. Institutional Contact Details & System Settings
+    if (categoryFilter === 'all' || categoryFilter === 'settings') {
+      const contactSettings = [
+        {
+          id: 'contact-email',
+          title: 'Official Inquiries & Admissions Email',
+          subtitle: `${siteConfig.contact.email} · Official Mailbox`,
+          content: `${siteConfig.contact.email} contact email admissions inquiry student support info data administrator`,
+          snippet: `Official institutional email address: ${siteConfig.contact.email}. Used across Contact Page, Privacy Policy, and Admissions.`,
+          locationPath: 'System Settings > Institutional Contact > Email',
+          targetRoute: '/admin/settings'
+        },
+        {
+          id: 'contact-phone',
+          title: 'Admissions Helpline & WhatsApp Hotline',
+          subtitle: `${siteConfig.contact.phone} · Admissions Desk`,
+          content: `${siteConfig.contact.phone} +977 9857058666 9703606381 phone contact whatsapp hotline call support butwal`,
+          snippet: `Student admissions helpline and WhatsApp support line: ${siteConfig.contact.phone}. Available Sunday – Friday: 9:00 AM – 6:00 PM.`,
+          locationPath: 'System Settings > Institutional Contact > Phone',
+          targetRoute: '/admin/settings'
+        },
+        {
+          id: 'contact-address',
+          title: 'Physical Innovation Lab & Campus Address',
+          subtitle: 'Butwal 11, Kalikanagar, Gyanbhoomi Path, Rupandehi, Nepal',
+          content: 'butwal 11 kalikanagar gyanbhoomi path rupandehi lumbini nepal physical center location opposite kalika manavgyan secondary school robotics lab',
+          snippet: 'Flagship learning academy & robotics lab: Butwal 11, Kalikanagar, Gyanbhoomi Path (Opposite Kalika Manavgyan), Rupandehi, Nepal.',
+          locationPath: 'System Settings > Physical Location > Address',
+          targetRoute: '/admin/settings'
+        }
+      ];
+
+      // Also include active social media links
+      const activeSocials = getActiveSocialLinks();
+      for (const [platform, url] of Object.entries(activeSocials)) {
+        if (url) {
+          contactSettings.push({
+            id: `social-${platform}`,
+            title: `Social Channel: ${platform.toUpperCase()}`,
+            subtitle: `${url} · Verified Channel`,
+            content: `${platform} social link ${url} community updates`,
+            snippet: `Official MindSparQ ${platform} profile: ${url}`,
+            locationPath: `System Settings > Social Links > ${platform.toUpperCase()}`,
+            targetRoute: '/admin/settings'
+          });
+        }
+      }
+
+      for (const item of contactSettings) {
+        const fullSearchable = `${item.title} ${item.subtitle} ${item.content}`.toLowerCase();
+        if (fullSearchable.includes(trimmed)) {
+          const isExactKey = trimmed.includes('contact@') || trimmed.includes('9857058666') || trimmed === 'contact' || trimmed === 'email';
+          const score = computeScore(item.title, item.subtitle, item.content, trimmed) + (isExactKey ? 80 : 25);
+          results.push({
+            id: item.id,
+            title: item.title,
+            subtitle: item.subtitle,
+            snippet: extractContextualSnippet(item.snippet, trimmed),
+            category: 'settings',
+            categoryLabel: 'System Settings',
+            locationPath: item.locationPath,
+            targetRoute: item.targetRoute,
+            badgeColor: '#64748b',
+            matchScore: score
+          });
+        }
+      }
+    }
+
+    // 1c. CMS Standard & Custom Pages with Deep Element-Level Decomposition
+    if (categoryFilter === 'all' || categoryFilter === 'page') {
+      try {
+        for (const [_pageKey, page] of Object.entries(DEFAULT_PAGES_REGISTRY)) {
+          // Page header level
+          const pageSearchable = `${page.name} ${page.title} ${page.subtitle || ''} ${page.route} ${page.seo?.metaTitle || ''} ${page.seo?.metaDescription || ''}`.toLowerCase();
+          if (pageSearchable.includes(trimmed)) {
+            const score = computeScore(page.name, page.title, page.subtitle || '', trimmed);
+            results.push({
+              id: `page-${page.slug}`,
+              title: `${page.name} Page`,
+              subtitle: `Route: ${page.route} · Status: ${page.status}`,
+              snippet: extractContextualSnippet(`${page.title} — ${page.subtitle || page.seo?.metaDescription || ''}`, trimmed),
+              category: 'page',
+              categoryLabel: 'CMS Page',
+              locationPath: `Pages > ${page.name}`,
+              targetRoute: `/admin/pages?edit=${encodeURIComponent(page.slug)}`,
+              badgeColor: '#8b5cf6',
+              matchScore: score + 15
+            });
+          }
+
+          // Deep Element-level parsing inside page sections
+          if (Array.isArray(page.sections)) {
+            for (const sec of page.sections) {
+              const secSearchable = `${sec.title} ${sec.subtitle || ''} ${sec.content || ''} ${sec.badge || ''}`.toLowerCase();
+              if (secSearchable.includes(trimmed)) {
+                const score = computeScore(sec.title, `${page.name} > ${sec.type}`, sec.content, trimmed);
+                results.push({
+                  id: `page-sec-${sec.id}`,
+                  title: `${page.name}: ${sec.title}`,
+                  subtitle: `Element Type: ${sec.type.toUpperCase()} · ${page.route}`,
+                  snippet: extractContextualSnippet(sec.content || sec.subtitle || sec.title, trimmed),
+                  category: 'page',
+                  categoryLabel: 'Page Element',
+                  locationPath: `Pages > ${page.name} > ${sec.title}`,
+                  targetRoute: `/admin/pages?edit=${encodeURIComponent(page.slug)}`,
+                  badgeColor: '#a855f7',
+                  matchScore: score + 20
+                });
+              }
+
+              // Sub-items inside section (e.g. Pillar cards, feature items)
+              if (Array.isArray(sec.items)) {
+                for (const subItem of sec.items) {
+                  const subSearchable = `${subItem.title} ${subItem.description || ''} ${subItem.badge || ''}`.toLowerCase();
+                  if (subSearchable.includes(trimmed)) {
+                    const score = computeScore(subItem.title, `${page.name} > ${sec.title}`, subItem.description || '', trimmed);
+                    results.push({
+                      id: `page-item-${subItem.id}`,
+                      title: `${subItem.title}`,
+                      subtitle: `${page.name} > ${sec.title} (Card)`,
+                      snippet: extractContextualSnippet(`${subItem.title}: ${subItem.description}`, trimmed),
+                      category: 'page',
+                      categoryLabel: 'Element Card',
+                      locationPath: `Pages > ${page.name} > ${sec.title} > ${subItem.title}`,
+                      targetRoute: `/admin/pages?edit=${encodeURIComponent(page.slug)}`,
+                      badgeColor: '#c084fc',
+                      matchScore: score + 18
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[searchService] Error querying CMS pages:', err);
+      }
+    }
+
+    // 2. Site Sections & Blocks with Deep Feature/Card Decomposition
     if (categoryFilter === 'all' || categoryFilter === 'section') {
       try {
         const sections: SiteSection[] = await getSiteSections();
         for (const sec of sections) {
-          const contentStr = JSON.stringify(sec.content_json || {});
+          const cJson = sec.content_json || {};
+          const contentStr = JSON.stringify(cJson);
           const searchable = `${sec.name} ${sec.title} ${sec.subtitle} ${sec.badge || ''} ${contentStr}`.toLowerCase();
 
           if (searchable.includes(trimmed)) {
@@ -354,6 +499,50 @@ export async function searchAdminContent(
               badgeColor: '#0ea5e9',
               matchScore: score
             });
+          }
+
+          // Granular Sub-elements: Feature Grid cards inside section
+          if (Array.isArray(cJson.features)) {
+            for (let fIdx = 0; fIdx < cJson.features.length; fIdx++) {
+              const feat = cJson.features[fIdx];
+              const featSearchable = `${feat.title || ''} ${feat.description || ''}`.toLowerCase();
+              if (featSearchable.includes(trimmed)) {
+                results.push({
+                  id: `sec-${sec.id}-feat-${fIdx}`,
+                  title: `${feat.title || 'Feature Item'}`,
+                  subtitle: `Homepage > ${sec.name} (Feature Card)`,
+                  snippet: extractContextualSnippet(`${feat.title}: ${feat.description}`, trimmed),
+                  category: 'section',
+                  categoryLabel: 'Section Card',
+                  locationPath: `Homepage > ${sec.name} > ${feat.title}`,
+                  targetRoute: `/admin/sections?edit=${encodeURIComponent(sec.key || sec.id)}`,
+                  badgeColor: '#38bdf8',
+                  matchScore: computeScore(feat.title, sec.name, feat.description, trimmed) + 15
+                });
+              }
+            }
+          }
+
+          // Granular Sub-elements: FAQs inside section
+          if (Array.isArray(cJson.faqs)) {
+            for (let qIdx = 0; qIdx < cJson.faqs.length; qIdx++) {
+              const faq = cJson.faqs[qIdx];
+              const faqSearchable = `${faq.question || ''} ${faq.answer || ''}`.toLowerCase();
+              if (faqSearchable.includes(trimmed)) {
+                results.push({
+                  id: `sec-${sec.id}-faq-${qIdx}`,
+                  title: `${faq.question || 'FAQ Item'}`,
+                  subtitle: `Homepage > ${sec.name} (FAQ Accordion)`,
+                  snippet: extractContextualSnippet(faq.answer, trimmed),
+                  category: 'section',
+                  categoryLabel: 'FAQ Item',
+                  locationPath: `Homepage > ${sec.name} > FAQ`,
+                  targetRoute: `/admin/sections?edit=${encodeURIComponent(sec.key || sec.id)}`,
+                  badgeColor: '#0284c7',
+                  matchScore: computeScore(faq.question, sec.name, faq.answer, trimmed) + 15
+                });
+              }
+            }
           }
         }
       } catch (err) {
@@ -512,3 +701,30 @@ export async function searchAdminContent(
     return results;
   }
 }
+
+export interface SearchHint {
+  text: string;
+  label: string;
+  description: string;
+  category: string;
+}
+
+export const POPULAR_SEARCH_HINTS: SearchHint[] = [
+  { text: 'contact@mindsparqeducation.com.np', label: 'Official Email', description: 'Institutional email inquiries & admissions mailbox', category: 'Contact' },
+  { text: '+977 9857058666', label: 'Admissions Helpline', description: 'Direct phone & WhatsApp hotline desk', category: 'Contact' },
+  { text: 'Butwal 11, Kalikanagar', label: 'Campus Location', description: 'Gyanbhoomi Path physical innovation lab address', category: 'Location' },
+  { text: 'Abacus', label: 'Abacus & Mental Math', description: 'Cognitive arithmetic course and progression ladder', category: 'Learning' },
+  { text: 'Robotics', label: 'Robotics & AI Lab', description: 'Autonomous sensor vehicles and hardware lab modules', category: 'Learning' },
+  { text: 'Privacy Policy', label: 'Privacy & Data Protection', description: 'Student safety, data retention, and terms', category: 'Pages' },
+  { text: 'Samay Budhathoki', label: 'Founder & Academic Lead', description: 'Leadership profile, certifications, and research bio', category: 'Faculty' },
+  { text: 'AI Assistant', label: 'AI Studio Copilot', description: 'Gemini direct prompt engine and content generation', category: 'AI' }
+];
+
+export function getMatchingHints(query: string): SearchHint[] {
+  const trimmed = query.trim().toLowerCase();
+  if (!trimmed) return POPULAR_SEARCH_HINTS;
+  return POPULAR_SEARCH_HINTS.filter(
+    h => h.text.toLowerCase().includes(trimmed) || h.label.toLowerCase().includes(trimmed) || h.description.toLowerCase().includes(trimmed)
+  );
+}
+

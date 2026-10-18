@@ -239,7 +239,7 @@ export async function sendGeminiPrompt(
 
   if (!apiKey) {
     // Smart institutional fallback generator when key is not yet pasted
-    return generateInstitutionalAiFallback(prompt, base64Image ? 'with_image' : 'text');
+    return generateInstitutionalAiFallback(prompt, base64Image ? 'with_image' : 'text', undefined, model);
   }
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -321,7 +321,6 @@ Core Directives:
             const altJson = await altRes.json();
             const altText = altJson.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
             if (altText) {
-              saveGeminiModel(altModel);
               return altText;
             }
           }
@@ -330,7 +329,7 @@ Core Directives:
         }
       }
 
-      return generateInstitutionalAiFallback(prompt, 'api_error', msg);
+      return generateInstitutionalAiFallback(prompt, 'api_error', msg, model);
     }
 
     const json = await res.json();
@@ -344,7 +343,7 @@ Core Directives:
     return text;
   } catch (err: any) {
     console.error('[Gemini AI] Network error:', err);
-    return generateInstitutionalAiFallback(prompt, 'network_error', err.message);
+    return generateInstitutionalAiFallback(prompt, 'network_error', err.message, model);
   }
 }
 
@@ -437,8 +436,11 @@ export async function transcribeAudioWithGemini(
 /**
  * Intelligent institutional fallback generator for MindSparQ STEAM education
  */
-function generateInstitutionalAiFallback(prompt: string, _reason: string, errDetail?: string): string {
+function generateInstitutionalAiFallback(prompt: string, _reason: string, errDetail?: string, model?: string): string {
   const p = prompt.toLowerCase();
+  const modelName = model
+    ? (SUPPORTED_GEMINI_MODELS.find(m => m.id === model)?.name || model)
+    : 'Google Gemini';
 
   if (p.includes('blog') || p.includes('article')) {
     return `### Article Draft: The Transformative Power of Hands-On STEAM Education in Nepal
@@ -460,7 +462,7 @@ In a world increasingly driven by machine learning, automated robotics, and digi
 Children who participate in structured maker education demonstrate higher resilience in mathematical problem-solving and an innate curiosity toward engineering disciplines.
 
 ---
-*Note: To enable direct real-time Gemini 2.5 Flash neural generation, paste your Google AI Studio API key in the top settings bar.*`;
+*Note: To enable direct real-time ${modelName} neural generation, paste your Google AI Studio API key in the top settings bar.*`;
   }
 
   if (p.includes('carousel') || p.includes('slide') || p.includes('banner')) {

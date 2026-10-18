@@ -22,12 +22,22 @@ function saveLocalVersions(versions: ContentVersion[]) {
     console.warn('[MindSparQ Versions] Could not save local versions:', err);
   }
 }
+export type SupportedContentType =
+  | 'blog_post'
+  | 'course'
+  | 'program'
+  | 'site_section'
+  | 'section'
+  | 'page'
+  | 'header'
+  | 'footer'
+  | 'theme';
 
 /**
- * Creates an immutable snapshot version of a content entity (Blog Post, Course, Program, etc.)
+ * Creates an immutable snapshot version of a content entity (Blog Post, Course, Program, Page, Header, etc.)
  */
 export async function createContentVersion(
-  contentType: 'blog_post' | 'course' | 'program' | 'site_section',
+  contentType: SupportedContentType,
   contentId: string,
   title: string,
   snapshot: Record<string, unknown>,
@@ -115,7 +125,7 @@ export async function createContentVersion(
  * Retrieves all chronological snapshots for a specific content item
  */
 export async function getContentVersions(
-  contentType: 'blog_post' | 'course' | 'program' | 'site_section',
+  contentType: SupportedContentType,
   contentId: string
 ): Promise<ContentVersion[]> {
   if (isSupabaseConfigured) {
@@ -143,6 +153,39 @@ export async function getContentVersions(
 }
 
 /**
+ * Retrieves all recent versions across all or filtered content types
+ */
+export async function getAllRecentVersions(
+  filterType?: SupportedContentType
+): Promise<ContentVersion[]> {
+  if (isSupabaseConfigured) {
+    try {
+      let query = supabase
+        .from('content_versions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (filterType) {
+        query = query.eq('content_type', filterType);
+      }
+
+      const { data, error } = await query;
+      if (!error && data && data.length > 0) {
+        return data as ContentVersion[];
+      }
+    } catch (err) {
+      console.warn('[MindSparQ Versions] Failed to fetch all remote versions, using local store:', err);
+    }
+  }
+
+  const localList = getLocalVersions();
+  return localList
+    .filter((v) => (filterType ? v.content_type === filterType : true))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+/**
  * Restores a historic snapshot into the active content table
  */
 export async function restoreContentVersion(
@@ -151,39 +194,47 @@ export async function restoreContentVersion(
   try {
     const { content_type, content_id, snapshot } = version;
 
-    if (isSupabaseConfigured) {
-      try {
-        if (content_type === 'blog_post') {
-          const { savePost } = await import('./blogService');
-          const payload = {
-            ...snapshot,
-            id: content_id
-          };
-          const res = await savePost(payload);
-          if (res.error) {
-            console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
-          }
-        } else if (content_type === 'course') {
-          const { saveCourse } = await import('./courseService');
-          const payload = {
-            ...snapshot,
-            id: content_id
-          };
-          const res = await saveCourse(payload);
-          if (res.error) {
-            console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
-          }
-        }
-      } catch (remoteErr) {
-        console.warn('[MindSparQ Versions] Remote restore mutation bypassed:', remoteErr);
+    if (content_type === 'page') {
+      const { restorePageVersion } = await import('./pageService');
+      const res = await restorePageVersion(content_id, snapshot, 'Staff Editor');
+      if (!res.success) throw res.error || new Error('Page restoration failed.');
+    } else if (content_type === 'header' || content_type === 'footer') {
+      const { saveSiteThemeSettings, getSiteThemeSettings } = await import('./siteThemeService');
+      const currentTheme = getSiteThemeSettings();
+      const updatedTheme = {
+        ...currentTheme,
+        [content_type]: snapshot
+      };
+      saveSiteThemeSettings(updatedTheme);
+    } else if (content_type === 'site_section') {
+      const { saveSiteSection } = await import('./siteCustomizerService');
+      const res = await saveSiteSection(snapshot as any);
+      if (!res.success) throw res.error || new Error('Section restoration failed.');
+    } else if (content_type === 'blog_post') {
+      const { savePost } = await import('./blogService');
+      const payload = {
+        ...snapshot,
+        id: content_id
+      };
+      const res = await savePost(payload);
+      if (res.error) {
+        console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
+      }
+    } else if (content_type === 'course') {
+      const { saveCourse } = await import('./courseService');
+      const payload = {
+        ...snapshot,
+        id: content_id
+      };
+      const res = await saveCourse(payload);
+      if (res.error) {
+        console.warn('[MindSparQ Versions] Remote restore sync warning:', res.error.message);
       }
     }
 
-
-
     // Save a new version noting the restoration
     await createContentVersion(
-      content_type,
+      content_type as SupportedContentType,
       content_id,
       version.title,
       snapshot,

@@ -6,10 +6,12 @@ import { programs } from '../content/programs';
 import { ContactFormData, ValidationErrors, validateContactForm } from '../lib/validation';
 import { updatePageSeo } from '../utils/seo';
 import { PageBanner } from '../components/ui/PageBanner';
+import { getPageContent, PageContentData } from '../services/pageService';
 
 export const ContactPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const preselectedProgram = searchParams.get('program') || '';
+  const [pageData, setPageData] = useState<PageContentData | null>(null);
 
   const [formData, setFormData] = useState<ContactFormData>({
     fullName: '',
@@ -24,11 +26,14 @@ export const ContactPage: React.FC = () => {
   const [submissionState, setSubmissionState] = useState<'idle' | 'reviewed'>('idle');
 
   useEffect(() => {
-    updatePageSeo({
-      title: 'Contact MindSparQ | Inquiries & School Partnerships',
-      description: 'Connect with MindSparQ Education & Technology in Butwal, Nepal. Inquire about student enrollment, school partnerships, and STEM workshops.',
-      canonicalPath: '/contact',
-      ogType: 'website'
+    getPageContent('contact', 'published').then((data) => {
+      setPageData(data);
+      updatePageSeo({
+        title: data?.seo?.metaTitle || 'Contact MindSparQ | Inquiries & School Partnerships',
+        description: data?.seo?.metaDescription || 'Connect with MindSparQ Education & Technology in Butwal, Nepal. Inquire about student enrollment, school partnerships, and STEM workshops.',
+        canonicalPath: data?.seo?.canonicalPath || '/contact',
+        ogType: 'website'
+      });
     });
   }, []);
 
@@ -81,9 +86,9 @@ export const ContactPage: React.FC = () => {
       <PageBanner
         eyebrowIcon={<Mail size={14} />}
         eyebrowText="Admissions & Institutional Partnerships"
-        title="Get in Touch with MindSparQ"
-        subtitle="Have questions about student enrollment, batch timings, our Butwal center, or establishing a school STEM club partnership? Reach out to our academic counselors."
-        backgroundImageUrl="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1600&q=80"
+        title={pageData?.title || "Get in Touch with MindSparQ"}
+        subtitle={pageData?.subtitle || "Have questions about student enrollment, batch timings, our Butwal center, or establishing a school STEM club partnership? Reach out to our academic counselors."}
+        backgroundImageUrl={pageData?.heroImageUrl || "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1600&q=80"}
         badges={[
           { icon: <MapPin size={13} />, label: 'Butwal-11, Rupandehi, Nepal', variant: 'primary' },
           { icon: <Phone size={13} />, label: siteConfig.contact.phone || '+977-9800000000', variant: 'neutral' },

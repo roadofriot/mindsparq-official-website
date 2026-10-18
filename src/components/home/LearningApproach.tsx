@@ -10,19 +10,29 @@ const STEP_IMAGES = [
   'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=500&q=80'  // 04 Mentor feedback
 ];
 
-export const LearningApproach: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface LearningApproachProps {
+  section?: SiteSection;
+}
+
+export const LearningApproach: React.FC<LearningApproachProps> = ({ section }) => {
   const { t, language } = useLanguage();
 
+  const eyebrowText = section?.badge || t('section.approach.eyebrow', 'Pedagogical Framework');
+  const titleText = section?.title || t('section.approach.title', 'Our Learning Approach');
+  const subtitleText = section?.subtitle || t('section.approach.subtitle', 'Real understanding is built through guided experience, purposeful repetition, and constructive curiosity—not rote memorization or unverified promises.');
+
   return (
-    <section className="section-spacing" style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}>
+    <section className="section-spacing" style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }} data-cms-section={section?.id || 'learning_approach'}>
       <div className="container">
         <div className="section-header">
-          <div className="eyebrow eyebrow-teal">
-            <span>{t('section.approach.eyebrow', 'Pedagogical Framework')}</span>
+          <div className="eyebrow eyebrow-teal" data-cms-field="badge">
+            <span>{eyebrowText}</span>
           </div>
-          <h2>{t('section.approach.title', 'Our Learning Approach')}</h2>
-          <p>
-            {t('section.approach.subtitle', 'Real understanding is built through guided experience, purposeful repetition, and constructive curiosity—not rote memorization or unverified promises.')}
+          <h2 data-cms-field="title">{titleText}</h2>
+          <p data-cms-field="subtitle">
+            {subtitleText}
           </p>
         </div>
 

@@ -91,6 +91,8 @@ export const AdminUsersPage: React.FC = () => {
       owner: 0,
       admin: 0,
       editor: 0,
+      designer: 0,
+      seo_manager: 0,
       contributor: 0,
       learner: 0
     };

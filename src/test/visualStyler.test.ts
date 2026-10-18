@@ -61,7 +61,7 @@ describe('WordPress-Grade Visual Section & Layout Studio', () => {
     const saveRes = await saveSiteSection(customBlock);
     expect(saveRes.success).toBe(true);
 
-    const reloaded = await getSiteSections();
+    const reloaded = await getSiteSections('draft');
     const found = reloaded.find((s) => s.id === customBlock.id);
     expect(found).toBeDefined();
     expect(found?.layout_style?.containerWidth).toBe('wide');
@@ -73,13 +73,13 @@ describe('WordPress-Grade Visual Section & Layout Studio', () => {
     const customBlock = createCustomBlockTemplate('stats_strip');
     await saveSiteSection(customBlock);
 
-    let reloaded = await getSiteSections();
+    let reloaded = await getSiteSections('draft');
     expect(reloaded.some((s) => s.id === customBlock.id)).toBe(true);
 
     const deleted = await deleteSiteSection(customBlock.id);
     expect(deleted).toBe(true);
 
-    reloaded = await getSiteSections();
+    reloaded = await getSiteSections('draft');
     expect(reloaded.some((s) => s.id === customBlock.id)).toBe(false);
   });
 });

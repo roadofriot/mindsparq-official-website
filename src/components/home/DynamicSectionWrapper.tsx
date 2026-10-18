@@ -58,13 +58,16 @@ export const DynamicSectionWrapper: React.FC<DynamicSectionWrapperProps> = ({ se
   return (
     <section
       id={`section-${section.key}`}
+      data-style-id={`section.${section.key}`}
       style={{
         position: 'relative',
-        width: '100%',
-        minHeight,
-        paddingTop,
-        paddingBottom,
-        backgroundColor: style.backgroundColor || 'transparent',
+        width: 'var(--ms-w, 100%)',
+        minHeight: 'var(--ms-min-h, ' + minHeight + ')',
+        paddingTop: 'var(--ms-p-top, ' + paddingTop + ')',
+        paddingBottom: 'var(--ms-p-bottom, ' + paddingBottom + ')',
+        marginTop: 'var(--ms-m-top, 0px)',
+        marginBottom: 'var(--ms-m-bottom, 0px)',
+        backgroundColor: 'var(--ms-bg, ' + (style.backgroundColor || 'transparent') + ')',
         backgroundImage: style.backgroundGradient
           ? style.backgroundGradient
           : hasBgImage
@@ -90,14 +93,15 @@ export const DynamicSectionWrapper: React.FC<DynamicSectionWrapperProps> = ({ se
 
       {/* Center Layout Container */}
       <div
+        data-style-id={`section.${section.key}.container`}
         style={{
           position: 'relative',
           zIndex: 2,
           width: '100%',
-          maxWidth,
+          maxWidth: 'var(--ms-max-w, ' + maxWidth + ')',
           margin: '0 auto',
-          paddingLeft: 'var(--space-4, 16px)',
-          paddingRight: 'var(--space-4, 16px)',
+          paddingLeft: 'var(--ms-p-left, var(--space-4, 16px))',
+          paddingRight: 'var(--ms-p-right, var(--space-4, 16px))',
           boxSizing: 'border-box'
         }}
       >

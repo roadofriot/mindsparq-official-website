@@ -10,11 +10,22 @@ const PILLAR_IMAGES = [
   'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80'  // Teacher & School Enablement
 ];
 
-export const FocusStrip: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface FocusStripProps {
+  section?: SiteSection;
+}
+
+export const FocusStrip: React.FC<FocusStripProps> = ({ section }) => {
   const { t, language } = useLanguage();
+
+  const eyebrowText = section?.badge || t('section.pillars.eyebrow', 'Our 4 Core Pillars');
+  const titleText = section?.title || t('section.pillars.title', 'Next-Gen Cognitive & Tech Foundation');
+  const subtitleText = section?.subtitle || t('section.pillars.subtitle', 'From mental arithmetic to autonomous robotics, we prepare young minds for tomorrow.');
 
   return (
     <section 
+      data-cms-section={section?.id || 'focus_strip'}
       style={{
         borderTop: '1px solid var(--color-border)',
         borderBottom: '1px solid var(--color-border)',
@@ -25,6 +36,7 @@ export const FocusStrip: React.FC = () => {
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
           <span
+            data-cms-field="badge"
             style={{
               fontSize: 'var(--font-xs)',
               fontWeight: 700,
@@ -33,13 +45,13 @@ export const FocusStrip: React.FC = () => {
               letterSpacing: '0.08em'
             }}
           >
-            {t('section.pillars.eyebrow', 'Our 4 Core Pillars')}
+            {eyebrowText}
           </span>
-          <h2 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, margin: 'var(--space-2) 0', color: 'var(--color-text)' }}>
-            {t('section.pillars.title', 'Next-Gen Cognitive & Tech Foundation')}
+          <h2 data-cms-field="title" style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, margin: 'var(--space-2) 0', color: 'var(--color-text)' }}>
+            {titleText}
           </h2>
-          <p style={{ fontSize: 'var(--font-sm)', color: 'var(--color-text-secondary)', maxWidth: '640px', margin: '0 auto' }}>
-            {t('section.pillars.subtitle', 'From mental arithmetic to autonomous robotics, we prepare young minds for tomorrow.')}
+          <p data-cms-field="subtitle" style={{ fontSize: 'var(--font-sm)', color: 'var(--color-text-secondary)', maxWidth: '640px', margin: '0 auto' }}>
+            {subtitleText}
           </p>
         </div>
 

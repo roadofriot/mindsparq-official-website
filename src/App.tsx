@@ -47,9 +47,13 @@ const AdminAiAssistantPage = lazy(() => import('./pages/admin/AdminAiAssistantPa
 const AdminSectionsPage = lazy(() => import('./pages/admin/AdminSectionsPage').then((m) => ({ default: m.AdminSectionsPage })));
 const AdminDesignPage = lazy(() => import('./pages/admin/AdminDesignPage').then((m) => ({ default: m.AdminDesignPage })));
 const AdminAdsPage = lazy(() => import('./pages/admin/AdminAdsPage').then((m) => ({ default: m.AdminAdsPage })));
+const AdminWebsiteBuilderPage = lazy(() => import('./pages/admin/AdminWebsiteBuilderPage').then((m) => ({ default: m.AdminWebsiteBuilderPage })));
+const AdminPagesManagerPage = lazy(() => import('./pages/admin/AdminPagesManagerPage').then((m) => ({ default: m.AdminPagesManagerPage })));
+const AdminRevisionsPage = lazy(() => import('./pages/admin/AdminRevisionsPage').then((m) => ({ default: m.AdminRevisionsPage })));
+const AdminHelpCenterPage = lazy(() => import('./pages/admin/AdminHelpCenterPage').then((m) => ({ default: m.AdminHelpCenterPage })));
 const PreviewPage = lazy(() => import('./pages/PreviewPage').then((m) => ({ default: m.PreviewPage })));
 import { applyDesignSettingsToDOM } from './services/siteCustomizerService';
-
+import { useStyleOverrides } from './hooks/useStyleOverrides';
 
 const RouteLoadingSpinner: React.FC = () => (
   <div
@@ -77,6 +81,8 @@ export const App: React.FC = () => {
   useEffect(() => {
     applyDesignSettingsToDOM();
   }, []);
+
+  useStyleOverrides();
 
   return (
     <ThemeProvider>
@@ -152,6 +158,12 @@ export const App: React.FC = () => {
                 }
               >
                 <Route index element={<AdminDashboardPage />} />
+                <Route path="help" element={<AdminHelpCenterPage />} />
+                <Route path="builder" element={<AdminWebsiteBuilderPage />} />
+                <Route path="pages" element={<AdminPagesManagerPage />} />
+                <Route path="revisions" element={<AdminRevisionsPage />} />
+                <Route path="header" element={<AdminDesignPage />} />
+                <Route path="footer" element={<AdminDesignPage />} />
                 <Route path="ai-assistant" element={<AdminAiAssistantPage />} />
                 <Route path="sections" element={<AdminSectionsPage />} />
                 <Route path="design" element={<AdminDesignPage />} />

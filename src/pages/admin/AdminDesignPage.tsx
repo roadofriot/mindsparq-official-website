@@ -29,6 +29,7 @@ import {
   Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AccessibleHint } from '../../components/ui/AccessibleHint';
 
 type ActiveTab = 'header' | 'footer' | 'typography' | 'preview';
 type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
@@ -161,14 +162,18 @@ export const AdminDesignPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Link to="/" target="_blank" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <ExternalLink size={15} />
-            <span>View Live Site</span>
-          </Link>
-          <button type="button" onClick={handleResetDefaults} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <RotateCcw size={15} />
-            <span>Reset Defaults</span>
-          </button>
+          <AccessibleHint text="Open live public website in a new browser tab" shortcut="Alt+V">
+            <Link to="/" target="_blank" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <ExternalLink size={15} />
+              <span>View Live Site</span>
+            </Link>
+          </AccessibleHint>
+          <AccessibleHint text="Restore header, footer, and styling back to factory defaults" shortcut="Alt+R">
+            <button type="button" onClick={handleResetDefaults} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <RotateCcw size={15} />
+              <span>Reset Defaults</span>
+            </button>
+          </AccessibleHint>
         </div>
       </div>
 

@@ -2,9 +2,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Cpu, Terminal, Sparkles, Layers, ArrowRight } from 'lucide-react';
 
-export const AiRoboticsFeature: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface AiRoboticsFeatureProps {
+  section?: SiteSection;
+}
+
+export const AiRoboticsFeature: React.FC<AiRoboticsFeatureProps> = ({ section }) => {
+  const eyebrowText = section?.badge || 'Technology & Future Skills';
+  const titleText = section?.title || 'Connecting Coding, Electronics, and Creative Thinking';
+  const descText = section?.subtitle || 'In an era powered by intelligent computing, our robotics and coding pathways help young learners move from passive consumers of technology to confident problem creators and engineers.';
+
   return (
     <section 
+      data-cms-section={section?.id || 'ai_robotics_feature'}
       className="section-spacing"
       style={{
         backgroundColor: 'var(--color-surface)',
@@ -24,15 +35,15 @@ export const AiRoboticsFeature: React.FC = () => {
         >
           {/* Text Side */}
           <div>
-            <div className="eyebrow eyebrow-teal">
+            <div className="eyebrow eyebrow-teal" data-cms-field="badge">
               <Cpu size={14} />
-              <span>Technology & Future Skills</span>
+              <span>{eyebrowText}</span>
             </div>
-            <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }}>
-              Connecting Coding, Electronics, and Creative Thinking
+            <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }} data-cms-field="title">
+              {titleText}
             </h2>
-            <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>
-              In an era powered by intelligent computing, our robotics and coding pathways help young learners move from passive consumers of technology to confident problem creators and engineers.
+            <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }} data-cms-field="subtitle">
+              {descText}
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>

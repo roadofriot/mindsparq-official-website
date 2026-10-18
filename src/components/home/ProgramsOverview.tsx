@@ -6,20 +6,30 @@ import { ProgramIcon } from '../ui/ProgramIcon';
 import { ExpandableText } from '../ui/ExpandableText';
 import { useLanguage } from '../../context/LanguageContext';
 
-export const ProgramsOverview: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface ProgramsOverviewProps {
+  section?: SiteSection;
+}
+
+export const ProgramsOverview: React.FC<ProgramsOverviewProps> = ({ section }) => {
   const { language, t } = useLanguage();
   const isNe = language === 'ne';
 
+  const eyebrowText = section?.badge || t('section.programs.eyebrow', 'Specialized Programs');
+  const titleText = section?.title || t('section.programs.title', 'Structured Learning for Every Stage');
+  const subtitleText = section?.subtitle || t('section.programs.subtitle', 'From cognitive mathematical reasoning to modern robotics, our curricula are crafted to spark inquiry and reinforce core problem-solving capability.');
+
   return (
-    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }} data-cms-section={section?.id || 'programs_overview'}>
       <div className="container">
         <div className="section-header">
-          <div className="eyebrow">
-            <span>{t('section.programs.eyebrow', 'Specialized Programs')}</span>
+          <div className="eyebrow" data-cms-field="badge">
+            <span>{eyebrowText}</span>
           </div>
-          <h2>{t('section.programs.title', 'Structured Learning for Every Stage')}</h2>
-          <p>
-            {t('section.programs.subtitle', 'From cognitive mathematical reasoning to modern robotics, our curricula are crafted to spark inquiry and reinforce core problem-solving capability.')}
+          <h2 data-cms-field="title">{titleText}</h2>
+          <p data-cms-field="subtitle">
+            {subtitleText}
           </p>
         </div>
 

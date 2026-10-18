@@ -23,17 +23,22 @@ import { siteConfig } from '../content/site';
 import { learningPillars, whoWeSupport, digitalEcosystemModules } from '../content/programs';
 import { updatePageSeo } from '../utils/seo';
 import { PageBanner } from '../components/ui/PageBanner';
+import { getPageContent, PageContentData } from '../services/pageService';
 
 export const AboutPage: React.FC = () => {
   const { hash } = useLocation();
   const [profileLanguage, setProfileLanguage] = useState<'en' | 'np'>('en');
+  const [pageData, setPageData] = useState<PageContentData | null>(null);
 
   useEffect(() => {
-    updatePageSeo({
-      title: 'About MindSparQ | Empowering Minds & Sparking Innovation',
-      description: 'Learn about MindSparQ Education & Technology, our mission, pedagogical philosophy, leadership, and digital learning ecosystem in Butwal, Nepal.',
-      canonicalPath: '/about',
-      ogType: 'website'
+    getPageContent('about', 'published').then((data) => {
+      setPageData(data);
+      updatePageSeo({
+        title: data?.seo?.metaTitle || 'About MindSparQ | Empowering Minds & Sparking Innovation',
+        description: data?.seo?.metaDescription || 'Learn about MindSparQ Education & Technology, our mission, pedagogical philosophy, leadership, and digital learning ecosystem in Butwal, Nepal.',
+        canonicalPath: data?.seo?.canonicalPath || '/about',
+        ogType: 'website'
+      });
     });
   }, []);
 
@@ -52,9 +57,9 @@ export const AboutPage: React.FC = () => {
       <PageBanner
         eyebrowIcon={<Compass size={14} />}
         eyebrowText="Institutional Profile & Vision"
-        title="Empowering Minds, Sparking Innovation"
-        subtitle={`${siteConfig.name} is an education and technology initiative based in Butwal, Nepal. We integrate foundational cognitive faculties—Abacus, Mental Math, Vedic Mathematics, and Bilingual Penmanship—with forward-looking technological competencies in AI, Coding, Robotics, and digital platforms.`}
-        backgroundImageUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1600&q=80"
+        title={pageData?.title || "Empowering Minds, Sparking Innovation"}
+        subtitle={pageData?.subtitle || `${siteConfig.name} is an education and technology initiative based in Butwal, Nepal. We integrate foundational cognitive faculties—Abacus, Mental Math, Vedic Mathematics, and Bilingual Penmanship—with forward-looking technological competencies in AI, Coding, Robotics, and digital platforms.`}
+        backgroundImageUrl={pageData?.heroImageUrl || "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1600&q=80"}
         badges={[
           { label: 'Education • Innovation • AI • STEM • Digital Learning', variant: 'primary' },
           { icon: <MapPin size={13} />, label: 'Butwal-11, Gyanbhoomi Path, Rupandehi, Nepal', variant: 'neutral' }

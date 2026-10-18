@@ -3,9 +3,23 @@ import { Link } from 'react-router-dom';
 import { MapPin, ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { siteConfig } from '../../content/site';
 
-export const AboutSnippet: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface AboutSnippetProps {
+  section?: SiteSection;
+}
+
+export const AboutSnippet: React.FC<AboutSnippetProps> = ({ section }) => {
+  const content = section?.content_json || {};
+  const eyebrowText = section?.badge || 'About MindSparQ';
+  const headlineText = section?.title || 'Empowering Minds, Sparking Innovation in Nepal';
+  const paragraph1 = content.paragraph1 || (section?.subtitle ? section.subtitle : `${siteConfig.name} is dedicated to modernizing supplementary education. By uniting mental math mastery (Abacus & Vedic Mathematics) with 21st-century technology competencies (AI literacy, coding, and robotics), we equip students with the durable analytical mindset necessary for a rapidly evolving world.`);
+  const paragraph2 = content.paragraph2 || `Headquartered at ${siteConfig.location.fullFormatted}, our programs serve individual learners, family cohorts, and school partnerships seeking elevated learning experiences.`;
+  const locationText = content.location || siteConfig.location.fullFormatted;
+  const founderText = content.founder || siteConfig.founder.name;
+
   return (
-    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }} data-cms-section={section?.id || 'about_snippet'}>
       <div className="container">
         <div 
           className="card"
@@ -26,17 +40,17 @@ export const AboutSnippet: React.FC = () => {
             className="about-snippet-grid"
           >
             <div>
-              <div className="eyebrow">
-                <span>About MindSparQ</span>
+              <div className="eyebrow" data-cms-field="badge">
+                <span>{eyebrowText}</span>
               </div>
-              <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }}>
-                Empowering Minds, Sparking Innovation in Nepal
+              <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }} data-cms-field="title">
+                {headlineText}
               </h2>
-              <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }}>
-                {siteConfig.name} is dedicated to modernizing supplementary education. By uniting mental math mastery (Abacus & Vedic Mathematics) with 21st-century technology competencies (AI literacy, coding, and robotics), we equip students with the durable analytical mindset necessary for a rapidly evolving world.
+              <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 'var(--space-4)' }} data-cms-field="paragraph1">
+                {paragraph1}
               </p>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 'var(--space-6)' }}>
-                Headquartered at <strong>{siteConfig.location.fullFormatted}</strong>, our programs serve individual learners, family cohorts, and school partnerships seeking elevated learning experiences.
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 'var(--space-6)' }} data-cms-field="paragraph2">
+                {paragraph2}
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
@@ -76,9 +90,9 @@ export const AboutSnippet: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
                 <MapPin size={16} style={{ color: 'var(--color-brand-primary)', flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <strong>Registered Center:</strong> {siteConfig.location.fullFormatted}
+                  <strong>Registered Center:</strong> <span data-cms-field="location">{locationText}</span>
                   <div style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                    Founder & CEO: {siteConfig.founder.name}
+                    Founder & CEO: <span data-cms-field="founder">{founderText}</span>
                   </div>
                 </div>
               </div>

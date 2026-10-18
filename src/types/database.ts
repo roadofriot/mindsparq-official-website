@@ -1,4 +1,22 @@
-export type RoleKey = 'super_admin' | 'owner' | 'admin' | 'editor' | 'contributor' | 'learner';
+export type RoleKey = 'super_admin' | 'owner' | 'admin' | 'editor' | 'designer' | 'seo_manager' | 'contributor' | 'learner';
+
+export interface CmsDocument<T = Record<string, unknown>> {
+  key: string;
+  data: T;
+  version: number;
+  published_at: string;
+  published_by?: string | null;
+  published_by_name?: string | null;
+}
+
+export interface CmsDraft<T = Record<string, unknown>> {
+  key: string;
+  data: T;
+  base_version: number;
+  updated_at: string;
+  updated_by?: string | null;
+  updated_by_name?: string | null;
+}
 
 export interface Profile {
   id: string;
@@ -246,7 +264,7 @@ export interface AuditLog {
 
 export interface ContentVersion {
   id: string;
-  content_type: 'blog_post' | 'course' | 'program' | 'site_section';
+  content_type: 'blog_post' | 'course' | 'program' | 'site_section' | 'section' | 'page' | 'header' | 'footer' | 'theme';
   content_id: string;
   version_number: number;
   title: string;

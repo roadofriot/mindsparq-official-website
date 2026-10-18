@@ -102,6 +102,22 @@ export const ROLE_DEFINITIONS: Record<RoleKey, RoleDefinition> = {
     level: 2,
     description: 'Educator and author. Can create drafts and upload teaching media, but cannot publish directly to the live site.'
   },
+  designer: {
+    key: 'designer',
+    label: 'Design & Brand Lead',
+    badgeColor: '#ec4899',
+    badgeBg: 'rgba(236, 72, 153, 0.15)',
+    level: 3,
+    description: 'Theme & visual builder lead. Can customize branding, visual sections, typography, and styling tokens.'
+  },
+  seo_manager: {
+    key: 'seo_manager',
+    label: 'SEO & Growth Manager',
+    badgeColor: '#10b981',
+    badgeBg: 'rgba(16, 185, 129, 0.15)',
+    level: 3,
+    description: 'Search visibility & analytics specialist. Can manage metadata, structured schemas, sitemaps, and redirects.'
+  },
   learner: {
     key: 'learner',
     label: 'Learner',
@@ -135,6 +151,23 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Capability[]> = {
     'courses.manage',
     'events.manage',
     'comments.moderate'
+  ],
+  designer: [
+    'content.read',
+    'content.create',
+    'content.edit.own',
+    'content.edit.any',
+    'content.publish',
+    'media.upload',
+    'settings.manage'
+  ],
+  seo_manager: [
+    'content.read',
+    'content.create',
+    'content.edit.own',
+    'content.edit.any',
+    'content.publish',
+    'settings.manage'
   ],
   admin: [
     'content.read',
@@ -207,7 +240,7 @@ export function hasCapability(roles: RoleKey[], capability: Capability): boolean
  * Check if the user has staff access (contributor, editor, admin, owner, or super_admin)
  */
 export function isStaffRole(roles: RoleKey[]): boolean {
-  return roles.some((r) => ['contributor', 'editor', 'admin', 'owner', 'super_admin'].includes(r));
+  return roles.some((r) => ['contributor', 'editor', 'designer', 'seo_manager', 'admin', 'owner', 'super_admin'].includes(r));
 }
 
 /**

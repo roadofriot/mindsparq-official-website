@@ -83,7 +83,7 @@ describe('Permissions & Role-Based Access Control (RBAC)', () => {
 
   it('exposes ROLE_DEFINITIONS with strict hierarchy tiers and protection markers', () => {
     const roleKeys = Object.keys(ROLE_DEFINITIONS);
-    expect(roleKeys.length).toBe(6);
+    expect(roleKeys.length).toBe(8);
 
     const superAdminDef = ROLE_DEFINITIONS['super_admin'];
     const ownerDef = ROLE_DEFINITIONS['owner'];

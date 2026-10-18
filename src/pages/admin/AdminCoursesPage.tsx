@@ -15,6 +15,7 @@ import { createContentVersion } from '../../services/versionService';
 import { Course, CourseModule, Lesson } from '../../types/database';
 import { Plus, Edit2, Trash2, BookOpen, Video, FileText, ChevronRight, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField';
+import { AccessibleHint } from '../../components/ui/AccessibleHint';
 
 
 export const AdminCoursesPage: React.FC = () => {
@@ -398,13 +399,15 @@ export const AdminCoursesPage: React.FC = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => handleOpenCourseModal()}
-              className="btn btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
-            >
-              <Plus size={16} /> Create Course
-            </button>
+            <AccessibleHint text="Add a new curriculum course with syllabus and modules" shortcut="Alt+N">
+              <button
+                onClick={() => handleOpenCourseModal()}
+                className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+              >
+                <Plus size={16} /> Create Course
+              </button>
+            </AccessibleHint>
           </div>
 
           <div className="admin-table-container" style={{ padding: 'var(--space-2)' }}>
@@ -477,48 +480,59 @@ export const AdminCoursesPage: React.FC = () => {
                       </td>
                       <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-                          <Link
-                            to={`/preview?type=course&id=${c.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Device Frame Live Preview (Desktop, Tablet, Mobile)"
-                            style={{
-                              padding: '4px 8px',
-                              fontSize: 'var(--font-xs)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              color: '#38bdf8',
-                              backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                              borderRadius: 'var(--radius-sm)',
-                              textDecoration: 'none',
-                              fontWeight: 500
-                            }}
-                          >
-                            <Eye size={13} />
-                            <span>Preview</span>
-                          </Link>
-                          <button
-                            onClick={() => handleSelectCourse(c)}
-                            className="btn btn-secondary"
-                            style={{ padding: '4px 8px', fontSize: 'var(--font-xs)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
-                          >
-                            <span>Curriculum</span>
-                            <ChevronRight size={14} />
-                          </button>
+                          <AccessibleHint text="Live preview in device simulator (Desktop, Tablet, Mobile)">
+                            <Link
+                              to={`/preview?type=course&id=${c.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: 'var(--font-xs)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                color: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                                borderRadius: 'var(--radius-sm)',
+                                textDecoration: 'none',
+                                fontWeight: 500
+                              }}
+                            >
+                              <Eye size={13} />
+                              <span>Preview</span>
+                            </Link>
+                          </AccessibleHint>
 
-                          <button
-                            onClick={() => handleOpenCourseModal(c)}
-                            style={{ background: 'none', border: 'none', color: 'var(--color-primary-600)', cursor: 'pointer', padding: '4px' }}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCourse(c.id, c.title)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <AccessibleHint text="Manage modules and lesson videos for this course">
+                            <button
+                              onClick={() => handleSelectCourse(c)}
+                              className="btn btn-secondary"
+                              style={{ padding: '4px 8px', fontSize: 'var(--font-xs)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+                            >
+                              <span>Curriculum</span>
+                              <ChevronRight size={14} />
+                            </button>
+                          </AccessibleHint>
+
+                          <AccessibleHint text="Edit course title, description, badge, fee, and metadata">
+                            <button
+                              onClick={() => handleOpenCourseModal(c)}
+                              style={{ background: 'none', border: 'none', color: 'var(--color-primary-600)', cursor: 'pointer', padding: '4px' }}
+                              aria-label={`Edit ${c.title}`}
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                          </AccessibleHint>
+
+                          <AccessibleHint text="Permanently delete this course and its lesson structure">
+                            <button
+                              onClick={() => handleDeleteCourse(c.id, c.title)}
+                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                              aria-label={`Delete ${c.title}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </AccessibleHint>
                         </div>
                       </td>
                     </tr>

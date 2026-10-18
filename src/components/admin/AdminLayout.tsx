@@ -23,10 +23,15 @@ import {
   Layers,
   Palette,
   UserCheck,
-  Search
+  Search,
+  Compass,
+  History,
+  Globe,
+  HelpCircle
 } from 'lucide-react';
 import { AdminAiCopilotDrawer } from './AdminAiCopilotDrawer';
 import { AdminUniversalSearch } from './AdminUniversalSearch';
+import { AccessibleHint } from '../ui/AccessibleHint';
 
 export const AdminLayout: React.FC = () => {
   const { user, profile, roles, isOwner, isAdmin, isSuperAdmin } = useAuth();
@@ -48,9 +53,15 @@ export const AdminLayout: React.FC = () => {
 
   const navLinks = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
-    { label: 'AI Studio & Chatbot', href: '/admin/ai-assistant', icon: Sparkles },
-    { label: 'Visual Section Customizer', href: '/admin/sections', icon: Layers },
+    { label: 'Help & User Manual', href: '/admin/help', icon: HelpCircle },
+    { label: 'Website Builder', href: '/admin/builder', icon: Compass },
+    { label: 'Pages Directory', href: '/admin/pages', icon: FileText },
+    { label: 'Revision History', href: '/admin/revisions', icon: History },
+    { label: 'Header & Navigation', href: '/admin/header', icon: Globe },
+    { label: 'Footer & Contacts', href: '/admin/footer', icon: Sliders },
     { label: 'Theme & Layout Studio', href: '/admin/design', icon: Palette },
+    { label: 'Visual Section Customizer', href: '/admin/sections', icon: Layers },
+    { label: 'AI Studio & Chatbot', href: '/admin/ai-assistant', icon: Sparkles },
     { label: 'Homepage Carousel', href: '/admin/carousel', icon: Sliders },
     { label: 'Ad Rails & Promotions', href: '/admin/ads', icon: Sparkles },
     { label: 'Blog & Articles', href: '/admin/blog', icon: FileText },
@@ -256,48 +267,50 @@ export const AdminLayout: React.FC = () => {
 
           {/* Universal Admin Content Search Trigger Bar */}
           <div style={{ flex: 1, maxWidth: '480px', margin: '0 var(--space-2)' }}>
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="admin-top-search-trigger"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '7px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--color-border)',
-                backgroundColor: 'var(--color-bg)',
-                color: 'var(--color-text-secondary)',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                <Search size={15} style={{ color: 'var(--color-primary-500, #38bdf8)', flexShrink: 0 }} />
-                <span className="search-placeholder-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  Search all content, courses, blogs, sections...
-                </span>
-              </div>
-              <kbd
+            <AccessibleHint content="Universal Search (Ctrl+K): Search all content, sections, blogs, courses, and guides" shortcut="Ctrl K" placement="bottom">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="admin-top-search-trigger"
                 style={{
-                  display: 'inline-flex',
+                  width: '100%',
+                  display: 'flex',
                   alignItems: 'center',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--color-surface)',
+                  justifyContent: 'space-between',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
                   border: '1px solid var(--color-border)',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  color: 'var(--color-text-muted)',
-                  marginLeft: '8px',
-                  flexShrink: 0
+                  backgroundColor: 'var(--color-bg)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '13px',
+                  cursor: 'pointer'
                 }}
               >
-                Ctrl K
-              </kbd>
-            </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <Search size={15} style={{ color: 'var(--color-primary-500, #38bdf8)', flexShrink: 0 }} />
+                  <span className="search-placeholder-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Search all content, courses, blogs, sections...
+                  </span>
+                </div>
+                <kbd
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: 'var(--color-text-muted)',
+                    marginLeft: '8px',
+                    flexShrink: 0
+                  }}
+                >
+                  Ctrl K
+                </kbd>
+              </button>
+            </AccessibleHint>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>

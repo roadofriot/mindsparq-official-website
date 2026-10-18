@@ -70,6 +70,8 @@ drop policy if exists "Only owners and admins can delete roles" on public.user_r
 drop policy if exists "Super Admins can manage all roles" on public.user_roles;
 drop policy if exists "Admins can manage non-privileged roles" on public.user_roles;
 drop policy if exists "Admins can delete non-privileged roles" on public.user_roles;
+drop policy if exists "Admins can assign non-privileged staff roles" on public.user_roles;
+drop policy if exists "Admins can revoke non-privileged staff roles" on public.user_roles;
 
 create policy "Super Admins can manage all roles"
   on public.user_roles for all

@@ -238,11 +238,25 @@ export const PALETTE_CONFIGS: Record<GlobalDesignSettings['brandPalette'], { pri
 };
 
 /**
- * Fetch all configurable homepage sections
+ * Fetch all configurable homepage sections with draft/published separation
  */
-export async function getSiteSections(): Promise<SiteSection[]> {
+export async function getSiteSections(mode: 'published' | 'draft' = 'published'): Promise<SiteSection[]> {
   try {
-    // 1. Try cloud database if configured
+    // 1. Try unified CMS store
+    try {
+      const { getPublishedDocument, getDraftDocument } = await import('./cmsStore');
+      const doc = mode === 'draft'
+        ? await getDraftDocument('sections.homepage', { sections: [] })
+        : await getPublishedDocument('sections.homepage', { sections: [] });
+
+      if (doc && doc.data && Array.isArray((doc.data as any).sections) && (doc.data as any).sections.length > 0) {
+        return (doc.data as any).sections as SiteSection[];
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Try legacy cloud database if configured
     if (isSupabaseConfigured) {
       const { data, error } = await supabase
         .from('site_sections')
@@ -254,8 +268,9 @@ export async function getSiteSections(): Promise<SiteSection[]> {
       }
     }
 
-    // 2. Local storage cache
-    const cached = localStorage.getItem(STORAGE_KEY_SECTIONS);
+    // 3. Local storage cache
+    const cacheKey = mode === 'draft' ? `${STORAGE_KEY_SECTIONS}_draft` : STORAGE_KEY_SECTIONS;
+    const cached = localStorage.getItem(cacheKey);
     if (cached) {
       return JSON.parse(cached);
     }
@@ -267,12 +282,14 @@ export async function getSiteSections(): Promise<SiteSection[]> {
 }
 
 /**
- * Save an updated section
+ * Save section draft (Staff operation, does not affect public visitors until published)
  */
-export async function saveSiteSection(section: SiteSection): Promise<{ success: boolean; error?: Error }> {
+export async function saveSiteSection(
+  section: SiteSection,
+  options?: { autoPublish?: boolean; editorName?: string; changeSummary?: string }
+): Promise<{ success: boolean; error?: Error }> {
   try {
-    // Save to local storage
-    const currentSections = await getSiteSections();
+    const currentSections = await getSiteSections('draft');
     const index = currentSections.findIndex((s) => s.id === section.id || s.key === section.key);
     let updated: SiteSection[];
     if (index >= 0) {
@@ -281,10 +298,32 @@ export async function saveSiteSection(section: SiteSection): Promise<{ success: 
     } else {
       updated = [...currentSections, section];
     }
-    localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(updated));
+    const cacheKey = options?.autoPublish ? STORAGE_KEY_SECTIONS : `${STORAGE_KEY_SECTIONS}_draft`;
+    localStorage.setItem(cacheKey, JSON.stringify(updated));
+    if (options?.autoPublish) {
+      localStorage.setItem(`${STORAGE_KEY_SECTIONS}_draft`, JSON.stringify(updated));
+    }
 
-    // Persist to Supabase if available
-    if (isSupabaseConfigured) {
+    // Persist as draft in cmsStore
+    try {
+      const { saveDraftDocument, publishDocument } = await import('./cmsStore');
+      await saveDraftDocument('sections.homepage', { sections: updated }, options?.editorName);
+
+      // If explicitly asked to auto-publish (e.g. from automated restore)
+      if (options?.autoPublish) {
+        await publishDocument('sections.homepage', { sections: updated }, {
+          publisherName: options.editorName,
+          contentType: 'site_section',
+          title: 'Homepage Sections',
+          changeSummary: options.changeSummary || `Published section: ${section.name || section.title}`
+        });
+      }
+    } catch {
+      // ignore
+    }
+
+    // Persist to Supabase site_sections table if available and publishing
+    if (isSupabaseConfigured && options?.autoPublish) {
       const { error } = await supabase
         .from('site_sections')
         .upsert({
@@ -296,6 +335,8 @@ export async function saveSiteSection(section: SiteSection): Promise<{ success: 
           badge: section.badge,
           is_visible: section.is_visible,
           sort_order: section.sort_order,
+          block_type: section.block_type || 'default',
+          layout_style: section.layout_style || DEFAULT_SECTION_LAYOUT,
           content_json: section.content_json,
           updated_at: new Date().toISOString()
         });
@@ -314,17 +355,68 @@ export async function saveSiteSection(section: SiteSection): Promise<{ success: 
 }
 
 /**
- * Reorder sections
+ * Publish all homepage section drafts to production
+ */
+export async function publishSiteSections(
+  publisherName?: string,
+  changeSummary?: string
+): Promise<{ success: boolean; version: number; error?: Error }> {
+  try {
+    const draftSections = await getSiteSections('draft');
+    localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(draftSections));
+
+    const { publishDocument } = await import('./cmsStore');
+    const res = await publishDocument('sections.homepage', { sections: draftSections }, {
+      publisherName: publisherName || 'Staff Publisher',
+      contentType: 'site_section',
+      title: 'Homepage Sections',
+      changeSummary: changeSummary || 'Published homepage section updates to production'
+    });
+
+    if (isSupabaseConfigured) {
+      for (const item of draftSections) {
+        await supabase.from('site_sections').upsert({
+          id: item.id,
+          key: item.key,
+          name: item.name,
+          title: item.title,
+          subtitle: item.subtitle,
+          badge: item.badge,
+          is_visible: item.is_visible,
+          sort_order: item.sort_order,
+          block_type: item.block_type || 'default',
+          layout_style: item.layout_style || DEFAULT_SECTION_LAYOUT,
+          content_json: item.content_json,
+          updated_at: new Date().toISOString()
+        });
+      }
+    }
+
+    return res;
+  } catch (err) {
+    return { success: false, version: 0, error: err as Error };
+  }
+}
+
+/**
+ * Reorder sections in draft
  */
 export async function reorderSiteSections(orderedIds: string[]): Promise<boolean> {
   try {
-    const current = await getSiteSections();
+    const current = await getSiteSections('draft');
     const updated = current.map((sec) => {
       const newOrder = orderedIds.indexOf(sec.id);
       return newOrder >= 0 ? { ...sec, sort_order: newOrder + 1 } : sec;
     }).sort((a, b) => a.sort_order - b.sort_order);
 
-    localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(updated));
+    localStorage.setItem(`${STORAGE_KEY_SECTIONS}_draft`, JSON.stringify(updated));
+
+    try {
+      const { saveDraftDocument } = await import('./cmsStore');
+      await saveDraftDocument('sections.homepage', { sections: updated });
+    } catch {
+      // ignore
+    }
 
     if (isSupabaseConfigured) {
       for (const item of updated) {
@@ -342,6 +434,18 @@ export async function reorderSiteSections(orderedIds: string[]): Promise<boolean
  */
 export async function resetDefaultSections(): Promise<SiteSection[]> {
   localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(DEFAULT_SECTIONS));
+  localStorage.setItem(`${STORAGE_KEY_SECTIONS}_draft`, JSON.stringify(DEFAULT_SECTIONS));
+  try {
+    const { publishDocument, saveDraftDocument } = await import('./cmsStore');
+    await saveDraftDocument('sections.homepage', { sections: DEFAULT_SECTIONS });
+    await publishDocument('sections.homepage', { sections: DEFAULT_SECTIONS }, {
+      contentType: 'site_section',
+      title: 'Reset Homepage Sections',
+      changeSummary: 'Reset sections to default factory configuration'
+    });
+  } catch {
+    // ignore
+  }
   return DEFAULT_SECTIONS;
 }
 
@@ -350,9 +454,16 @@ export async function resetDefaultSections(): Promise<SiteSection[]> {
  */
 export async function deleteSiteSection(id: string): Promise<boolean> {
   try {
-    const current = await getSiteSections();
+    const current = await getSiteSections('draft');
     const updated = current.filter((s) => s.id !== id);
-    localStorage.setItem(STORAGE_KEY_SECTIONS, JSON.stringify(updated));
+    localStorage.setItem(`${STORAGE_KEY_SECTIONS}_draft`, JSON.stringify(updated));
+
+    try {
+      const { saveDraftDocument } = await import('./cmsStore');
+      await saveDraftDocument('sections.homepage', { sections: updated });
+    } catch {
+      // ignore
+    }
 
     if (isSupabaseConfigured) {
       await supabase.from('site_sections').delete().eq('id', id);

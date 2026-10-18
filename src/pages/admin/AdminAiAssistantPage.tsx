@@ -447,7 +447,13 @@ Core Directives:
         {isGenerating && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-text-secondary)', fontSize: '0.8125rem' }}>
             <Loader2 size={16} className="spin" style={{ color: 'var(--color-primary-600)' }} />
-            <span>Gemini 2.5 Flash is thinking & drafting educational content...</span>
+            <span>
+              {(
+                (dynamicModels.length > 0 ? dynamicModels : SUPPORTED_GEMINI_MODELS).find(
+                  (m: any) => m.id === selectedModel
+                )?.name || selectedModel || 'Google Gemini'
+              )} is thinking & drafting educational content...
+            </span>
           </div>
         )}
 

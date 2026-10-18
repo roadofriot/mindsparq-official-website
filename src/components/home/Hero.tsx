@@ -4,8 +4,13 @@ import { ArrowRight, Sparkles, BookOpen, Cpu, ChevronLeft, ChevronRight, Pause, 
 import { siteConfig } from '../../content/site';
 import { getPublishedCarouselItems } from '../../services/contentService';
 import { CarouselItem } from '../../types/database';
+import { SiteSection } from '../../services/siteCustomizerService';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  section?: SiteSection;
+}
+
+export const Hero: React.FC<HeroProps> = ({ section }) => {
   const [slides, setSlides] = useState<CarouselItem[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -395,13 +400,14 @@ export const Hero: React.FC = () => {
             className="hero-grid"
           >
             {/* Hero Content */}
-            <div style={{ maxWidth: '680px' }}>
-              <div className="eyebrow">
+            <div style={{ maxWidth: '680px' }} data-cms-section={section?.id || 'hero'}>
+              <div className="eyebrow" data-cms-field="badge">
                 <Sparkles size={14} aria-hidden="true" />
-                <span>EDUCATION • INNOVATION • AI • STEM • DIGITAL LEARNING</span>
+                <span>{section?.badge || 'EDUCATION • INNOVATION • AI • STEM • DIGITAL LEARNING'}</span>
               </div>
 
               <h1 
+                data-cms-field="title"
                 style={{
                   fontSize: 'var(--text-5xl)',
                   fontWeight: 800,
@@ -411,19 +417,26 @@ export const Hero: React.FC = () => {
                   color: 'var(--color-text-primary)'
                 }}
               >
-                Empowering Minds, <br />
-                <span 
-                  style={{
-                    background: 'linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-accent-teal) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
-                  Sparking Innovation.
-                </span>
+                {section?.title ? (
+                  section.title
+                ) : (
+                  <>
+                    Empowering Minds, <br />
+                    <span 
+                      style={{
+                        background: 'linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-accent-teal) 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                      }}
+                    >
+                      Sparking Innovation.
+                    </span>
+                  </>
+                )}
               </h1>
 
               <p 
+                data-cms-field="subtitle"
                 style={{
                   fontSize: 'var(--text-lg)',
                   lineHeight: 1.7,
@@ -431,7 +444,7 @@ export const Hero: React.FC = () => {
                   marginBottom: 'var(--space-8)'
                 }}
               >
-                {siteConfig.name} unites foundational cognitive arts—Abacus, Mental Math, Vedic Mathematics, and bilingual penmanship—with modern applied AI, Coding, and Robotics to empower independent thinkers and young creators in Nepal.
+                {section?.subtitle || `${siteConfig.name} unites foundational cognitive arts—Abacus, Mental Math, Vedic Mathematics, and bilingual penmanship—with modern applied AI, Coding, and Robotics to empower independent thinkers and young creators in Nepal.`}
               </p>
 
               <div 

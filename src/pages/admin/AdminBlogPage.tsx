@@ -35,6 +35,7 @@ import { useAuth } from '../../context/AuthContext';
 import { uploadMedia } from '../../services/mediaService';
 import { extractYouTubeVideoId } from '../../services/courseService';
 import { ImageUploadField } from '../../components/admin/ImageUploadField';
+import { AccessibleHint } from '../../components/ui/AccessibleHint';
 
 
 export const AdminBlogPage: React.FC = () => {
@@ -383,27 +384,29 @@ export const AdminBlogPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 20px',
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-            color: '#ffffff',
-            border: 'none',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
-          }}
-        >
-          <Plus size={16} />
-          <span>New Article</span>
-        </button>
+        <AccessibleHint text="Draft a new pedagogical article or news announcement" shortcut="Alt+N">
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              color: '#ffffff',
+              border: 'none',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)'
+            }}
+          >
+            <Plus size={16} />
+            <span>New Article</span>
+          </button>
+        </AccessibleHint>
       </div>
 
       {/* Metrics Row */}
@@ -691,50 +694,52 @@ export const AdminBlogPage: React.FC = () => {
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           {/* Device Frame Live Preview */}
-                          <Link
-                            to={`/preview?type=blog&id=${post.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Device Frame Live Preview (Desktop, Tablet, Mobile)"
-                            style={{
-                              padding: '5px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              color: '#38bdf8',
-                              backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: 500,
-                              textDecoration: 'none'
-                            }}
-                          >
-                            <Eye size={14} />
-                            <span>Preview</span>
-                          </Link>
+                          <AccessibleHint text="Live preview in device simulator (Desktop, Tablet, Mobile)">
+                            <Link
+                              to={`/preview?type=blog&id=${post.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: 'var(--radius-sm)',
+                                color: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 500,
+                                textDecoration: 'none'
+                              }}
+                            >
+                              <Eye size={14} />
+                              <span>Preview</span>
+                            </Link>
+                          </AccessibleHint>
 
                           {/* Revisions History Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleOpenHistory(post)}
-                            title="View revision snapshot history"
-                            style={{
-                              padding: '5px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              backgroundColor: 'rgba(168, 85, 247, 0.1)',
-                              border: 'none',
-                              color: '#c084fc',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: 500
-                            }}
-                          >
-                            <History size={14} />
-                            <span>History</span>
-                          </button>
+                          <AccessibleHint text="View and restore immutable snapshots from Postgres">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenHistory(post)}
+                              style={{
+                                padding: '5px 8px',
+                                borderRadius: 'var(--radius-sm)',
+                                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                                border: 'none',
+                                color: '#c084fc',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 500
+                              }}
+                            >
+                              <History size={14} />
+                              <span>History</span>
+                            </button>
+                          </AccessibleHint>
 
                           {/* Public Link (Only for Published) */}
                           {post.status === 'published' && (

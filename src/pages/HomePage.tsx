@@ -52,32 +52,35 @@ export const HomePage: React.FC = () => {
     let innerComponent: React.ReactNode = null;
     switch (section.key) {
       case 'hero':
-        innerComponent = <Hero key="hero" />;
+        innerComponent = <Hero key="hero" section={section} />;
         break;
       case 'focus_strip':
-        innerComponent = <FocusStrip key="focus_strip" />;
+        innerComponent = <FocusStrip key="focus_strip" section={section} />;
         break;
       case 'programs_overview':
-        innerComponent = <ProgramsOverview key="programs_overview" />;
+        innerComponent = <ProgramsOverview key="programs_overview" section={section} />;
         break;
       case 'learning_approach':
-        innerComponent = <LearningApproach key="learning_approach" />;
+        innerComponent = <LearningApproach key="learning_approach" section={section} />;
         break;
       case 'who_we_support':
-        innerComponent = <WhoWeSupport key="who_we_support" />;
+        innerComponent = <WhoWeSupport key="who_we_support" section={section} />;
         break;
       case 'ai_robotics_feature':
-        innerComponent = <AiRoboticsFeature key="ai_robotics_feature" />;
+        innerComponent = <AiRoboticsFeature key="ai_robotics_feature" section={section} />;
         break;
       case 'about_snippet':
-        innerComponent = <AboutSnippet key="about_snippet" />;
+        innerComponent = <AboutSnippet key="about_snippet" section={section} />;
         break;
       case 'meet_our_team':
         innerComponent = <MeetOurTeamSection key="meet_our_team" />;
         break;
       case 'inquiry_cta':
-        innerComponent = <InquiryCta key="inquiry_cta" />;
+        innerComponent = <InquiryCta key="inquiry_cta" section={section} />;
         break;
+      case 'social_community_hub':
+        // Rendered globally by Layout above the footer; return null to prevent duplicate
+        return null;
       default:
         innerComponent = <CustomBlockRenderer section={section} />;
         break;

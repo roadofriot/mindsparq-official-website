@@ -31,6 +31,39 @@ export interface SearchResultItem {
 
 const STATIC_ADMIN_NAV_ITEMS = [
   {
+    id: 'nav-help',
+    title: 'Admin Operating Manual & Help Center',
+    subtitle: 'Step-by-step guides for editing paragraphs, colors, menus, and testing mobile layout',
+    content: 'help guide manual instructions documentation how to edit paragraph change color font logo footer address restore revision mobile test',
+    locationPath: 'System > Help Center',
+    targetRoute: '/admin/help',
+    category: 'navigation' as const,
+    categoryLabel: 'Help & Docs',
+    badgeColor: '#10b981'
+  },
+  {
+    id: 'nav-builder',
+    title: 'Visual Website Builder (Click-to-Edit)',
+    subtitle: 'Interactive live canvas preview with element selection, inline editing, and responsive frame simulator',
+    content: 'builder visual editor click to edit canvas live preview inspector paragraph headline image button duplicate delete reorder',
+    locationPath: 'Visual CMS > Website Builder',
+    targetRoute: '/admin/builder',
+    category: 'navigation' as const,
+    categoryLabel: 'Visual Builder',
+    badgeColor: '#0ea5e9'
+  },
+  {
+    id: 'nav-revisions',
+    title: 'Revision History & Rollback Console',
+    subtitle: 'Browse chronological content snapshots, compare diffs, and restore previous versions with one click',
+    content: 'revision history rollback restore version snapshot undo backup previous diff',
+    locationPath: 'System > Revision History',
+    targetRoute: '/admin/revisions',
+    category: 'navigation' as const,
+    categoryLabel: 'Revisions',
+    badgeColor: '#f97316'
+  },
+  {
     id: 'nav-overview',
     title: 'Admin Overview & Dashboard',
     subtitle: 'System health, quick stats, content metrics, and key links',

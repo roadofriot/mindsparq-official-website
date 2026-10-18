@@ -2,9 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { HelpCircle, ArrowRight, School } from 'lucide-react';
 
-export const InquiryCta: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface InquiryCtaProps {
+  section?: SiteSection;
+}
+
+export const InquiryCta: React.FC<InquiryCtaProps> = ({ section }) => {
+  const content = section?.content_json || {};
+  const eyebrowText = section?.badge || 'Admissions & School Inquiries';
+  const titleText = section?.title || 'Have Questions About Programs, Schedules, or School Collaboration?';
+  const descText = section?.subtitle || 'Whether you are a parent seeking mental math development for your child or a school administrator interested in integrating robotics and AI literacy, we are glad to discuss options.';
+  const ctaLabel = section?.layout_style?.ctaButtonText || 'Send An Inquiry';
+  const ctaLink = section?.layout_style?.ctaButtonUrl || content.actionUrl || '/contact';
+
   return (
     <section 
+      data-cms-section={section?.id || 'inquiry_cta'}
       style={{
         padding: 'var(--space-16) 0',
         backgroundColor: 'var(--color-surface)',
@@ -23,16 +37,17 @@ export const InquiryCta: React.FC = () => {
             margin: '0 auto'
           }}
         >
-          <div className="eyebrow eyebrow-teal" style={{ marginBottom: 'var(--space-3)' }}>
+          <div className="eyebrow eyebrow-teal" style={{ marginBottom: 'var(--space-3)' }} data-cms-field="badge">
             <HelpCircle size={14} />
-            <span>Admissions & School Inquiries</span>
+            <span>{eyebrowText}</span>
           </div>
 
-          <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }}>
-            Have Questions About Programs, Schedules, or School Collaboration?
+          <h2 style={{ fontSize: 'var(--text-3xl)', marginBottom: 'var(--space-4)' }} data-cms-field="title">
+            {titleText}
           </h2>
 
           <p 
+            data-cms-field="subtitle"
             style={{
               fontSize: 'var(--text-base)',
               color: 'var(--color-text-secondary)',
@@ -41,7 +56,7 @@ export const InquiryCta: React.FC = () => {
               lineHeight: 1.7
             }}
           >
-            Whether you are a parent seeking mental math development for your child or a school administrator interested in integrating robotics and AI literacy, we are glad to discuss options.
+            {descText}
           </p>
 
           <div 
@@ -52,8 +67,8 @@ export const InquiryCta: React.FC = () => {
               gap: 'var(--space-4)'
             }}
           >
-            <Link to="/contact" className="btn btn-primary btn-lg">
-              <span>Send An Inquiry</span>
+            <Link to={ctaLink} className="btn btn-primary btn-lg" data-cms-field="cta">
+              <span>{ctaLabel}</span>
               <ArrowRight size={18} />
             </Link>
             <Link to="/programs" className="btn btn-secondary btn-lg">

@@ -8,17 +8,27 @@
  * - Footer layout (brand blurb, dynamic link columns, registered center notice, copyright)
  * - Global Typography & Design Tokens (fonts, primary brand hue, container widths, radii)
  */
+import { recordAuditLog } from './auditService';
+import { createContentVersion } from './versionService';
 
 export interface NavMenuItem {
   id: string;
   label: string;
   href: string;
   isExternal?: boolean;
+  children?: Array<{ id: string; label: string; href: string }>;
 }
 
 export interface HeaderConfig {
   height: number;                // 56px to 96px (default: 68)
   logoHeight: number;            // 28px to 64px (default: 42)
+  logoAltText?: string;
+  logoDestination?: string;
+  siteName?: string;
+  siteTagline?: string;
+  showTagline?: boolean;
+  headerVariant?: 'standard' | 'centered' | 'split';
+  headerBgColor?: string;
   isSticky: boolean;             // Sticky positioning vs static flow
   showAnnouncement: boolean;     // Top announcement banner toggle
   announcementText: string;      // Banner announcement message
@@ -40,11 +50,20 @@ export interface FooterColumn {
 export interface FooterConfig {
   brandDescription: string;
   registeredCenterText: string;
+  contactAddress?: string;
   contactPhone: string;
   contactEmail: string;
+  officeHours?: string;
   copyrightText: string;         // Supports {year} dynamic placeholder
   showVisitorCount: boolean;
   showSocialBadges: boolean;
+  socialLinks?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
   columns: FooterColumn[];
   backgroundTheme: 'surface' | 'slate' | 'navy' | 'black';
 }
@@ -136,7 +155,7 @@ export const DEFAULT_THEME_SETTINGS: MindSparQThemeSettings = {
           { label: 'About MindSparQ', href: '/about' },
           { label: 'Faculty & Mentors', href: '/team' },
           { label: 'Contact & Inquiries', href: '/contact' },
-          { label: 'Privacy Policy', href: '/privacy' }
+          { label: 'Privacy Policy', href: '/privacy-policy' }
         ]
       }
     ]
@@ -238,7 +257,7 @@ export function applyThemeToDocument(settings: MindSparQThemeSettings): void {
 }
 
 /**
- * Retrieves the active theme settings with fallback to defaults
+ * Retrieves the active theme settings with fallback to defaults (synchronous fast read from cache)
  */
 export function getSiteThemeSettings(): MindSparQThemeSettings {
   if (typeof window === 'undefined') return DEFAULT_THEME_SETTINGS;
@@ -270,9 +289,40 @@ export function getSiteThemeSettings(): MindSparQThemeSettings {
 }
 
 /**
- * Saves and broadcasts updated theme settings across the browser
+ * Loads published theme settings from CMS cloud store asynchronously
  */
-export function saveSiteThemeSettings(settings: MindSparQThemeSettings): void {
+export async function loadSiteThemeSettingsAsync(): Promise<MindSparQThemeSettings> {
+  try {
+    const { getPublishedDocument } = await import('./cmsStore');
+    const { data } = await getPublishedDocument<any>('settings.theme', DEFAULT_THEME_SETTINGS);
+    if (data) {
+      const merged: MindSparQThemeSettings = {
+        header: { ...DEFAULT_THEME_SETTINGS.header, ...(data.header || {}) },
+        footer: { ...DEFAULT_THEME_SETTINGS.footer, ...(data.footer || {}) },
+        typography: { ...DEFAULT_THEME_SETTINGS.typography, ...(data.typography || {}) },
+        updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date().toISOString()
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
+        applyThemeToDocument(merged);
+        window.dispatchEvent(new CustomEvent(THEME_UPDATE_EVENT, { detail: merged }));
+      }
+      return merged;
+    }
+  } catch (err) {
+    console.warn('[SiteThemeService] Cloud theme fetch error:', err);
+  }
+  return getSiteThemeSettings();
+}
+
+/**
+ * Saves and broadcasts updated theme settings across the browser and cloud CMS
+ */
+export async function saveSiteThemeSettings(settings: MindSparQThemeSettings, changeSummary?: string): Promise<void> {
   if (typeof window === 'undefined') return;
 
   const payload: MindSparQThemeSettings = {
@@ -286,11 +336,46 @@ export function saveSiteThemeSettings(settings: MindSparQThemeSettings): void {
     console.error('Failed to persist theme settings:', err);
   }
 
-  // Apply to active document DOM
+  // Apply to active document DOM immediately
   applyThemeToDocument(payload);
 
-  // Broadcast event to reactive listeners
+  // Broadcast event to reactive listeners immediately
   window.dispatchEvent(new CustomEvent(THEME_UPDATE_EVENT, { detail: payload }));
+
+  // Persist to unified cmsStore (public published + draft)
+  try {
+    const { publishDocument, saveDraftDocument } = await import('./cmsStore');
+    await saveDraftDocument('settings.theme', payload as unknown as Record<string, unknown>);
+    await publishDocument('settings.theme', payload as unknown as Record<string, unknown>, {
+      contentType: 'theme',
+      title: 'Global Theme & Frame Settings',
+      changeSummary: changeSummary || 'Updated global theme, header and footer configuration'
+    });
+  } catch (err) {
+    console.warn('[SiteThemeService] Cloud persistence warning:', err);
+  }
+
+  // Create immutable version history snapshots for Header and Footer
+  await Promise.allSettled([
+    createContentVersion(
+      'header',
+      'global-header',
+      'Global Header Configuration',
+      payload.header as unknown as Record<string, unknown>,
+      changeSummary || 'Updated header and navigation settings'
+    ),
+    createContentVersion(
+      'footer',
+      'global-footer',
+      'Global Footer Configuration',
+      payload.footer as unknown as Record<string, unknown>,
+      changeSummary || 'Updated footer and contact settings'
+    ),
+    recordAuditLog('theme.update', 'site_theme', 'global', {
+      hasAnnouncement: payload.header.showAnnouncement,
+      columnCount: payload.footer.columns.length
+    })
+  ]);
 }
 
 /**

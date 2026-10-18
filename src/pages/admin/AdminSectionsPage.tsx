@@ -7,11 +7,14 @@ import {
   reorderSiteSections,
   resetDefaultSections,
   createCustomBlockTemplate,
+  publishSiteSections,
   SiteSection,
   CustomBlockType,
   SectionLayoutStyle,
   DEFAULT_SECTION_LAYOUT
 } from '../../services/siteCustomizerService';
+import { useStyleOverrides } from '../../hooks/useStyleOverrides';
+import { StyleInspector } from '../../components/admin/StyleInspector';
 import {
   Eye,
   EyeOff,
@@ -43,6 +46,7 @@ import {
 import { reviewWebsiteSectionContent, sendGeminiPrompt } from '../../services/geminiService';
 import { DynamicSectionWrapper } from '../../components/home/DynamicSectionWrapper';
 import { CustomBlockRenderer } from '../../components/home/CustomBlockRenderer';
+import { AccessibleHint } from '../../components/ui/AccessibleHint';
 
 export const AdminSectionsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,7 +54,16 @@ export const AdminSectionsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingSection, setEditingSection] = useState<SiteSection | null>(null);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [statusNotice, setStatusNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const {
+    overrides,
+    updateElementOverride,
+    resetElementOverride,
+    saveDraft: saveStyleDraft,
+    publishLive: publishStyleLive
+  } = useStyleOverrides({ mode: 'draft' });
 
   // Modal Sub-navigation
   const [activeTab, setActiveTab] = useState<'content' | 'layout' | 'styling' | 'ai' | 'preview'>('content');
@@ -71,7 +84,7 @@ export const AdminSectionsPage: React.FC = () => {
 
   const loadSections = async () => {
     setLoading(true);
-    const data = await getSiteSections();
+    const data = await getSiteSections('draft');
     setSections(data);
     setLoading(false);
   };
@@ -126,6 +139,8 @@ export const AdminSectionsPage: React.FC = () => {
 
     setSaving(true);
     const { success, error } = await saveSiteSection(editingSection);
+    await saveStyleDraft();
+
     if (success) {
       setSections((prev) => {
         const idx = prev.findIndex((s) => s.id === editingSection.id);
@@ -136,14 +151,38 @@ export const AdminSectionsPage: React.FC = () => {
         }
         return [...prev, editingSection];
       });
-      setStatusNotice({ type: 'success', text: `Section "${editingSection.name}" updated successfully!` });
-      setTimeout(() => setStatusNotice(null), 3000);
+      setStatusNotice({ type: 'success', text: `Section "${editingSection.name}" and design styles saved as draft! Remember to press "Publish to Live Site" to go live.` });
+      setTimeout(() => setStatusNotice(null), 4000);
       setEditingSection(null);
       setSearchParams({});
     } else {
       alert(`Save error: ${error?.message || 'Failed to update section'}`);
     }
     setSaving(false);
+  };
+
+  const handlePublishLive = async () => {
+    setPublishing(true);
+    try {
+      const secRes = await publishSiteSections('Staff Admin', 'Published homepage sections and visual styles to live site');
+      const styleRes = await publishStyleLive('Staff Admin', 'Published homepage sections and visual styles to live site');
+      if (secRes.success && styleRes.success) {
+        setStatusNotice({
+          type: 'success',
+          text: `Homepage sections and design styles published live successfully! (Version ${secRes.version})`
+        });
+        setTimeout(() => setStatusNotice(null), 5000);
+      } else {
+        setStatusNotice({
+          type: 'error',
+          text: secRes.error?.message || styleRes.error?.message || 'Failed to publish to live site.'
+        });
+      }
+    } catch (err: any) {
+      setStatusNotice({ type: 'error', text: err?.message || 'Publish error' });
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const handleDeleteSection = async (id: string, name: string) => {
@@ -245,6 +284,25 @@ Provide:
     });
   };
 
+  // Keyboard shortcuts for quick actions
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (!isInput && e.altKey) {
+        if (e.key === 'n' || e.key === 'N') {
+          e.preventDefault();
+          setShowBlockPicker(true);
+        } else if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          handleResetDefaults();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div>
       {/* Page Title & Action Bar */}
@@ -283,36 +341,63 @@ Provide:
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setShowBlockPicker(true)}
-            className="btn btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Plus size={16} />
-            <span>Add Custom Block</span>
-          </button>
+          <AccessibleHint text="Publish current draft sections and visual styles to external live visitors" shortcut="Alt+P">
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={handlePublishLive}
+              className="btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: 700,
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              <Sparkles size={16} />
+              <span>{publishing ? 'Publishing Live...' : 'Publish to Live Site'}</span>
+            </button>
+          </AccessibleHint>
 
-          <Link
-            to="/"
-            target="_blank"
-            className="btn btn-secondary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <ExternalLink size={15} />
-            <span>View Public Site</span>
-          </Link>
+          <AccessibleHint text="Add a new custom component (grid, media, rich text, CTA) to homepage" shortcut="Alt+N">
+            <button
+              type="button"
+              onClick={() => setShowBlockPicker(true)}
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Plus size={16} />
+              <span>Add Custom Block</span>
+            </button>
+          </AccessibleHint>
 
-          <button
-            type="button"
-            onClick={handleResetDefaults}
-            className="btn btn-secondary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            title="Restore factory default sections"
-          >
-            <RotateCcw size={15} />
-            <span>Reset Defaults</span>
-          </button>
+          <AccessibleHint text="Open live public homepage in a new browser tab" shortcut="Alt+V">
+            <Link
+              to="/"
+              target="_blank"
+              className="btn btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <ExternalLink size={15} />
+              <span>View Public Site</span>
+            </Link>
+          </AccessibleHint>
+
+          <AccessibleHint text="Reset all homepage sections to verified institutional factory defaults" shortcut="Alt+R">
+            <button
+              type="button"
+              onClick={handleResetDefaults}
+              className="btn btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <RotateCcw size={15} />
+              <span>Reset Defaults</span>
+            </button>
+          </AccessibleHint>
         </div>
       </div>
 
@@ -1078,72 +1163,21 @@ Provide:
                 </div>
               )}
 
-              {/* TAB 3: Background & Styling */}
+              {/* TAB 3: Visual Styling & Layout Geometry */}
               {activeTab === 'styling' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '780px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
-                      Background Image URL
-                    </label>
-                    <input
-                      type="text"
-                      value={editingSection.layout_style?.backgroundImageUrl || ''}
-                      onChange={(e) => updateLayoutStyle({ backgroundImageUrl: e.target.value })}
-                      placeholder="e.g. https://images.unsplash.com/... or /images/hero-bg.jpg"
-                      className="input-field"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  {editingSection.layout_style?.backgroundImageUrl && (
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text)' }}>
-                          Dark Glass Overlay Opacity
-                        </label>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8' }}>
-                          {Math.round((editingSection.layout_style.backgroundOverlayOpacity ?? 0.4) * 100)}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={editingSection.layout_style.backgroundOverlayOpacity ?? 0.4}
-                        onChange={(e) => updateLayoutStyle({ backgroundOverlayOpacity: parseFloat(e.target.value) })}
-                        style={{ width: '100%', cursor: 'pointer' }}
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
-                      Background Gradient Overlay (CSS linear-gradient)
-                    </label>
-                    <input
-                      type="text"
-                      value={editingSection.layout_style?.backgroundGradient || ''}
-                      onChange={(e) => updateLayoutStyle({ backgroundGradient: e.target.value })}
-                      placeholder="e.g. linear-gradient(135deg, rgba(36, 87, 214, 0.15) 0%, rgba(2, 132, 199, 0.08) 100%)"
-                      className="input-field"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text)' }}>
-                      Custom Background Hex / Color
-                    </label>
-                    <input
-                      type="text"
-                      value={editingSection.layout_style?.backgroundColor || ''}
-                      onChange={(e) => updateLayoutStyle({ backgroundColor: e.target.value })}
-                      placeholder="e.g. #070e1a or rgba(11, 19, 41, 0.8)"
-                      className="input-field"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
+                  <StyleInspector
+                    elementLabel={`Section: ${editingSection.name || editingSection.title}`}
+                    styleId={`section.${editingSection.key}`}
+                    override={overrides[`section.${editingSection.key}`]}
+                    onChange={(bp, partial) => {
+                      updateElementOverride(`section.${editingSection.key}`, bp, partial);
+                      if (bp === 'base' && partial.backgroundColor) {
+                        updateLayoutStyle({ backgroundColor: partial.backgroundColor });
+                      }
+                    }}
+                    onReset={() => resetElementOverride(`section.${editingSection.key}`)}
+                  />
                 </div>
               )}
 

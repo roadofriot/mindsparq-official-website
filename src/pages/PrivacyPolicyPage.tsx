@@ -1,15 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, FileText, CheckCircle2 } from 'lucide-react';
 import { siteConfig } from '../content/site';
 import { updatePageSeo } from '../utils/seo';
+import { getPageContent, PageContentData } from '../services/pageService';
 
 export const PrivacyPolicyPage: React.FC = () => {
+  const [pageData, setPageData] = useState<PageContentData | null>(null);
+
   useEffect(() => {
-    updatePageSeo({
-      title: 'Privacy Policy & Student Data Protection',
-      description: 'Information handling, cookie policies, and learner data protection standards at MindSparQ Education & Technology.',
-      canonicalPath: '/privacy-policy',
-      ogType: 'website'
+    getPageContent('privacy-policy', 'published').then((data) => {
+      setPageData(data);
+      updatePageSeo({
+        title: data?.seo?.metaTitle || 'Privacy Policy & Student Data Protection',
+        description: data?.seo?.metaDescription || 'Information handling, cookie policies, and learner data protection standards at MindSparQ Education & Technology.',
+        canonicalPath: data?.seo?.canonicalPath || '/privacy-policy',
+        ogType: 'website'
+      });
     });
   }, []);
 
@@ -31,10 +37,10 @@ export const PrivacyPolicyPage: React.FC = () => {
               <span>Data Protection & Privacy</span>
             </div>
             <h1 style={{ fontSize: 'var(--text-4xl)', marginBottom: 'var(--space-4)' }}>
-              Privacy Policy
+              {pageData?.title || 'Privacy Policy'}
             </h1>
             <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
-              This policy describes how {siteConfig.name} handles information collected through our official website ({siteConfig.domain}). We prioritize minimal data collection and respectful student privacy.
+              {pageData?.subtitle || `This policy describes how ${siteConfig.name} handles information collected through our official website (${siteConfig.domain}). We prioritize minimal data collection and respectful student privacy.`}
             </p>
           </div>
         </div>

@@ -13,19 +13,29 @@ const SUPPORT_IMAGES = [
   'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=500&q=80'  // Tech Creators
 ];
 
-export const WhoWeSupport: React.FC = () => {
+import { SiteSection } from '../../services/siteCustomizerService';
+
+interface WhoWeSupportProps {
+  section?: SiteSection;
+}
+
+export const WhoWeSupport: React.FC<WhoWeSupportProps> = ({ section }) => {
   const { t, language } = useLanguage();
 
+  const eyebrowText = section?.badge || t('section.support.eyebrow', 'Community & Ecosystem');
+  const titleText = section?.title || t('section.support.title', 'Who We Support');
+  const subtitleText = section?.subtitle || t('section.support.subtitle', 'Whether preparing young minds for mathematical clarity or partnering with schools on robotics integration, we meet learners where they are.');
+
   return (
-    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <section className="section-spacing" style={{ backgroundColor: 'var(--color-bg)' }} data-cms-section={section?.id || 'who_we_support'}>
       <div className="container">
         <div className="section-header">
-          <div className="eyebrow eyebrow-amber">
-            <span>{t('section.support.eyebrow', 'Community & Ecosystem')}</span>
+          <div className="eyebrow eyebrow-amber" data-cms-field="badge">
+            <span>{eyebrowText}</span>
           </div>
-          <h2>{t('section.support.title', 'Who We Support')}</h2>
-          <p>
-            {t('section.support.subtitle', 'Whether preparing young minds for mathematical clarity or partnering with schools on robotics integration, we meet learners where they are.')}
+          <h2 data-cms-field="title">{titleText}</h2>
+          <p data-cms-field="subtitle">
+            {subtitleText}
           </p>
         </div>
 

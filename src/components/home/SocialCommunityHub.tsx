@@ -206,12 +206,16 @@ export const SocialCommunityHub: React.FC = () => {
   return (
     <section
       id="community-social-hub"
+      data-style-id="social_community_hub"
       aria-label={isNe ? 'सामाजिक सञ्जाल तथा ताजा गतिविधि' : 'Community & Social Highlights'}
       style={{
-        padding: 'var(--space-16) var(--space-4)',
-        backgroundColor: 'var(--color-surface)',
-        borderTop: '1px solid var(--color-border)',
-        borderBottom: '1px solid var(--color-border)',
+        paddingTop: 'var(--ms-p-top, var(--space-16))',
+        paddingBottom: 'var(--ms-p-bottom, var(--space-16))',
+        paddingLeft: 'var(--ms-p-left, var(--space-4))',
+        paddingRight: 'var(--ms-p-right, var(--space-4))',
+        backgroundColor: 'var(--ms-bg, var(--color-surface))',
+        borderTop: 'var(--ms-border, 1px solid var(--color-border))',
+        borderBottom: 'var(--ms-border, 1px solid var(--color-border))',
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -244,18 +248,19 @@ export const SocialCommunityHub: React.FC = () => {
         }}
       />
 
-      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+      <div data-style-id="social.container" className="container" style={{ position: 'relative', zIndex: 1 }}>
         {/* Section Header */}
-        <div style={{ maxWidth: '780px', margin: '0 auto var(--space-10) auto', textAlign: 'center' }}>
+        <div data-style-id="social.header" style={{ maxWidth: '780px', margin: '0 auto var(--space-10) auto', textAlign: 'center' }}>
           <div
+            data-style-id="social.badge"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
               padding: '6px 14px',
               borderRadius: '999px',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
-              color: 'var(--color-primary-600)',
+              backgroundColor: 'var(--ms-badge-bg, rgba(99, 102, 241, 0.1))',
+              color: 'var(--ms-badge-color, var(--color-primary-600))',
               fontSize: '0.8125rem',
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -268,29 +273,31 @@ export const SocialCommunityHub: React.FC = () => {
           </div>
 
           <h2
+            data-style-id="social.title"
             style={{
               fontSize: 'clamp(1.75rem, 3.5vw, 2.375rem)',
               fontWeight: 800,
-              color: 'var(--color-text)',
+              color: 'var(--ms-heading, var(--color-text))',
               marginBottom: 'var(--space-3)',
               lineHeight: 1.25
             }}
           >
             {isNe ? (
               <>
-                सामाजिक सञ्जालमा <span style={{ color: 'var(--color-primary-600)' }}>MindSparQ</span> सँग जोडिनुहोस्
+                सामाजिक सञ्जालमा <span data-style-id="social.title_accent" style={{ color: 'var(--ms-accent, var(--color-primary-600))' }}>MindSparQ</span> सँग जोडिनुहोस्
               </>
             ) : (
               <>
-                Connect With <span style={{ color: 'var(--color-primary-600)' }}>MindSparQ</span> Across Social Media
+                Connect With <span data-style-id="social.title_accent" style={{ color: 'var(--ms-accent, var(--color-primary-600))' }}>MindSparQ</span> Across Social Media
               </>
             )}
           </h2>
 
           <p
+            data-style-id="social.subtitle"
             style={{
               fontSize: 'var(--font-base)',
-              color: 'var(--color-text-secondary)',
+              color: 'var(--ms-text, var(--color-text-secondary))',
               lineHeight: 1.6,
               margin: 0
             }}
@@ -302,6 +309,7 @@ export const SocialCommunityHub: React.FC = () => {
 
           {/* Platform Filter Tabs */}
           <div
+            data-style-id="social.filter_tabs"
             role="tablist"
             aria-label="Filter social channels"
             style={{
@@ -348,6 +356,7 @@ export const SocialCommunityHub: React.FC = () => {
 
         {/* Cards Grid - Balanced and Centered */}
         <div
+          data-style-id="social.cards_grid"
           style={{
             display: 'flex',
             flexWrap: 'wrap',

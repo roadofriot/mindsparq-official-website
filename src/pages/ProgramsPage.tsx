@@ -122,7 +122,16 @@ export const ProgramsPage: React.FC = () => {
       />
 
       {/* Enterprise Capabilities & Trust Strip */}
-      <section style={{ backgroundColor: 'var(--color-bg)', marginTop: 'calc(-1 * var(--space-6))', position: 'relative', zIndex: 10 }}>
+      <section 
+        data-style-id="programs.trust_strip"
+        style={{ 
+          backgroundColor: 'var(--color-bg)', 
+          marginTop: 'var(--ms-m-top, var(--space-4))',
+          marginBottom: 'var(--ms-m-bottom, var(--space-6))',
+          position: 'relative', 
+          zIndex: 10 
+        }}
+      >
         <div className="container">
           <div
             style={{
@@ -244,10 +253,17 @@ export const ProgramsPage: React.FC = () => {
       </section>
 
       {/* Program Disclaimers & Filter Bar */}
-      <section style={{ backgroundColor: 'var(--color-bg)', padding: 'var(--space-10) 0 var(--space-6)' }}>
+      <section 
+        data-style-id="programs.main_section"
+        style={{ 
+          backgroundColor: 'var(--color-bg)', 
+          padding: 'var(--ms-p-top, var(--space-8)) 0 var(--ms-p-bottom, var(--space-6))' 
+        }}
+      >
         <div className="container">
           {/* Transparent Availability Notice */}
           <div 
+            data-style-id="programs.notice"
             style={{
               display: 'flex',
               alignItems: 'flex-start',
@@ -256,7 +272,7 @@ export const ProgramsPage: React.FC = () => {
               backgroundColor: 'var(--color-surface)',
               borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--color-border)',
-              marginBottom: 'var(--space-8)'
+              marginBottom: 'var(--ms-m-bottom, var(--space-8))'
             }}
           >
             <Info size={20} style={{ color: 'var(--color-primary-600)', flexShrink: 0, marginTop: '2px' }} />
@@ -270,12 +286,13 @@ export const ProgramsPage: React.FC = () => {
 
           {/* Segmented Filter Control */}
           <div 
+            data-style-id="programs.filter_bar"
             style={{
               display: 'flex',
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '10px',
-              marginBottom: 'var(--space-10)'
+              marginBottom: 'var(--ms-m-bottom, var(--space-10))'
             }}
           >
             <span 

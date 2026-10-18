@@ -260,8 +260,11 @@ export function elementStyleToCss(style: ElementStyle, selector: string): string
 
   // Direct CSS Properties
   if (style.backgroundColor) rules.push(`background-color: ${style.backgroundColor};`);
-  if (style.backgroundGradient) rules.push(`background-image: ${style.backgroundGradient};`);
-  if (style.backgroundImageUrl) {
+  if (style.backgroundGradient && style.backgroundImageUrl) {
+    rules.push(`background-image: ${style.backgroundGradient}, url("${style.backgroundImageUrl}"); background-size: cover; background-position: center;`);
+  } else if (style.backgroundGradient) {
+    rules.push(`background-image: ${style.backgroundGradient};`);
+  } else if (style.backgroundImageUrl) {
     rules.push(`background-image: url("${style.backgroundImageUrl}"); background-size: cover; background-position: center;`);
   }
   if (style.textColor) rules.push(`color: ${style.textColor};`);
@@ -310,6 +313,7 @@ export function elementStyleToCss(style: ElementStyle, selector: string): string
   // Emitted Scoped CSS Custom Properties for sub-element consumption
   if (style.backgroundColor) rules.push(`--ms-bg: ${style.backgroundColor};`);
   if (style.backgroundGradient) rules.push(`--ms-bg-gradient: ${style.backgroundGradient};`);
+  if (style.backgroundImageUrl) rules.push(`--ms-bg-image: url("${style.backgroundImageUrl}");`);
   if (style.textColor) rules.push(`--ms-text: ${style.textColor};`);
   if (style.headingColor) rules.push(`--ms-heading: ${style.headingColor};`);
   if (style.subheadingColor) rules.push(`--ms-subheading: ${style.subheadingColor};`);

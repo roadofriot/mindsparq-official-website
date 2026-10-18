@@ -140,7 +140,7 @@ export const AdminDesignPage: React.FC = () => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 800, color: 'var(--color-text)', margin: 0 }}>
-              WordPress-Grade Theme & Layout Studio
+              MindSparQ Visual Design & Layout Studio
             </h1>
             <span
               style={{

@@ -87,7 +87,7 @@ const STATIC_ADMIN_NAV_ITEMS = [
   },
   {
     id: 'nav-design',
-    title: 'WordPress-Grade Theme & Layout Studio',
+    title: 'MindSparQ Theme & Layout Studio',
     subtitle: 'Header height, logo scale, announcement ribbon, footer branding, and typography',
     content: 'theme customizer design header height logo size announcement banner ribbon sticky header cta button footer copyright registered center columns typography fonts palettes',
     locationPath: 'Appearance > Theme Studio',

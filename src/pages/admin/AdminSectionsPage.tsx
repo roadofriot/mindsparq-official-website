@@ -15,6 +15,7 @@ import {
 } from '../../services/siteCustomizerService';
 import { useStyleOverrides } from '../../hooks/useStyleOverrides';
 import { StyleInspector } from '../../components/admin/StyleInspector';
+import { ImageUploadField } from '../../components/admin/ImageUploadField';
 import {
   Eye,
   EyeOff,
@@ -332,7 +333,7 @@ Provide:
                 border: '1px solid rgba(56, 189, 248, 0.3)'
               }}
             >
-              WordPress-Grade CMS
+              MindSparQ Enterprise CMS
             </span>
           </div>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-sm)', margin: '4px 0 0' }}>
@@ -640,7 +641,7 @@ Provide:
                   Add New Custom Section Block
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-text-secondary, #94a3b8)' }}>
-                  Choose a WordPress-grade block template to insert into your homepage.
+                  Choose a pre-styled MindSparQ block template to insert into your homepage.
                 </p>
               </div>
               <button
@@ -944,6 +945,22 @@ Provide:
                     </div>
                   )}
 
+                  {editingSection.block_type === 'split_media' && (
+                    <div style={{ marginTop: '12px' }}>
+                      <ImageUploadField
+                        label="Media Image (Computer / Phone or Link)"
+                        value={editingSection.content_json?.imageUrl || ''}
+                        onChange={(url) => setEditingSection({
+                          ...editingSection,
+                          content_json: { ...editingSection.content_json, imageUrl: url }
+                        })}
+                        placeholder="https://images.unsplash.com/... or choose from device"
+                        helperText="Upload an image directly from your computer or enter an external image URL for the split banner."
+                        recommendedDimensions="1200x800 px"
+                      />
+                    </div>
+                  )}
+
                   {editingSection.block_type === 'video_showcase' && (
                     <div style={{ marginTop: '8px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px', color: 'var(--color-text)' }}>
@@ -983,7 +1000,7 @@ Provide:
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '780px' }}>
                   <div style={{ padding: '12px 16px', borderRadius: '10px', backgroundColor: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: '#38bdf8' }}>
-                      WordPress-Grade Dimensions & Box Model
+                      Enterprise Section Dimensions & Box Model
                     </span>
                     <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-text-secondary, #94a3b8)' }}>
                       Adjust container width, section min-height, top/bottom padding, and typography scaling directly.

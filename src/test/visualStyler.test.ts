@@ -8,7 +8,7 @@ import {
   DEFAULT_SECTION_LAYOUT
 } from '../services/siteCustomizerService';
 
-describe('WordPress-Grade Visual Section & Layout Studio', () => {
+describe('MindSparQ Visual Section & Layout Studio', () => {
   beforeEach(() => {
     localStorage.clear();
   });
